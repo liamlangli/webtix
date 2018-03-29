@@ -11,6 +11,7 @@ uniform float inseed;
 uniform int incount;
 uniform vec2 resolution;
 
+uniform float size;
 uniform sampler2D verties;
 
 in vec3 origin;
@@ -20,6 +21,7 @@ float seed;
 uint N = 128u;
 uint i;
 
+int iSize;
 
 float random_ofs = 0.0;
 vec3 cosWeightedRandomHemisphereDirectionHammersley(const vec3 n)
@@ -36,44 +38,54 @@ vec3 cosWeightedRandomHemisphereDirectionHammersley(const vec3 n)
     return normalize(vec3(sqrtx * cos(r.y) * uu + sqrtx * sin(r.y) * vv + sqrt(1.0 - r.x) * n));
 }
 
-vec4 trace( vec3 o, vec3 dir ) {
+vec4 trace( vec3 orig, vec3 dir ) {
 
     i = uint(incount);
 
-    float mint = 1000000.0;
+    float mint = 1e10;
+    vec2 minpos, minuv;
     vec2 pos = vec2(0.0);
-    vec3 v0, v1, v2;
-    v0 = textureLod( verties, pos, 0.0).rgb;
-    v1 = textureLodOffset( verties, pos, 0.0, ivec2(1, 0) ).rgb;
-    v2 = textureLodOffset( verties, pos, 0.0, ivec2(2, 0) ).rgb;
+    vec3 v0, v01, v02;
 
-    vec3 P = cross( dir, v2 );
-    float det = dot( v1, P );
-    if ( det > -EPSILON ) return vec4(0.0);
+    vec3 realori = orig;
 
-    vec3 T = o - v0;
-    float invdet = 1.0 / det;
-    float u = dot( T, P ) * invdet;
-    if ( u < 0.0 || u > 1.0 ) return vec4(0.0);
+    for(int index = 0; index < iSize; ++index) {
+        v0 = textureLod( verties, pos, 0.0).rgb;
+        v01 = textureLodOffset( verties, pos, 0.0, ivec2(1, 0) ).rgb;
+        v02 = textureLodOffset( verties, pos, 0.0, ivec2(2, 0) ).rgb;
+        pos += vec2( 4.0 / size, 0.0);
 
-    vec3 Q = cross( T, v1 );
-    float v = dot( dir, Q ) * invdet;
-    if ( v < 0.0 || u + v > 1.0 ) return vec4(0.0);
+        vec3 v2 = v01 - v0;
+        vec3 v1 = v02 - v0;
 
-    float t = dot( v2, Q ) * invdet;
-    if ( t > EPSILON && t < mint ) 
-        return vec4(1.0 - u - v, u, v, 1.0);
+        vec3 P = cross(dir, v2);
+        float det = dot(v1, P);
+        if (det > -EPSILON)
+            continue;
+        vec3 T = realori - v0;
+        float invdet = 1.0 / det;
+        float u = dot(T, P) * invdet;
+        if (u < 0.0 || u > 1.0)
+            continue;
+        vec3 Q = cross(T, v1);
+        float v = dot(dir, Q) * invdet;
+        if (v < 0.0 || u + v > 1.0)
+            continue;
+        float t = dot(v2, Q) * invdet;
+        if (t > EPSILON && t < mint)
+        {
+            mint = t;
+            minpos = pos - vec2(4.0 / size, 10.0);
+            minuv = vec2(u, v);
+        }
+    }
+
+    if (mint < 1e10) {
+        return vec4( vec3(textureLodOffset( verties, minpos, 0.0, ivec2(3, 0)).rgb), mint);
+    }
+
+    return vec4(0.0);
 }
-
-// vec3 getRayDir(vec3 camR, vec3 camU, vec3 camF) {
-//     vec2 fc = vec2( gl_FragCoord.xy );
-//     vec2 fcu = fc / resolution;
-//     seed = inseed + fcu.x + fcu.y;
-//     vec2 aa = fract( sin( vec2( seed, seed + 0.1))) * vec2(43758.5453123, 22578.1459123);
-//     vec2 uv = (fc) / (resolution / 2.0) - 1.0;
-
-//     return normalize( uv.x * camR + uv.y * camU + camF); 
-// }
 
 void main()
 {
@@ -85,6 +97,7 @@ void main()
 
     // vec3 dir = getRayDir(camR, camU, camF);
     // vec4 hit = trace( vec3(0.0, 0.0, -1.0), dir);
+    iSize = int(size);
 
     vec2 fc = vec2(gl_FragCoord.xy);
     vec2 fcu = fc / resolution;
@@ -93,19 +106,16 @@ void main()
     vec4 view = proj * vec4( (fc + aa) / (resolution / 2.0) - 1.0, 0.0, 1.0);
     view = normalize( MVP * vec4(view.xyz / view.w, 0.0) );
     vec3 orig = origin;
+    orig += view.xyz;
 
     vec4 hit = trace( orig, view.xyz );
-
     if (hit.w <= 0.0) {
         color.rgb = vec3( 1.0 );
-    } else {
-        color.rgb = hit.xyz;
-    }
+        return;
+    } 
 
-    vec3 v0, v1, v2;
-    vec2 pos = vec2(0.0);
-    v0 = textureLod( verties, pos, 0.0).rgb;
-    v1 = textureLodOffset( verties, pos, 0.0, ivec2(1, 0) ).rgb;
-    v2 = textureLodOffset( verties, pos, 0.0, ivec2(2, 0) ).rgb;
-    // color.rgb = dir;
+    hit = trace(orig, -cosWeightedRandomHemisphereDirectionHammersley(hit.xyz));
+    if (hit.w <= 0.0 ) {
+        color.rgb = vec3( 0.8 );
+    }
 }

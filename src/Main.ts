@@ -2,6 +2,8 @@ import { dom, t, rX, rY, i } from '../lib/lan';
 import { HiddenScreen } from './HiddenScreen';
 import { GLProgram } from './GLProgram';
 
+import { OBJLoader } from '../utils/OBJLoader';
+
 import * as BasicVert from '../shaders/basic_vert.glsl';
 import * as BasicFrag from '../shaders/basic_frag.glsl';
 import * as PathTracingVert from '../shaders/path_tracing_vert.glsl';
@@ -30,7 +32,9 @@ export class Arch {
         MVP: null,
         proj: null,
         inseed: null,
-        resolution: null
+        incount: null,
+        resolution: null, 
+        size: null
     };
 
     normalLocations = {
@@ -48,6 +52,8 @@ export class Arch {
     zoom = 0;
 
     status = dom('status') as HTMLDivElement;
+
+    dataSize: number;
 
     constructor(canvas: HTMLCanvasElement) {
 
@@ -68,45 +74,6 @@ export class Arch {
         this.hiddenScreen = new HiddenScreen(this.gl, this.width, this.height);
 
         const gl = this.gl;
-
-        const totX = 3;
-        const totY = 3;
-        const data = new Float32Array([
-             1.0, -1.0, -1.0,
-             1.0, -1.0,  1.0,
-            -1.0, -1.0,  1.0,
-            -1.0, -1.0, -1.0,
-             1.0,  1.0, -1.0,
-             1.0,  1.0,  1.0,
-            -1.0,  1.0,  1.0,
-            -1.0,  1.0, -1.0
-        ]);
-
-        this.texture = gl.createTexture();
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, this.texture);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-        gl.texImage2D(gl.TEXTURE_2D, 0, (gl as any).RGB32F, totX, 1, 0, gl.RGB, gl.FLOAT, data);
-
-        this.programTracing = new GLProgram(gl, PathTracingVert, PathTracingFrag, this.tracingLocations);
-        this.programNormal = new GLProgram(gl, BasicVert, BasicFrag, this.normalLocations);
-
-        // Setup the quad that will drive the rendering.
-        const vertexPosBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, vertexPosBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 0, 1, -1, 0, 1, 1, 0, 1, 1, 0, -1, 1, 0, -1, -1, 0]), gl.STATIC_DRAW);
-        gl.bindBuffer(gl.ARRAY_BUFFER, null);
-
-        this.vertexArray = (gl as any).createVertexArray();
-        (gl as any).bindVertexArray(this.vertexArray);
-        const vertexPosLocation = 0;
-        gl.enableVertexAttribArray(vertexPosLocation);
-        gl.bindBuffer(gl.ARRAY_BUFFER, vertexPosBuffer);
-        gl.vertexAttribPointer(vertexPosLocation, 3, gl.FLOAT, false, 0, 0);
-        gl.bindBuffer(gl.ARRAY_BUFFER, null);
-        (gl as any).bindVertexArray(null);
-
 
         this.matrix = new Float32Array([0, 0, 1, 0,
             -0.86, 0.5, 0, 0,
@@ -138,6 +105,39 @@ export class Arch {
         }
     }
 
+    bindData( data ) {
+
+        const gl = this.gl;
+
+        const size = data.length / 3;
+        this.dataSize = size;
+
+        this.texture = gl.createTexture();
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, this.texture);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        gl.texImage2D(gl.TEXTURE_2D, 0, (gl as any).RGB32F, size, 1, 0, gl.RGB, gl.FLOAT, data);
+
+        this.programTracing = new GLProgram(gl, PathTracingVert, PathTracingFrag, this.tracingLocations);
+        this.programNormal = new GLProgram(gl, BasicVert, BasicFrag, this.normalLocations);
+
+        // Setup the quad that will drive the rendering.
+        const vertexPosBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertexPosBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 0, 1, -1, 0, 1, 1, 0, 1, 1, 0, -1, 1, 0, -1, -1, 0]), gl.STATIC_DRAW);
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+        this.vertexArray = (gl as any).createVertexArray();
+        (gl as any).bindVertexArray(this.vertexArray);
+        const vertexPosLocation = 0;
+        gl.enableVertexAttribArray(vertexPosLocation);
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertexPosBuffer);
+        gl.vertexAttribPointer(vertexPosLocation, 3, gl.FLOAT, false, 0, 0);
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);
+        (gl as any).bindVertexArray(null);
+    }
+
     render = () => {
 
         const gl = this.gl;
@@ -159,7 +159,9 @@ export class Arch {
                 gl.uniformMatrix4fv( this.tracingLocations.MVP, false, this.matrix );
                 gl.uniformMatrix4fv( this.tracingLocations.proj, false, this.matrix2 );
                 gl.uniform1f( this.tracingLocations.inseed, Math.random() );
+                gl.uniform1i( this.tracingLocations.incount, this.accum_count % 200 );
                 gl.uniform2fv( this.tracingLocations.resolution, new Float32Array([this.width, this.height]) );
+                gl.uniform1f( this.tracingLocations.size, this.dataSize);
 
                 gl.activeTexture( gl.TEXTURE0 );
                 gl.bindTexture( gl.TEXTURE_2D, this.texture );
@@ -198,4 +200,10 @@ export class Arch {
 }
 
 const arch = new Arch(dom('view') as HTMLCanvasElement);
-arch.render();
+
+
+OBJLoader('../obj/box.obj').then((data) => {
+    console.log(data);
+    arch.bindData(data);
+    arch.render();
+})
