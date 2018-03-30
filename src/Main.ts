@@ -187,7 +187,7 @@ export class Arch {
 
             gl.bindTexture(gl.TEXTURE_2D, null);
 
-            if( ++this.accum_count >= 100 ) this.abort = true;
+            if( ++this.accum_count >= 200 ) this.abort = true;
 
             this.status.innerHTML = `sample count:${this.accum_count}`;
         }
@@ -202,7 +202,7 @@ export class Arch {
 const arch = new Arch(dom('view') as HTMLCanvasElement);
 
 
-OBJLoader('../obj/box.obj').then((data) => {
+OBJLoader('../obj/house.obj').then((data) => {
     console.log(data);
     arch.bindData(data);
     arch.render();

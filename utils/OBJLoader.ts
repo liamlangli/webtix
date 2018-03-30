@@ -58,8 +58,13 @@ function vertiesAbsorb(data: string): Float32Array {
         const v1 = vs[ fs[i][1] - 1 ];
         const v2 = vs[ fs[i][2] - 1 ];
         const n0 = vn[ fs[i][3] - 1 ];
-        res.push(v0[0], v0[1], v0[2], v1[0], v1[1], v1[2], v2[0], v2[1], v2[2]);
         res.push(n0[0], n0[1], n0[2]);
+        res.push(
+            v0[0], v0[1], v0[2],
+            v1[0], v1[1], v1[2],
+            v2[0], v2[1], v2[2]
+        );
+        
     }
     return new Float32Array(res);
 }
