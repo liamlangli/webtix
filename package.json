@@ -2,7 +2,8 @@
   "name": "arch",
   "version": "1.0.0",
   "main": "index.js",
-  "license": "MIT","scripts": {
+  "license": "MIT",
+  "scripts": {
     "dev": "webpack-dev-server"
   },
   "devDependencies": {
@@ -10,6 +11,8 @@
     "raw-loader": "^0.5.1",
     "ts-loader": "^4.1.0",
     "typescript": "^2.8.1",
-    "webpack": "^4.3.0"
-  } 
+    "webpack": "^4.3.0",
+    "webpack-cli": "^2.0.14",
+    "webpack-dev-server": "^3.1.1"
+  }
 }

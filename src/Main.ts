@@ -1,4 +1,4 @@
-import { dom, t, rX, rY, i } from '../lib/lan';
+import { dom, t, rX, rY, i } from './lib/lan';
 import { HiddenScreen } from './HiddenScreen';
 import { GLProgram } from './GLProgram';
 
@@ -187,7 +187,7 @@ export class Arch {
 
             gl.bindTexture(gl.TEXTURE_2D, null);
 
-            if( ++this.accum_count >= 200 ) this.abort = true;
+            if( ++this.accum_count >= 120 ) this.abort = true;
 
             this.status.innerHTML = `sample count:${this.accum_count}`;
         }

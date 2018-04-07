@@ -5,7 +5,7 @@ const root = (...args) => path.resolve(__dirname, ...args);
 
 function devServer() {
     return {
-        contentBase: root(""),
+        contentBase: root("./server"),
         inline: true,
         port: 7666
     }
@@ -20,6 +20,7 @@ function entries() {
 function rules() {
     return [
         { test: /\.ts$/, loader: "ts-loader", exclude: /node_modules/ },
+        { test: /\.js$/, loader: "babel-loader", exclude: /node_modules/, options: {cacheDirectory: true}},
         { test: /\.glsl$/, loader: "raw-loader", exclude: /node_modules/ }
     ];
 }
@@ -37,6 +38,7 @@ var config = {
     watch: true,
     output: {
         filename: "[name].bundle.js",
+        path: root("./build"),
         publicPath: '/dist/'
     },
     devtool: "source-map",
