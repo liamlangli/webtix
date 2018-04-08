@@ -1,20 +1,3 @@
-
-
-const Ajax = function () {
-    // this is just a helper class to ease ajax calls
-    var scope = this;
-    this.xmlhttp = new XMLHttpRequest();
-    this.get = function (url, callback) {
-        scope.xmlhttp.onreadystatechange = function () {
-            if (scope.xmlhttp.readyState === 4) {
-                callback(scope.xmlhttp.responseText, scope.xmlhttp.status);
-            }
-        };
-        scope.xmlhttp.open('GET', url, true);
-        scope.xmlhttp.send();
-    }
-};
-
 const re_vector  = /^v\s/;
 const re_normal  = /^vn\s/;
 const re_face = /^f\s/;
@@ -69,14 +52,8 @@ function vertiesAbsorb(data: string): Float32Array {
     return new Float32Array(res);
 }
 
-export async function OBJLoader( path ): Promise<Float32Array>{
-
-    var ajax = new Ajax();
-
-    return new Promise<Float32Array>( (resolve, reject) => {
-        ajax.get(path, function (data, status) {
-            resolve( vertiesAbsorb(data) );
-        })
-    });
-
+export async function OBJLoader( path ) {
+    const data = await fetch(path);
+    const obj = await data.text();
+    return vertiesAbsorb(obj);
 }

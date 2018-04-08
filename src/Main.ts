@@ -4,12 +4,16 @@ import { GLProgram } from './GLProgram';
 
 import { OBJLoader } from '../utils/OBJLoader';
 
-import * as BasicVert from '../shaders/basic_vert.glsl';
-import * as BasicFrag from '../shaders/basic_frag.glsl';
-import * as PathTracingVert from '../shaders/path_tracing_vert.glsl';
-import * as PathTracingFrag from '../shaders/path_tracing_frag.glsl';
+import * as BasicVert from './shaders/basic_vert.glsl';
+import * as BasicFrag from './shaders/basic_frag.glsl';
+import * as PathTracingVert from './shaders/path_tracing_vert.glsl';
+import * as PathTracingFrag from './shaders/path_tracing_frag.glsl';
+import { BVH } from './accelerator/BVH';
+import { Scene } from './core/Scene';
 
 export class Arch {
+
+    scene: Scene;
 
     gl: WebGLRenderingContext;
     ofSceeen;
@@ -34,7 +38,9 @@ export class Arch {
         inseed: null,
         incount: null,
         resolution: null, 
-        size: null
+        size: null,
+        BBmin: null,
+        BBmax: null
     };
 
     normalLocations = {
@@ -98,18 +104,21 @@ export class Arch {
                 this.angleHori += e.movementX/100;
                 this.angleVer += e.movementY/100;
             } else {
+                console.log('zoom');
                 this.zoom += e.movementX/10;
             }
-            this.viewportMV = t(rX(rY(i(), this.angleHori),this.angleVer),[0,4,-20+this.zoom]);
+            this.viewportMV = t(rX(rY(i(), this.angleHori),this.angleVer),[0, 4, -20 + this.zoom]);
             this.diff = true;
         }
     }
 
-    bindData( data ) {
+    bindScene( scene: Scene ) {
+        this.scene = scene;
+        console.log(scene);
 
         const gl = this.gl;
 
-        const size = data.length / 3;
+        const size = scene.vertices.length / 3;
         this.dataSize = size;
 
         this.texture = gl.createTexture();
@@ -117,7 +126,7 @@ export class Arch {
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-        gl.texImage2D(gl.TEXTURE_2D, 0, (gl as any).RGB32F, size, 1, 0, gl.RGB, gl.FLOAT, data);
+        gl.texImage2D(gl.TEXTURE_2D, 0, (gl as any).RGB32F, size, 1, 0, gl.RGB, gl.FLOAT, scene.vertices);
 
         this.programTracing = new GLProgram(gl, PathTracingVert, PathTracingFrag, this.tracingLocations);
         this.programNormal = new GLProgram(gl, BasicVert, BasicFrag, this.normalLocations);
@@ -162,6 +171,8 @@ export class Arch {
                 gl.uniform1i( this.tracingLocations.incount, this.accum_count % 200 );
                 gl.uniform2fv( this.tracingLocations.resolution, new Float32Array([this.width, this.height]) );
                 gl.uniform1f( this.tracingLocations.size, this.dataSize);
+                gl.uniform3fv( this.tracingLocations.BBmin, this.scene.accelerator.box.minV.elements());
+                gl.uniform3fv( this.tracingLocations.BBmax, this.scene.accelerator.box.maxV.elements());
 
                 gl.activeTexture( gl.TEXTURE0 );
                 gl.bindTexture( gl.TEXTURE_2D, this.texture );
@@ -201,9 +212,9 @@ export class Arch {
 
 const arch = new Arch(dom('view') as HTMLCanvasElement);
 
-
-OBJLoader('../obj/house.obj').then((data) => {
-    console.log(data);
-    arch.bindData(data);
+OBJLoader('../obj/monkey.obj').then((data)=>{
+    arch.bindScene(new Scene(data, new BVH()));
     arch.render();
-})
+});
+
+

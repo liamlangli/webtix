@@ -10,6 +10,8 @@ uniform mat4 MVP, proj;
 uniform float inseed;
 uniform int incount;
 uniform vec2 resolution;
+uniform vec3 BBmin;
+uniform vec3 BBmax;
 
 uniform float size;
 uniform sampler2D verties;
@@ -38,7 +40,7 @@ vec3 cosWeightedRandomHemisphereDirectionHammersley(const vec3 n)
     return normalize(vec3(sqrtx * cos(r.y) * uu + sqrtx * sin(r.y) * vv + sqrt(1.0 - r.x) * n));
 }
 
-vec4 trace( vec3 orig, vec3 dir ) {
+vec4 trace(inout vec3 orig, vec3 dir) {
 
     float mint = 1e10;
     vec2 minpos, minuv;
@@ -79,6 +81,7 @@ vec4 trace( vec3 orig, vec3 dir ) {
     }
 
     if (mint < 1e10) {
+        orig += dir * mint;
         return vec4( vec3(textureLod( verties, minpos, 0.0).rgb), mint);
     }
 
@@ -98,14 +101,27 @@ void main()
     view = normalize( MVP * vec4(view.xyz / view.w, 0.0) );
     vec3 orig = origin;
 
-    orig += view.xyz;
-    vec4 hit = trace( orig, view.xyz );
+    // check scene box intersect
+    vec3 bmin = (BBmin - vec3(0.2) - orig) / view.xyz;
+    vec3 bmax = (BBmax + vec3(0.2) - orig) / view.xyz;
+
+    vec3 near = min(bmin, bmax);
+    vec3 far = max(bmin, bmax);
+
+    float ext_n = max(near.x, max(near.y, near.z));
+    float ext_f = min(far.x, min(far.y, far.z));
+    if(ext_f < 0.0 || ext_n > ext_f) {
+        color.rgb = vec3(0.0);
+        return;
+    }
+    // start tracing 
+    orig += max(0.0, ext_n) * view.xyz;
+    vec4 hit = trace(orig, view.xyz );
     if (hit.w <= 0.0) {
         color.rgb = vec3( 1.0 );
         return;
-    } 
+    }
 
-    orig += view.xyz * hit.w;
     hit = trace(orig, -cosWeightedRandomHemisphereDirectionHammersley( -hit.xyz ));
     if (hit.w <= 0.0 ) {
         color.rgb = vec3( 0.8 );

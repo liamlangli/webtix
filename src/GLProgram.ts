@@ -8,8 +8,6 @@ export class GLProgram {
         gl.attachShader( this.program, this.buildShader( fs, gl.FRAGMENT_SHADER ));
         gl.linkProgram( this.program );
 
-        console.log( this.program);
-
         const attrs = Object.getOwnPropertyNames( uniformList );
         attrs.forEach( attr => {
             uniformList[attr] = gl.getUniformLocation( this.program, attr );
