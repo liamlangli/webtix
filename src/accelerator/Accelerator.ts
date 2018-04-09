@@ -9,7 +9,7 @@ export class Accelerator {
     }
 
     feed(vertices: Float32Array) {
-        for(let i = 0, il = vertices.length / 9; i < il; ++i) {
+        for(let i = 0, il = vertices.length; i < il; i+=12) {
             const b = new Box3();
             b.minV.x = Math.min(Math.min(vertices[i + 0], vertices[i + 3]), vertices[i + 6]);
 		    b.minV.y = Math.min(Math.min(vertices[i + 1], vertices[i + 4]), vertices[i + 7]);

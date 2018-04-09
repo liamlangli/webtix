@@ -111,7 +111,7 @@ void main()
     float ext_n = max(near.x, max(near.y, near.z));
     float ext_f = min(far.x, min(far.y, far.z));
     if(ext_f < 0.0 || ext_n > ext_f) {
-        color.rgb = vec3(0.0);
+        color.rgb = vec3(1.0);
         return;
     }
     // start tracing 
