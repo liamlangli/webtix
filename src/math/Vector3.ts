@@ -75,6 +75,14 @@ export class Vector3 {
         return new Vector3(this.x, this.y, this.z);
     }
 
+    minElement():number {
+        return Math.min(this.x, Math.min(this.y, this.z));
+    }
+
+    maxElement():number {
+        return Math.max(this.x, Math.max(this.y, this.z));
+    }
+
     elements():Float32Array {
         return new Float32Array([this.x, this.y, this.z]);
     }

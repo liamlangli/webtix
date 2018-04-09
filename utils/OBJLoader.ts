@@ -3,7 +3,16 @@ const re_normal  = /^vn\s/;
 const re_face = /^f\s/;
 const re_space   = /\s+/;
 
-function vertiesAbsorb(data: string): Float32Array {
+export class OBJData {
+    constructor(
+        public size: number,
+        public width: number,
+        public height: number,
+        public data: Float32Array
+    ) {}
+}
+
+function vertiesAbsorb(data: string) {
     const res = [];
     const vs = [];
     const vn = [];
@@ -49,7 +58,17 @@ function vertiesAbsorb(data: string): Float32Array {
         );
         
     }
-    return new Float32Array(res);
+    // align data
+    const len = res.length / 3;
+    if(len < 4096) {
+        return new OBJData(len, len, 1, new Float32Array(res));
+    } else {
+        const lines = Math.ceil(len / 4096);
+        const output = new Float32Array(lines * 4096 * 3);
+        output.set(res);
+        return new OBJData(len, 4096, lines, new Float32Array(output));
+    }
+    
 }
 
 export async function OBJLoader( path ) {

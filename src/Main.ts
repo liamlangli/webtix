@@ -10,6 +10,7 @@ import * as PathTracingVert from './shaders/path_tracing_vert.glsl';
 import * as PathTracingFrag from './shaders/path_tracing_frag.glsl';
 import { BVH } from './accelerator/BVH';
 import { Scene } from './core/Scene';
+import { Texture_Width } from './Contants';
 
 export class Arch {
 
@@ -84,7 +85,7 @@ export class Arch {
         this.matrix = new Float32Array([0, 0, 1, 0,
             -0.86, 0.5, 0, 0,
             -0.5, -0.86, 0, 0,
-            6.534, 19.32, 0, 1]);
+            10.0, 19.32, 0, 1]);
 
         this.matrix2 = new Float32Array([1.77, 0, 0, 0,
             0, 1, 0, 0,
@@ -107,9 +108,13 @@ export class Arch {
                 console.log('zoom');
                 this.zoom += e.movementX/10;
             }
-            this.viewportMV = t(rX(rY(i(), this.angleHori),this.angleVer),[0, 4, -20 + this.zoom]);
+            this.viewportMV = t(rX(rY(i(), this.angleHori),this.angleVer),[0, 0, -20 + this.zoom]);
             this.diff = true;
         }
+    }
+
+    private boundData(vertices: Float32Array) {
+        const size = vertices.length / 12;
     }
 
     bindScene( scene: Scene ) {
@@ -118,7 +123,7 @@ export class Arch {
 
         const gl = this.gl;
 
-        const size = scene.vertices.length / 3;
+        const size = scene.data.size;
         this.dataSize = size;
 
         this.texture = gl.createTexture();
@@ -126,7 +131,7 @@ export class Arch {
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-        gl.texImage2D(gl.TEXTURE_2D, 0, (gl as any).RGB32F, size, 1, 0, gl.RGB, gl.FLOAT, scene.vertices);
+        gl.texImage2D(gl.TEXTURE_2D, 0, (gl as any).RGB32F, scene.data.width, scene.data.height, 0, gl.RGB, gl.FLOAT, scene.data.data);
 
         this.programTracing = new GLProgram(gl, PathTracingVert, PathTracingFrag, this.tracingLocations);
         this.programNormal = new GLProgram(gl, BasicVert, BasicFrag, this.normalLocations);
@@ -212,7 +217,7 @@ export class Arch {
 
 const arch = new Arch(dom('view') as HTMLCanvasElement);
 
-OBJLoader('../obj/monkey.obj').then((data)=>{
+OBJLoader('../obj/depart.obj').then((data)=>{
     arch.bindScene(new Scene(data, new BVH()));
     arch.render();
 });

@@ -1,0 +1,1 @@
+export const Texture_Width = 4096;
