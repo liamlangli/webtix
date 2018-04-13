@@ -14,5 +14,4 @@ void main()
         sqrt( texelFetch(accum, ivec2(gl_FragCoord.xy), 0).rgb * count ),
         1.0
     );
-    // color = vec4(0.1, 0.2, 0.3, 1.0);
 }

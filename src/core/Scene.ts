@@ -1,5 +1,5 @@
 import { Accelerator } from "../accelerator/Accelerator";
-import { OBJData } from "../../utils/OBJLoader";
+import { OBJData } from "../utils/OBJLoader";
 
 export class Scene {
 

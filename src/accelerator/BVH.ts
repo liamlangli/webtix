@@ -1,7 +1,8 @@
-import { Primitive } from "../geometry/Primitive";
-import { Box3 } from "../math/Box3";
-import { Vector3 } from "../math/Vector3";
-import { Accelerator } from "./Accelerator";
+import { Primitive } from '../geometry/Primitive';
+import { Box3 } from '../math/Box3';
+import { Vector3 } from '../math/Vector3';
+import { Accelerator, longestAxis } from './Accelerator';
+import { IndexArray } from '../core/IndexArray';
 
 class BVHNode {
     box: Box3;
@@ -20,29 +21,28 @@ export class BVH extends Accelerator {
 
     feed(vertices: Float32Array) {
         super.feed(vertices);
-        this.build(vertices);
+        this.build(new IndexArray(vertices), 0, vertices.length);
     }
 
-    build(vertices: Float32Array) {
+    build(vertices: IndexArray, left: number, right: number) {
         let pivot = this.box.center.clone();
-        // let split_point = this.split(vertices, pivot[this.axis], this.axis);
+        this.axis = longestAxis(this.box);
+        this.root = new BVHNode();
+        this.root.box = this.box.clone();
+        this.split(this.pList, left, right, pivot, this.axis);
     }
 
-    split() {
-        let center = new Vector3(0, 0, 0);
-        let tmpMin = new Vector3(0, 0, 0);
-        let tmpBox = new Box3();
-        let accBox = new Box3();
-        return (vertices: Float32Array, pivot: number, axis:number):number => {
-            let start = 0;
-            let end = vertices.length - 1;
-            let center: Vector3;
-            while(start < end) {
-                // tmpBox();
+    split(primitives: Primitive[], left: number, right: number, pivot: Vector3, axis: number) {
+        for(let front = left, back = right - 1; front < right; ++front) {
+            const pFront = this.pList[front];
+            const pBack = this.pList[back];
+            while (front < right) {
+                if (pFront.box.center.elements()[axis] < pivot.elements()[axis]) {
+                    ++front;
+                    --back;
+                }
             }
-            return 0;
         }
-        
     }
 
 }

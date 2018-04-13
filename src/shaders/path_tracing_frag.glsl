@@ -118,7 +118,7 @@ void main()
     orig += max(0.0, ext_n) * view.xyz;
     vec4 hit = trace(orig, view.xyz );
     if (hit.w <= 0.0) {
-        color.rgb = vec3( 1.0 );
+        color.rgb = vec3(1.0);
         return;
     }
 

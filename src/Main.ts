@@ -2,7 +2,7 @@ import { dom, t, rX, rY, i } from './lib/lan';
 import { HiddenScreen } from './HiddenScreen';
 import { GLProgram } from './GLProgram';
 
-import { OBJLoader } from '../utils/OBJLoader';
+import { OBJLoader } from './utils/OBJLoader';
 
 import * as BasicVert from './shaders/basic_vert.glsl';
 import * as BasicFrag from './shaders/basic_frag.glsl';
@@ -10,7 +10,7 @@ import * as PathTracingVert from './shaders/path_tracing_vert.glsl';
 import * as PathTracingFrag from './shaders/path_tracing_frag.glsl';
 import { BVH } from './accelerator/BVH';
 import { Scene } from './core/Scene';
-import { Texture_Width } from './Contants';
+import { Texture_Width } from './Constants';
 
 export class Arch {
 
@@ -65,10 +65,11 @@ export class Arch {
     constructor(canvas: HTMLCanvasElement) {
 
         this.gl = canvas.getContext('webgl2') as WebGLRenderingContext;
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        this.width = canvas.width;
-        this.height = canvas.height;
+        const ratio = window.devicePixelRatio;
+        this.width = canvas.width * ratio;
+        this.height = canvas.height * ratio;
+        canvas.width = this.width;
+        canvas.height = this.height;
         if (this.gl === undefined) {
             alert(' require webgl 2 ');
         }
@@ -217,7 +218,7 @@ export class Arch {
 
 const arch = new Arch(dom('view') as HTMLCanvasElement);
 
-OBJLoader('../obj/home.obj').then((data)=>{
+OBJLoader('../obj/box.obj').then((data)=>{
     arch.bindScene(new Scene(data, new BVH()));
     arch.render();
 });

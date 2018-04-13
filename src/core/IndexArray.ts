@@ -1,11 +1,10 @@
 export class IndexArray {
 
-    elements;
     protected index: number = -1;
     protected size: number;
 
-    constructor(size:number) {
-        this.size = size;
+    constructor(public elements) {
+        this.size = elements.length;
     }
 
     push(element) {
@@ -27,13 +26,16 @@ export class IndexArray {
     clear() {
         this.index = -1;
     }
+
+    get(index: number) {
+        return this.elements[index];
+    }
 }
 
 export class IndexFloatArray  extends IndexArray {
 
-    constructor(size:number) {
-        super(size);
-        this.elements = new Float32Array(size);
+    constructor(public elements: Float32Array) {
+        super(elements);
     }
 }
 
