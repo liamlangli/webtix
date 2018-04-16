@@ -65,7 +65,7 @@ export class BVH extends Accelerator {
 
         if (left < right - 1) {
             node.left = this.split(primitives, left, pivot);
-            node.right = this.split(primitives, pivot + 1, right);
+            node.right = this.split(primitives, pivot, right);
         }
 
         return node;
@@ -96,7 +96,6 @@ export class BVH extends Accelerator {
             const leftNodeInfo = this.nodeToBuffer(node.left);
             nodeInfo.childCount += leftNodeInfo.childCount;
             childBuffer = childBuffer.concat(leftNodeInfo.buffer);
-        } else {
             nodeInfo.childCount += 1;
         }
         
@@ -104,12 +103,7 @@ export class BVH extends Accelerator {
             const rightNodeInfo = this.nodeToBuffer(node.right);
             nodeInfo.childCount += rightNodeInfo.childCount;
             childBuffer = childBuffer.concat(rightNodeInfo.buffer);
-        } else {
             nodeInfo.childCount += 1;
-        }
-
-        if (node.left === undefined && node.right === undefined) {
-            nodeInfo.childCount = 1;
         }
 
         nodeInfo.buffer.push(nodeInfo.childCount);

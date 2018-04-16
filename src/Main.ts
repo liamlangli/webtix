@@ -40,8 +40,10 @@ export class Arch {
         inseed: null,
         incount: null,
         resolution: null, 
-        primitiveSize: null,
-        acceleratorSize: null
+        primitiveInfo: null,
+        acceleratorInfo: null,
+        primitives: null,
+        accelerator: null
     };
 
     normalLocations = {
@@ -125,9 +127,6 @@ export class Arch {
 
         const gl = this.gl;
 
-        const size = scene.primitiveBuffer.size;
-        this.dataSize = size;
-
         // set primitiveTexture buffer
         this.primitiveTexture = gl.createTexture();
         gl.activeTexture(gl.TEXTURE0);
@@ -186,8 +185,10 @@ export class Arch {
                 gl.uniform1f( this.tracingLocations.inseed, Math.random() );
                 gl.uniform1i( this.tracingLocations.incount, this.accum_count % 200 );
                 gl.uniform2fv( this.tracingLocations.resolution, new Float32Array([this.width, this.height]) );
-                gl.uniform1f( this.tracingLocations.primitiveSize, this.scene.primitiveBuffer.size);
-                gl.uniform1f( this.tracingLocations.acceleratorSize, this.scene.accelerateBuffer.size);
+                gl.uniform3fv( this.tracingLocations.primitiveInfo, this.scene.primitiveBuffer.genInfoBuffer());
+                gl.uniform3fv( this.tracingLocations.acceleratorInfo, this.scene.accelerateBuffer.genInfoBuffer());
+                gl.uniform1i( this.tracingLocations.primitives, 0);
+                gl.uniform1i( this.tracingLocations.accelerator, 1);
 
                 gl.activeTexture( gl.TEXTURE0 );
                 gl.bindTexture( gl.TEXTURE_2D, this.primitiveTexture );

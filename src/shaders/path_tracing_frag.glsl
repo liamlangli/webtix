@@ -11,20 +11,23 @@ uniform float inseed;
 uniform int incount;
 uniform vec2 resolution;
 
-uniform float primitiveSize;
-uniform float acceleratorSize;
+uniform vec3 primitiveInfo;     // [size, width, height];
+uniform vec3 acceleratorInfo;  // [size, width, height];
+
 uniform sampler2D primitives;
 uniform sampler2D accelerator;
 
 in vec3 origin;
 out vec4 color;
 
+float primitiveSize, primitiveWidth, primitiveHeight;
+int pSize;
+float acceleratorSize, acceleratorWidth, acceleratorHeight;
+int aSize;
+
 float seed;
 uint N = 128u;
 uint i;
-
-int pSize;
-int aSize;
 
 float random_ofs = 0.0;
 vec3 cosWeightedRandomHemisphereDirectionHammersley(const vec3 n)
@@ -41,9 +44,9 @@ vec3 cosWeightedRandomHemisphereDirectionHammersley(const vec3 n)
     return normalize(vec3(sqrtx * cos(r.y) * uu + sqrtx * sin(r.y) * vv + sqrt(1.0 - r.x) * n));
 }
 
-bool boxIntersect(vec3 minV, vec3 maxV, vec3 ori, vec3 dir) {
-    vec3 bmin = (minV - vec3(0.2) - ori) / dir.xyz;
-    vec3 bmax = (maxV + vec3(0.2) - ori) / dir.xyz;
+float boxIntersect(vec3 minV, vec3 maxV, vec3 ori, vec3 dir) {
+    vec3 bmin = (minV - ori) / dir.xyz;
+    vec3 bmax = (maxV - ori) / dir.xyz;
 
     vec3 near = min(bmin, bmax);
     vec3 far = max(bmin, bmax);
@@ -51,32 +54,29 @@ bool boxIntersect(vec3 minV, vec3 maxV, vec3 ori, vec3 dir) {
     float ext_n = max(near.x, max(near.y, near.z));
     float ext_f = min(far.x, min(far.y, far.z));
     if(ext_f < 0.0 || ext_n > ext_f) {
-        return false;
+        return -1.0;
     }
-    return true;
-} 
+    return ext_n;
+}
 
-vec4 trace(inout vec3 orig, vec3 dir) {
+vec4 primitivesIntersect(vec3 orig, vec3 dir, float start, float end) {
 
+    int startIndex = int(start);
+    int endIndex = int(end);
     float mint = 1e10;
     vec2 minpos, minuv;
-    vec2 pos = vec2(0.0001);
+    vec2 pos = vec2(0.0001) + vec2(4.0 / primitiveSize * start, 0.0);
     vec3 v0, v01, v02;
-    vec3 realori = orig;
+    vec3 v1, v2;
 
-    // vec3 vMin, vMax;
-    // for(int i = 0; i < aSize; ++i) {
-        
-    // }
+    for(int index = startIndex; index < endIndex; ++index) {
+        v0  = textureLodOffset(primitives, pos, 0.0, ivec2(1, 0)).rgb;
+        v01 = textureLodOffset(primitives, pos, 0.0, ivec2(2, 0)).rgb;
+        v02 = textureLodOffset(primitives, pos, 0.0, ivec2(3, 0)).rgb;
+        pos += vec2(4.0 / primitiveSize, 0.0);
 
-    for(int index = 0; index < pSize; ++index) {
-        v0  = textureLodOffset( primitives, pos, 0.0, ivec2(1, 0) ).rgb;
-        v01 = textureLodOffset( primitives, pos, 0.0, ivec2(2, 0) ).rgb;
-        v02 = textureLodOffset( primitives, pos, 0.0, ivec2(3, 0) ).rgb;
-        pos += vec2( 4.0 / primitiveSize, 0.0);
-
-        vec3 v2 = v01 - v0;
-        vec3 v1 = v02 - v0;
+        v2 = v01 - v0;
+        v1 = v02 - v0;
         
         vec3 P = cross(dir, v2);
         float det = dot(v1, P);   //carmer rules devider
@@ -93,17 +93,58 @@ vec4 trace(inout vec3 orig, vec3 dir) {
         if (v < 0.0 || u + v > 1.0)
             continue;
         float t = dot(v2, Q) * invdet;
-        if ( t > EPSILON && t < mint)
-        {
+        if (t > EPSILON && t < mint) {
             mint = t;
-            minpos = pos - vec2(4.0 / primitiveSize, 0.0);
-            minuv = vec2(u, v);
+            minpos = pos - vec2(4.0 / primitiveSize);
+            // minuv = vec2(u, v);
         }
     }
 
     if (mint < 1e10) {
-        orig += dir * mint;
-        return vec4( vec3(textureLod( primitives, minpos, 0.0).rgb), mint);
+        return vec4(textureLod(primitives, minpos, 0.0).rgb, mint);
+    }
+
+    return vec4(0.0);
+}
+
+vec4 trace(inout vec3 orig, vec3 dir) {
+
+    vec4 result = vec4(1.0, 0.0, 0.0, 1e10);
+
+    // traversal accelerator
+    vec3 vMin, vMax;
+    vec3 info; // info => left, right, childCount; 
+    vec2 aPos = vec2(0.0);
+    float ext;
+    for(int i = 0; i < aSize;) {
+        float stepSize = 3.0;
+        vMin = textureLod(accelerator, aPos, 0.0).rgb;
+        vMax = textureLodOffset(accelerator, aPos, 0.0, ivec2(1, 0)).rgb;
+        info = textureLodOffset(accelerator, aPos, 0.0, ivec2(2, 0)).rgb;
+
+        ext = boxIntersect(vMin, vMax, orig, dir);
+
+        if (ext > 0.0) {
+            if(info.z <= 0.0) {
+                vec4 tmpResult = primitivesIntersect(orig, dir, info.x, info.y);
+                if (tmpResult.w > 0.0 && tmpResult.w < result.w) {
+                    result = tmpResult;
+                }
+            }
+        } else {
+            if(info.z > 0.0) {
+                float childSize = info.z * 3.0;
+                i += int(childSize);
+                stepSize += childSize;
+            }
+        }
+        i += 3;
+        aPos += vec2(stepSize / acceleratorSize, 0.0);
+    }
+    
+    if (result.w < 1e10) {
+        orig += dir * result.w;
+        return result;
     }
 
     return vec4(0.0);
@@ -111,6 +152,13 @@ vec4 trace(inout vec3 orig, vec3 dir) {
 
 void main()
 {
+    primitiveSize = primitiveInfo.x;
+    primitiveWidth = primitiveInfo.y;
+    primitiveHeight = primitiveInfo.z;
+    acceleratorSize = acceleratorInfo.x;
+    acceleratorWidth = acceleratorInfo.y;
+    acceleratorHeight = acceleratorInfo.z;
+
     pSize = int(primitiveSize);
     aSize = int(acceleratorSize);
     i = uint(incount);
@@ -123,36 +171,27 @@ void main()
     view = normalize( MVP * vec4(view.xyz / view.w, 0.0) );
     vec3 orig = origin;
 
-    // check scene box intersect
-    // vec3 bmin = (BBmin - vec3(0.2) - orig) / view.xyz;
-    // vec3 bmax = (BBmax + vec3(0.2) - orig) / view.xyz;
-
-    // vec3 near = min(bmin, bmax);
-    // vec3 far = max(bmin, bmax);
-
-    // float ext_n = max(near.x, max(near.y, near.z));
-    // float ext_f = min(far.x, min(far.y, far.z));
-    // if(ext_f < 0.0 || ext_n > ext_f) {
-    //     color.rgb = vec3(0.0);
-    //     return;
-    // }
-
-    vec2 accPos = vec2(0.0001);
-    vec3 BBmin = vec3(textureLod( accelerator, accPos, 0.0).rgb);
+    // global boundingbox intersect
+    vec2 accPos = vec2(0.00001);
+    vec3 BBmin = textureLod( accelerator, accPos, 0.0).rgb;
     accPos += vec2(1.0 / acceleratorSize, 0.0);
-    vec3 BBmax = vec3(textureLod( accelerator, accPos, 0.0).rgb);
-
-    if(!boxIntersect(BBmin, BBmax, orig, view.xyz)) {
-        color.rgb = vec3(BBmax);
+    vec3 BBmax = textureLod( accelerator, accPos, 0.0).rgb;
+    float ext = boxIntersect(BBmin - vec3(0.02), BBmax + vec3(0.02), orig, view.xyz);
+    if( ext < 0.0 ) {
+        color.rgb = vec3(1.0);
         return;
     }
+
     // start tracing 
-    // orig += max(0.0, ext_n) * view.xyz;
-    vec4 hit = trace(orig, view.xyz );
+    orig += max(0.0, ext) * view.xyz;
+    vec4 hit = trace(orig, view.xyz);
     if (hit.w <= 0.0) {
         color.rgb = vec3(1.0);
         return;
     }
+
+    color.rgb = hit.xyz;
+    return;
 
     hit = trace(orig, -cosWeightedRandomHemisphereDirectionHammersley( -hit.xyz ));
     if (hit.w <= 0.0 ) {
