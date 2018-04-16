@@ -1,3 +1,5 @@
+import { TextureBuffer } from "../core/TextureBuffer";
+
 const re_vector  = /^v\s/;
 const re_normal  = /^vn\s/;
 const re_face = /^f\s/;
@@ -45,6 +47,7 @@ function vertiesAbsorb(data: string) {
             fs.push(indices);
         }
     }
+    
     for( i = 0; i < fs.length; ++i ) {
         const v0 = vs[ fs[i][0] - 1 ];
         const v1 = vs[ fs[i][1] - 1 ];
@@ -56,19 +59,8 @@ function vertiesAbsorb(data: string) {
             v1[0], v1[1], v1[2],
             v2[0], v2[1], v2[2]
         );
-        
     }
-    // align data
-    const len = res.length / 3;
-    if(len < 4096) {
-        return new OBJData(len, len, 1, new Float32Array(res));
-    } else {
-        const lines = Math.ceil(len / 4096);
-        const output = new Float32Array(lines * 4096 * 3);
-        output.set(res);
-        return new OBJData(len, 4096, lines, new Float32Array(output));
-    }
-    
+    return new TextureBuffer(res);
 }
 
 export async function OBJLoader( path ) {

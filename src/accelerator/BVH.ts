@@ -1,19 +1,31 @@
 import { Primitive } from '../geometry/Primitive';
 import { Box3 } from '../math/Box3';
 import { Vector3 } from '../math/Vector3';
-import { Accelerator, longestAxis } from './Accelerator';
-import { IndexArray } from '../core/IndexArray';
+import { Accelerator, LongestAxis, QuickSort } from './Accelerator';
+import { IndexArray, IndexFloatArray } from '../core/IndexArray';
 
 class BVHNode {
     box: Box3;
+    leftIndex: number;
+    rightIndex: number;
     left: BVHNode;
     right: BVHNode;
+    axis: number;
+}
+
+class NodeInfo {
+    childCount: number = 0;
+    buffer: number[] = [];
+
+    appendBuffer(buffer: number[]): number[] {
+        this.buffer = this.buffer.concat(buffer);
+        return this.buffer;
+    }
 }
 
 export class BVH extends Accelerator {
     
     root: BVHNode;
-    axis: number = 0;
 
     constructor() {
         super();
@@ -21,28 +33,88 @@ export class BVH extends Accelerator {
 
     feed(vertices: Float32Array) {
         super.feed(vertices);
-        this.build(new IndexArray(vertices), 0, vertices.length);
     }
 
-    build(vertices: IndexArray, left: number, right: number) {
-        let pivot = this.box.center.clone();
-        this.axis = longestAxis(this.box);
-        this.root = new BVHNode();
-        this.root.box = this.box.clone();
-        this.split(this.pList, left, right, pivot, this.axis);
+    build() {
+        this.root = this.split(this.pList, 0, this.pList.length);
     }
 
-    split(primitives: Primitive[], left: number, right: number, pivot: Vector3, axis: number) {
-        for(let front = left, back = right - 1; front < right; ++front) {
-            const pFront = this.pList[front];
-            const pBack = this.pList[back];
-            while (front < right) {
-                if (pFront.box.center.elements()[axis] < pivot.elements()[axis]) {
-                    ++front;
-                    --back;
-                }
-            }
+    private split(primitives: Primitive[], left: number, right: number):BVHNode {
+        
+        let node = new BVHNode();
+        node.leftIndex = left;
+        node.rightIndex = right;
+
+        let box = new Box3();
+
+        for(let i = left; i < right; ++i) {
+            const p = primitives[i];
+            box.append(p.box);
         }
+
+        node.box = box;
+        node.axis = LongestAxis(box);
+
+        const compareFn = (pa: Primitive, pb: Primitive) => {
+            return pa.box.center.elements()[node.axis] - pb.box.center.elements()[node.axis];
+        };
+
+        QuickSort(primitives, left, right, compareFn);
+
+        const pivot = (left + (right - left) / 2) | 0;
+
+        if (left < right - 1) {
+            node.left = this.split(primitives, left, pivot);
+            node.right = this.split(primitives, pivot + 1, right);
+        }
+
+        return node;
     }
 
+    genBuffer(): number[] {
+        const nodeInfo = this.nodeToBuffer(this.root);
+        return nodeInfo.buffer;
+    }
+
+    private nodeToBuffer(node: BVHNode): NodeInfo {
+        const nodeInfo = new NodeInfo();
+
+        if (node === undefined) {
+            return ;
+        }
+
+        const min = node.box.minV;
+        const max = node.box.maxV;
+
+        nodeInfo.buffer.push(min.x, min.y, min.z);
+        nodeInfo.buffer.push(max.x, max.y, max.z);
+        nodeInfo.buffer.push(node.leftIndex, node.rightIndex);
+
+        let childBuffer = [];
+
+        if (node.left) {
+            const leftNodeInfo = this.nodeToBuffer(node.left);
+            nodeInfo.childCount += leftNodeInfo.childCount;
+            childBuffer = childBuffer.concat(leftNodeInfo.buffer);
+        } else {
+            nodeInfo.childCount += 1;
+        }
+        
+        if (node.right) {
+            const rightNodeInfo = this.nodeToBuffer(node.right);
+            nodeInfo.childCount += rightNodeInfo.childCount;
+            childBuffer = childBuffer.concat(rightNodeInfo.buffer);
+        } else {
+            nodeInfo.childCount += 1;
+        }
+
+        if (node.left === undefined && node.right === undefined) {
+            nodeInfo.childCount = 1;
+        }
+
+        nodeInfo.buffer.push(nodeInfo.childCount);
+        nodeInfo.appendBuffer(childBuffer);
+
+        return nodeInfo;
+    }
 }

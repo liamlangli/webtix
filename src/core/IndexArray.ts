@@ -3,8 +3,8 @@ export class IndexArray {
     protected index: number = -1;
     protected size: number;
 
-    constructor(public elements) {
-        this.size = elements.length;
+    constructor(public elements?) {
+        this.size = elements !== undefined ? elements.length : 0;
     }
 
     push(element) {
@@ -34,7 +34,7 @@ export class IndexArray {
 
 export class IndexFloatArray  extends IndexArray {
 
-    constructor(public elements: Float32Array) {
+    constructor(public elements?: Float32Array) {
         super(elements);
     }
 }

@@ -11,6 +11,7 @@ import * as PathTracingFrag from './shaders/path_tracing_frag.glsl';
 import { BVH } from './accelerator/BVH';
 import { Scene } from './core/Scene';
 import { Texture_Width } from './Constants';
+import { QuickSort, InsertionSort } from './accelerator/Accelerator';
 
 export class Arch {
 
@@ -39,9 +40,8 @@ export class Arch {
         inseed: null,
         incount: null,
         resolution: null, 
-        size: null,
-        BBmin: null,
-        BBmax: null
+        primitiveSize: null,
+        acceleratorSize: null
     };
 
     normalLocations = {
@@ -50,7 +50,8 @@ export class Arch {
         MVP: null
     };
 
-    texture: WebGLTexture;
+    primitiveTexture: WebGLTexture;
+    acceleratorTexture: WebGLTexture;
 
     vertexArray;
 
@@ -124,15 +125,24 @@ export class Arch {
 
         const gl = this.gl;
 
-        const size = scene.data.size;
+        const size = scene.primitiveBuffer.size;
         this.dataSize = size;
 
-        this.texture = gl.createTexture();
+        // set primitiveTexture buffer
+        this.primitiveTexture = gl.createTexture();
         gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, this.texture);
+        gl.bindTexture(gl.TEXTURE_2D, this.primitiveTexture);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-        gl.texImage2D(gl.TEXTURE_2D, 0, (gl as any).RGB32F, scene.data.width, scene.data.height, 0, gl.RGB, gl.FLOAT, scene.data.data);
+        gl.texImage2D(gl.TEXTURE_2D, 0, (gl as any).RGB32F, scene.primitiveBuffer.width, scene.primitiveBuffer.height, 0, gl.RGB, gl.FLOAT, scene.primitiveBuffer.data);
+
+        // set acceleratorTexture buffer
+        this.acceleratorTexture = gl.createTexture();
+        gl.activeTexture(gl.TEXTURE1);
+        gl.bindTexture(gl.TEXTURE_2D, this.acceleratorTexture);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        gl.texImage2D(gl.TEXTURE_2D, 0, (gl as any).RGB32F, scene.accelerateBuffer.width, scene.accelerateBuffer.height, 0, gl.RGB, gl.FLOAT, scene.accelerateBuffer.data);
 
         this.programTracing = new GLProgram(gl, PathTracingVert, PathTracingFrag, this.tracingLocations);
         this.programNormal = new GLProgram(gl, BasicVert, BasicFrag, this.normalLocations);
@@ -176,12 +186,14 @@ export class Arch {
                 gl.uniform1f( this.tracingLocations.inseed, Math.random() );
                 gl.uniform1i( this.tracingLocations.incount, this.accum_count % 200 );
                 gl.uniform2fv( this.tracingLocations.resolution, new Float32Array([this.width, this.height]) );
-                gl.uniform1f( this.tracingLocations.size, this.dataSize);
-                gl.uniform3fv( this.tracingLocations.BBmin, this.scene.accelerator.box.minV.elements());
-                gl.uniform3fv( this.tracingLocations.BBmax, this.scene.accelerator.box.maxV.elements());
+                gl.uniform1f( this.tracingLocations.primitiveSize, this.scene.primitiveBuffer.size);
+                gl.uniform1f( this.tracingLocations.acceleratorSize, this.scene.accelerateBuffer.size);
 
                 gl.activeTexture( gl.TEXTURE0 );
-                gl.bindTexture( gl.TEXTURE_2D, this.texture );
+                gl.bindTexture( gl.TEXTURE_2D, this.primitiveTexture );
+
+                gl.activeTexture( gl.TEXTURE1 );
+                gl.bindTexture( gl.TEXTURE_2D, this.acceleratorTexture );
 
                 gl.enable( gl.BLEND );
                 gl.blendFunc( gl.ONE, gl.ONE );
@@ -208,12 +220,8 @@ export class Arch {
 
             this.status.innerHTML = `sample count:${this.accum_count}`;
         }
-
         requestAnimationFrame(this.render);
     }
-
-
-
 }
 
 const arch = new Arch(dom('view') as HTMLCanvasElement);
@@ -222,5 +230,3 @@ OBJLoader('../obj/box.obj').then((data)=>{
     arch.bindScene(new Scene(data, new BVH()));
     arch.render();
 });
-
-
