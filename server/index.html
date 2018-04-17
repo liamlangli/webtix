@@ -23,6 +23,14 @@ html, body{
     height: 320px;
     border-radius: 4px;
 }
+#test {
+    margin-left: calc(50% - 240px);
+    padding: 0;
+    margin-top: 20px;
+    width: 480px;
+    height: 320px;
+    border-radius: 4px;
+}
 #status {
     width: 120px;
     height: 30px;
@@ -36,7 +44,10 @@ html, body{
 </style>
 <body>
     <canvas id="view"></canvas>
+    <canvas id="test"></canvas>
     <div id="status"></div>
 </body>
+<script src="./lib/three.min.js"></script>
+<script src="./lib/OrbitControls.js"></script>
 <script src="http://localhost:7666/dist/main.bundle.js"></script>
 </html>

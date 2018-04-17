@@ -12,6 +12,7 @@ import { BVH } from './accelerator/BVH';
 import { Scene } from './core/Scene';
 import { Texture_Width } from './Constants';
 import { QuickSort, InsertionSort } from './accelerator/Accelerator';
+import { sceneTest } from './utils/Test';
 
 export class Arch {
 
@@ -63,7 +64,7 @@ export class Arch {
 
     status = dom('status') as HTMLDivElement;
 
-    dataSize: number;
+    sampleCount = 100;
 
     constructor(canvas: HTMLCanvasElement) {
 
@@ -217,7 +218,7 @@ export class Arch {
 
             gl.bindTexture(gl.TEXTURE_2D, null);
 
-            if( ++this.accum_count >= 120 ) this.abort = true;
+            if( ++this.accum_count >= this.sampleCount ) this.abort = true;
 
             this.status.innerHTML = `sample count:${this.accum_count}`;
         }
@@ -230,4 +231,7 @@ const arch = new Arch(dom('view') as HTMLCanvasElement);
 OBJLoader('../obj/box.obj').then((data)=>{
     arch.bindScene(new Scene(data, new BVH()));
     arch.render();
+    // sceneTest(arch.scene);
 });
+
+

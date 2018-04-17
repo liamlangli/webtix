@@ -5,11 +5,9 @@ import { Equals } from "../utils/MathUtil";
 
 export class Accelerator {
 
-    box: Box3;
     pList: Primitive[] = [];
 
     constructor() {
-        this.box = new Box3();
     }
 
     feed(vertices: Float32Array) {

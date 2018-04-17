@@ -6,6 +6,16 @@
   version "0.7.0"
   resolved "http://npm-registry.qunhequnhe.com/@sindresorhus/is/download/@sindresorhus/is-0.7.0.tgz#9a06f4f137ee84d7df0460c1fdb1135ffa6c50fd"
 
+"@types/three@^0.91.8":
+  version "0.91.8"
+  resolved "http://npm-registry.qunhequnhe.com/@types/three/download/@types/three-0.91.8.tgz#e565a756fa572bb1478ed839ec158f989c15f9c1"
+  dependencies:
+    "@types/webvr-api" "*"
+
+"@types/webvr-api@*":
+  version "0.0.34"
+  resolved "http://npm-registry.qunhequnhe.com/@types/webvr-api/download/@types/webvr-api-0.0.34.tgz#8fa49028de925c7b8bce3d559d3374ce2c89ee28"
+
 abbrev@1:
   version "1.1.1"
   resolved "http://npm-registry.qunhequnhe.com/abbrev/download/abbrev-1.1.1.tgz#f8f2c887ad10bf67f634f005b6987fed3179aac8"
@@ -4973,6 +4983,10 @@ text-table@^0.2.0:
 textextensions@2:
   version "2.2.0"
   resolved "http://npm-registry.qunhequnhe.com/textextensions/download/textextensions-2.2.0.tgz#38ac676151285b658654581987a0ce1a4490d286"
+
+three@^0.91.0:
+  version "0.91.0"
+  resolved "http://npm-registry.qunhequnhe.com/three/download/three-0.91.0.tgz#033fe745b64e56e679a86581957cfd1c5f9fe284"
 
 through2@^2.0.0:
   version "2.0.3"

@@ -92,18 +92,20 @@ export class BVH extends Accelerator {
 
         let childBuffer = [];
 
-        if (node.left) {
+        if (node.left !== undefined) {
             const leftNodeInfo = this.nodeToBuffer(node.left);
-            nodeInfo.childCount += leftNodeInfo.childCount;
+            nodeInfo.childCount += leftNodeInfo.childCount + 1;
             childBuffer = childBuffer.concat(leftNodeInfo.buffer);
-            nodeInfo.childCount += 1;
         }
         
-        if (node.right) {
+        if (node.right !== undefined) {
             const rightNodeInfo = this.nodeToBuffer(node.right);
-            nodeInfo.childCount += rightNodeInfo.childCount;
+            nodeInfo.childCount += rightNodeInfo.childCount + 1;
             childBuffer = childBuffer.concat(rightNodeInfo.buffer);
-            nodeInfo.childCount += 1;
+        }
+
+        if (node.right === undefined && node.left === undefined) {
+            nodeInfo.childCount = 0;
         }
 
         nodeInfo.buffer.push(nodeInfo.childCount);

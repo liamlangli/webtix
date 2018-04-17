@@ -45,6 +45,9 @@ var config = {
     resolve: {
         extensions: [".ts", ".js", ".glsl"]
     },
+    externals: {
+        'three': 'THREE'
+    },
     module: {
         rules: rules()
     },
