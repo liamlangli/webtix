@@ -6,11 +6,13 @@ import { TextureBuffer } from "./TextureBuffer";
 export class Scene {
     
     accelerateBuffer: TextureBuffer;
+    primitiveBuffer: TextureBuffer;
 
-    constructor(public primitiveBuffer: TextureBuffer, public accelerator: Accelerator) {
-        accelerator.feed(primitiveBuffer.data);
+    constructor(public originData: Float32Array , public accelerator: Accelerator) {
+        accelerator.feed(originData);
         accelerator.build();
-        this.accelerateBuffer = new TextureBuffer(accelerator.genBuffer());
+        this.accelerateBuffer = new TextureBuffer(accelerator.genAccelerateBuffer());
+        this.primitiveBuffer = new TextureBuffer(accelerator.genPrimitiveBuffer());
     }
 
 }

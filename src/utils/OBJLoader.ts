@@ -60,7 +60,7 @@ function vertiesAbsorb(data: string) {
             v2[0], v2[1], v2[2]
         );
     }
-    return new TextureBuffer(res);
+    return new Float32Array(res);
 }
 
 export async function OBJLoader( path ) {

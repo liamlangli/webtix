@@ -22,9 +22,27 @@ export class Accelerator {
         console.log('Please use Accelerator sub class');
     }
 
-    genBuffer(): number[] {
+    genAccelerateBuffer(): number[] {
         console.log('Please use Accelerator sub class');
-        return ;
+        return [];
+    }
+
+    genPrimitiveBuffer(): number[] {
+        const res = [];
+        for(let i = 0, il = this.pList.length; i < il; ++i) {
+            const p = this.pList[i];
+            const n0 = p.n0;
+            const p0 = p.p0;
+            const p1 = p.p1;
+            const p2 = p.p2;
+            res.push(
+                n0.x, n0.y, n0.z,
+                p0.x, p0.y, p0.z,
+                p1.x, p1.y, p1.z,
+                p2.x, p2.y, p2.z
+            );
+        }
+        return res;
     }
 }
 

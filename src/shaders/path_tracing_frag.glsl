@@ -29,6 +29,10 @@ float seed;
 uint N = 128u;
 uint i;
 
+bool contain(vec3 v, vec3 minV, vec3 maxV) {
+    return v.x < maxV.x && v.y < maxV.y && v.z < maxV.z && v.x > minV.x && v.y > minV.y && v.z > minV.z;
+}
+
 float random_ofs = 0.0;
 vec3 cosWeightedRandomHemisphereDirectionHammersley(const vec3 n)
 {
@@ -50,6 +54,10 @@ float boxIntersect(vec3 minV, vec3 maxV, vec3 ori, vec3 dir) {
 
     vec3 near = min(bmin, bmax);
     vec3 far = max(bmin, bmax);
+
+    if (contain(ori, minV, maxV) ) {
+        return 0.0;
+    }
 
     float ext_n = max(near.x, max(near.y, near.z));
     float ext_f = min(far.x, min(far.y, far.z));
@@ -80,7 +88,7 @@ vec4 primitivesIntersect(vec3 orig, vec3 dir, float start, float end) {
         
         vec3 P = cross(dir, v2);
         float det = dot(v1, P);   //carmer rules devider
-        if ( det > -EPSILON )
+        if ( det > -EPSILON && det < EPSILON )
             continue;
         vec3 T = orig - v0;
         float invdet = 1.0 / det;
@@ -109,7 +117,7 @@ vec4 primitivesIntersect(vec3 orig, vec3 dir, float start, float end) {
 
 vec4 trace(inout vec3 orig, vec3 dir) {
 
-    vec4 result = vec4(1.0, 0.0, 0.0, 1e10);
+    vec4 result = vec4(1.0, 1.0, 1.0, 1e10);
 
     // traversal accelerator
     vec3 vMin, vMax;
@@ -124,8 +132,8 @@ vec4 trace(inout vec3 orig, vec3 dir) {
 
         ext = boxIntersect(vMin, vMax, orig, dir);
 
-        if (ext > 0.0) {
-            if(info.z <= 0.0) {
+        if (ext >= 0.0) {
+            if(info.z <= EPSILON) {
                 vec4 tmpResult = primitivesIntersect(orig, dir, info.x, info.y);
                 if (tmpResult.w > 0.0 && tmpResult.w < result.w) {
                     result = tmpResult;
@@ -176,22 +184,18 @@ void main()
     vec3 BBmin = textureLod( accelerator, accPos, 0.0).rgb;
     accPos += vec2(1.0 / acceleratorSize, 0.0);
     vec3 BBmax = textureLod( accelerator, accPos, 0.0).rgb;
-    float ext = boxIntersect(BBmin - vec3(0.02), BBmax + vec3(0.02), orig, view.xyz);
+    float ext = boxIntersect(BBmin, BBmax, orig, view.xyz);
     if( ext < 0.0 ) {
         color.rgb = vec3(1.0);
         return;
     }
 
     // start tracing 
-    orig += max(0.0, ext) * view.xyz;
     vec4 hit = trace(orig, view.xyz);
     if (hit.w <= 0.0) {
-        color.rgb = vec3(0.0);
+        color.rgb = vec3(1.0);
         return;
     }
-
-    color.rgb = hit.xyz;
-    return;
 
     hit = trace(orig, -cosWeightedRandomHemisphereDirectionHammersley( -hit.xyz ));
     if (hit.w <= 0.0 ) {

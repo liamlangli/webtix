@@ -55,6 +55,10 @@ export class BVH extends Accelerator {
         node.box = box;
         node.axis = LongestAxis(box);
 
+        if (right - left < 5) {
+            return node;
+        }
+
         const compareFn = (pa: Primitive, pb: Primitive) => {
             return pa.box.center.elements()[node.axis] - pb.box.center.elements()[node.axis];
         };
@@ -71,7 +75,7 @@ export class BVH extends Accelerator {
         return node;
     }
 
-    genBuffer(): number[] {
+    genAccelerateBuffer(): number[] {
         const nodeInfo = this.nodeToBuffer(this.root);
         return nodeInfo.buffer;
     }
