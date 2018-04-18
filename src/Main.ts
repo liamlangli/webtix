@@ -69,7 +69,7 @@ export class Arch {
     constructor(canvas: HTMLCanvasElement) {
 
         this.gl = canvas.getContext('webgl2') as WebGLRenderingContext;
-        const ratio = window.devicePixelRatio;
+        const ratio = Math.max(window.devicePixelRatio, 2.0);
         this.width = canvas.width * ratio;
         this.height = canvas.height * ratio;
         canvas.width = this.width;

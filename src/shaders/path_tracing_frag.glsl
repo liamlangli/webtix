@@ -25,6 +25,11 @@ int pSize;
 float acceleratorSize, acceleratorWidth, acceleratorHeight;
 int aSize;
 
+float seed;
+uint N = 128u;
+uint i;
+const vec2 padding = vec2(0.0001);
+
 struct primitiveBlock {
     vec3 n0, p0, p1, p2;
 };
@@ -33,7 +38,7 @@ primitiveBlock requestPrimitiveBlock(float index) {
     float scalar = index / primitiveWidth;
     float row = floor(scalar) / primitiveHeight;
     float column = fract(scalar);
-    vec2 pos = vec2(column, row);
+    vec2 pos = padding + vec2(column, row);
     vec3 n0 = textureLod(primitives, pos, 0.0).rgb;
     vec3 p0 = textureLodOffset(primitives, pos, 0.0, ivec2(1, 0)).rgb;
     vec3 p1 = textureLodOffset(primitives, pos, 0.0, ivec2(2, 0)).rgb;
@@ -49,16 +54,12 @@ accelerateBlock requestAccelerateBlock(float index) {
     float scalar = index / acceleratorWidth;
     float row = floor(scalar) / acceleratorHeight;
     float column = fract(scalar);
-    vec2 pos = vec2(column, row);
+    vec2 pos = padding + vec2(column, row);
     vec3 minV = textureLod(accelerator, pos, 0.0).rgb;
     vec3 maxV = textureLodOffset(accelerator, pos, 0.0, ivec2(1, 0)).rgb;
     vec3 info = textureLodOffset(accelerator, pos, 0.0, ivec2(2, 0)).rgb;
     return accelerateBlock(minV, maxV, info);
 }
-
-float seed;
-uint N = 128u;
-uint i;
 
 bool contain(vec3 v, vec3 minV, vec3 maxV) {
     return v.x < maxV.x && v.y < maxV.y && v.z < maxV.z && v.x > minV.x && v.y > minV.y && v.z > minV.z;
@@ -195,7 +196,7 @@ void main()
     vec3 orig = origin;
 
     // global boundingbox intersect
-    vec2 accPos = vec2(0.0);
+    vec2 accPos = padding;
     vec3 BBmin = textureLod( accelerator, accPos, 0.0).rgb;
     accPos += vec2(1.0 / acceleratorWidth, 0.0);
     vec3 BBmax = textureLod( accelerator, accPos, 0.0).rgb;
