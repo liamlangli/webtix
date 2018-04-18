@@ -64,14 +64,16 @@ export class Arch {
 
     status = dom('status') as HTMLDivElement;
 
-    sampleCount = 100;
+    sampleCount = 140;
 
     constructor(canvas: HTMLCanvasElement) {
 
         this.gl = canvas.getContext('webgl2') as WebGLRenderingContext;
         const ratio = Math.max(window.devicePixelRatio, 2.0);
-        this.width = canvas.width * ratio;
-        this.height = canvas.height * ratio;
+        // this.width = canvas.width * ratio;
+        // this.height = canvas.height * ratio;
+        this.width = 960 * 2;
+        this.height = 640 * 2;
         canvas.width = this.width;
         canvas.height = this.height;
         if (this.gl === undefined) {

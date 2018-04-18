@@ -28,7 +28,21 @@ int aSize;
 float seed;
 uint N = 128u;
 uint i;
+
+// global variable
 const vec2 padding = vec2(0.0001);
+const vec3 sky = vec3(0.318, 0.471, 0.624);
+const vec3 ground = vec3(0.619, 0.607, 0.564);
+const vec3 up = vec3(0.0, 1.0, 0.0);
+const float nature_e = 2.718281828;
+
+const vec3 sun = vec3(30.0, 30.0, 30.0);
+
+// global function
+vec3 skyColor(vec3 dir) {
+    // return ground + (sky - ground) * pow( 5.0, dot(normalize(dir), up));
+    return ground + (sky - ground) * exp(dot(normalize(dir), up));
+}
 
 struct primitiveBlock {
     vec3 n0, p0, p1, p2;
@@ -107,7 +121,7 @@ vec4 primitivesIntersect(vec3 orig, vec3 dir, float start, float end) {
     primitiveBlock block;
     vec3 v1, v2;
     float endIndex = end * 4.0;
-    for(float index = start * 4.0; index <= endIndex; index += 4.0) {
+    for (float index = start * 4.0; index <= endIndex; index += 4.0) {
         block = requestPrimitiveBlock(index);
 
         v2 = block.p1 - block.p0;
@@ -202,20 +216,23 @@ void main()
     vec3 BBmax = textureLod( accelerator, accPos, 0.0).rgb;
     float ext = boxIntersect(BBmin, BBmax, orig, view.xyz);
     if( ext < 0.0 ) {
-        color.rgb = vec3(1.0);
+        color.rgb = skyColor(view.xyz);
         return;
     }
 
     // start tracing 
     vec4 hit = trace(orig, view.xyz);
     if (hit.w <= 0.0) {
-        color.rgb = vec3(1.0);
+        color.rgb = skyColor(view.xyz);
         return;
     }
 
-    hit = trace(orig, -cosWeightedRandomHemisphereDirectionHammersley( -hit.xyz ));
+    vec3 reflect_dir = -cosWeightedRandomHemisphereDirectionHammersley( -hit.xyz );
+    hit = trace(orig, reflect_dir);
     if (hit.w <= 0.0 ) {
         color.rgb = vec3( 0.8 );
         return;
     }
+
+    color.rgb = skyColor(view.xyz) * 0.5;
 }
