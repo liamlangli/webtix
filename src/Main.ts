@@ -109,10 +109,13 @@ export class Arch {
             if ( e.buttons == 1) {
                 this.angleHori += e.movementX/100;
                 this.angleVer += e.movementY/100;
-            } else {
-                console.log('zoom');
-                this.zoom += e.movementX/10;
-            }
+            } 
+            this.viewportMV = t(rX(rY(i(), this.angleHori),this.angleVer),[0, 0, -20 + this.zoom]);
+            this.diff = true;
+        }
+
+        canvas.onmousewheel = (e) => {
+            this.zoom += e.wheelDelta / 120;
             this.viewportMV = t(rX(rY(i(), this.angleHori),this.angleVer),[0, 0, -20 + this.zoom]);
             this.diff = true;
         }
@@ -228,7 +231,7 @@ export class Arch {
 
 const arch = new Arch(dom('view') as HTMLCanvasElement);
 
-OBJLoader('../obj/house.obj').then((data)=>{
+OBJLoader('../obj/depart.obj').then((data) => {
     arch.bindScene(new Scene(data, new BVH()));
     arch.render();
     // sceneTest(arch.scene);

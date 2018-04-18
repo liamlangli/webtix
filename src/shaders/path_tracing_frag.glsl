@@ -33,7 +33,7 @@ primitiveBlock requestPrimitiveBlock(float index) {
     float scalar = index / primitiveWidth;
     float row = floor(scalar) / primitiveHeight;
     float column = fract(scalar);
-    vec2 pos = vec2(0.0001) + vec2(column, row);
+    vec2 pos = vec2(column, row);
     vec3 n0 = textureLod(primitives, pos, 0.0).rgb;
     vec3 p0 = textureLodOffset(primitives, pos, 0.0, ivec2(1, 0)).rgb;
     vec3 p1 = textureLodOffset(primitives, pos, 0.0, ivec2(2, 0)).rgb;
@@ -49,7 +49,7 @@ accelerateBlock requestAccelerateBlock(float index) {
     float scalar = index / acceleratorWidth;
     float row = floor(scalar) / acceleratorHeight;
     float column = fract(scalar);
-    vec2 pos = vec2(0.0001) + vec2(column, row);
+    vec2 pos = vec2(column, row);
     vec3 minV = textureLod(accelerator, pos, 0.0).rgb;
     vec3 maxV = textureLodOffset(accelerator, pos, 0.0, ivec2(1, 0)).rgb;
     vec3 info = textureLodOffset(accelerator, pos, 0.0, ivec2(2, 0)).rgb;
@@ -80,8 +80,8 @@ vec3 cosWeightedRandomHemisphereDirectionHammersley(const vec3 n)
 }
 
 float boxIntersect(vec3 minV, vec3 maxV, vec3 ori, vec3 dir) {
-    vec3 bmin = (minV - ori) / dir.xyz;
-    vec3 bmax = (maxV - ori) / dir.xyz;
+    vec3 bmin = (minV - vec3(0.001) - ori) / dir.xyz;
+    vec3 bmax = (maxV + vec3(0.001) - ori) / dir.xyz;
 
     vec3 near = min(bmin, bmax);
     vec3 far = max(bmin, bmax);
@@ -106,7 +106,7 @@ vec4 primitivesIntersect(vec3 orig, vec3 dir, float start, float end) {
     primitiveBlock block;
     vec3 v1, v2;
     float endIndex = end * 4.0;
-    for(float index = start * 4.0; index < endIndex; index += 4.0) {
+    for(float index = start * 4.0; index <= endIndex; index += 4.0) {
         block = requestPrimitiveBlock(index);
 
         v2 = block.p1 - block.p0;
@@ -114,7 +114,7 @@ vec4 primitivesIntersect(vec3 orig, vec3 dir, float start, float end) {
         
         vec3 P = cross(dir, v2);
         float det = dot(v1, P);   //carmer rules devider
-        if ( det > -EPSILON && det < EPSILON )
+        if ( det > -EPSILON )
             continue;
         vec3 T = orig - block.p0;
         float invdet = 1.0 / det;
@@ -146,11 +146,10 @@ vec4 trace(inout vec3 orig, vec3 dir) {
     accelerateBlock block;
     // traversal accelerator
     float ext;
-    for(float index = 6.0; index < acceleratorSize;) {
+    for(float index = 0.0; index <= acceleratorSize;) {
 
         block = requestAccelerateBlock(index);
         ext = boxIntersect(block.minV, block.maxV, orig, dir);
-        // ext = boxIntersect(vec3(-1.0), vec3(1.0), orig, dir);
         if (ext >= 0.0) {
             if(block.info.z <= EPSILON) {
                 vec4 tmpResult = primitivesIntersect(orig, dir, block.info.x, block.info.y);
@@ -198,7 +197,7 @@ void main()
     // global boundingbox intersect
     vec2 accPos = vec2(0.0);
     vec3 BBmin = textureLod( accelerator, accPos, 0.0).rgb;
-    accPos += vec2(1.0 / min(acceleratorSize, acceleratorWidth), 0.0);
+    accPos += vec2(1.0 / acceleratorWidth, 0.0);
     vec3 BBmax = textureLod( accelerator, accPos, 0.0).rgb;
     float ext = boxIntersect(BBmin, BBmax, orig, view.xyz);
     if( ext < 0.0 ) {

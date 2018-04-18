@@ -87,6 +87,7 @@ export function QuickSort(a, from, to, comparefn: Function) {
             InsertionSort(a, from, to, comparefn);
             return;
         }
+        third_index = from + ((to - from) >> 1);
         // Find a pivot as the median of first, last and middle element.
         var v0 = a[from];
         var v1 = a[to - 1];
