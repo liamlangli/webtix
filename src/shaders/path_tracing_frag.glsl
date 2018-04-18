@@ -25,6 +25,37 @@ int pSize;
 float acceleratorSize, acceleratorWidth, acceleratorHeight;
 int aSize;
 
+struct primitiveBlock {
+    vec3 n0, p0, p1, p2;
+};
+
+primitiveBlock requestPrimitiveBlock(float index) {
+    float scalar = index / primitiveWidth;
+    float row = floor(scalar) / primitiveHeight;
+    float column = fract(scalar);
+    vec2 pos = vec2(0.0001) + vec2(column, row);
+    vec3 n0 = textureLod(primitives, pos, 0.0).rgb;
+    vec3 p0 = textureLodOffset(primitives, pos, 0.0, ivec2(1, 0)).rgb;
+    vec3 p1 = textureLodOffset(primitives, pos, 0.0, ivec2(2, 0)).rgb;
+    vec3 p2 = textureLodOffset(primitives, pos, 0.0, ivec2(3, 0)).rgb;
+    return primitiveBlock(n0, p0, p1, p2);
+}
+
+struct accelerateBlock {
+    vec3 minV, maxV, info;
+};
+
+accelerateBlock requestAccelerateBlock(float index) {
+    float scalar = index / acceleratorWidth;
+    float row = floor(scalar) / acceleratorHeight;
+    float column = fract(scalar);
+    vec2 pos = vec2(0.0001) + vec2(column, row);
+    vec3 minV = textureLod(accelerator, pos, 0.0).rgb;
+    vec3 maxV = textureLodOffset(accelerator, pos, 0.0, ivec2(1, 0)).rgb;
+    vec3 info = textureLodOffset(accelerator, pos, 0.0, ivec2(2, 0)).rgb;
+    return accelerateBlock(minV, maxV, info);
+}
+
 float seed;
 uint N = 128u;
 uint i;
@@ -69,28 +100,23 @@ float boxIntersect(vec3 minV, vec3 maxV, vec3 ori, vec3 dir) {
 
 vec4 primitivesIntersect(vec3 orig, vec3 dir, float start, float end) {
 
-    int startIndex = int(start);
-    int endIndex = int(end);
     float mint = 1e10;
-    vec2 minpos, minuv;
-    vec2 pos = vec2(0.0001) + vec2(4.0 / primitiveSize * start, 0.0);
-    vec3 v0, v01, v02;
+    vec3 minNormal;
+    vec2 minuv;
+    primitiveBlock block;
     vec3 v1, v2;
+    float endIndex = end * 4.0;
+    for(float index = start * 4.0; index < endIndex; index += 4.0) {
+        block = requestPrimitiveBlock(index);
 
-    for(int index = startIndex; index < endIndex; ++index) {
-        v0  = textureLodOffset(primitives, pos, 0.0, ivec2(1, 0)).rgb;
-        v01 = textureLodOffset(primitives, pos, 0.0, ivec2(2, 0)).rgb;
-        v02 = textureLodOffset(primitives, pos, 0.0, ivec2(3, 0)).rgb;
-        pos += vec2(4.0 / primitiveSize, 0.0);
-
-        v2 = v01 - v0;
-        v1 = v02 - v0;
+        v2 = block.p1 - block.p0;
+        v1 = block.p2 - block.p0;
         
         vec3 P = cross(dir, v2);
         float det = dot(v1, P);   //carmer rules devider
         if ( det > -EPSILON && det < EPSILON )
             continue;
-        vec3 T = orig - v0;
+        vec3 T = orig - block.p0;
         float invdet = 1.0 / det;
 
         float u = dot(T, P) * invdet;
@@ -103,13 +129,12 @@ vec4 primitivesIntersect(vec3 orig, vec3 dir, float start, float end) {
         float t = dot(v2, Q) * invdet;
         if (t > EPSILON && t < mint) {
             mint = t;
-            minpos = pos - vec2(4.0 / primitiveSize);
-            // minuv = vec2(u, v);
+            minNormal = block.n0;
         }
     }
 
     if (mint < 1e10) {
-        return vec4(textureLod(primitives, minpos, 0.0).rgb, mint);
+        return vec4(minNormal, mint);
     }
 
     return vec4(0.0);
@@ -118,36 +143,27 @@ vec4 primitivesIntersect(vec3 orig, vec3 dir, float start, float end) {
 vec4 trace(inout vec3 orig, vec3 dir) {
 
     vec4 result = vec4(1.0, 1.0, 1.0, 1e10);
-
+    accelerateBlock block;
     // traversal accelerator
-    vec3 vMin, vMax;
-    vec3 info; // info => left, right, childCount; 
-    vec2 aPos = vec2(0.0);
     float ext;
-    for(int i = 0; i < aSize;) {
-        float stepSize = 3.0;
-        vMin = textureLod(accelerator, aPos, 0.0).rgb;
-        vMax = textureLodOffset(accelerator, aPos, 0.0, ivec2(1, 0)).rgb;
-        info = textureLodOffset(accelerator, aPos, 0.0, ivec2(2, 0)).rgb;
+    for(float index = 6.0; index < acceleratorSize;) {
 
-        ext = boxIntersect(vMin, vMax, orig, dir);
-
+        block = requestAccelerateBlock(index);
+        ext = boxIntersect(block.minV, block.maxV, orig, dir);
+        // ext = boxIntersect(vec3(-1.0), vec3(1.0), orig, dir);
         if (ext >= 0.0) {
-            if(info.z <= EPSILON) {
-                vec4 tmpResult = primitivesIntersect(orig, dir, info.x, info.y);
+            if(block.info.z <= EPSILON) {
+                vec4 tmpResult = primitivesIntersect(orig, dir, block.info.x, block.info.y);
                 if (tmpResult.w > 0.0 && tmpResult.w < result.w) {
                     result = tmpResult;
                 }
             }
         } else {
-            if(info.z > 0.0) {
-                float childSize = info.z * 3.0;
-                i += int(childSize);
-                stepSize += childSize;
+            if(block.info.z > 0.0) {
+                index += block.info.z * 3.0;
             }
         }
-        i += 3;
-        aPos += vec2(stepSize / acceleratorSize, 0.0);
+        index += 3.0;
     }
     
     if (result.w < 1e10) {
@@ -180,9 +196,9 @@ void main()
     vec3 orig = origin;
 
     // global boundingbox intersect
-    vec2 accPos = vec2(0.00001);
+    vec2 accPos = vec2(0.0);
     vec3 BBmin = textureLod( accelerator, accPos, 0.0).rgb;
-    accPos += vec2(1.0 / acceleratorSize, 0.0);
+    accPos += vec2(1.0 / min(acceleratorSize, acceleratorWidth), 0.0);
     vec3 BBmax = textureLod( accelerator, accPos, 0.0).rgb;
     float ext = boxIntersect(BBmin, BBmax, orig, view.xyz);
     if( ext < 0.0 ) {

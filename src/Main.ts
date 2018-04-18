@@ -228,10 +228,10 @@ export class Arch {
 
 const arch = new Arch(dom('view') as HTMLCanvasElement);
 
-OBJLoader('../obj/monkey.obj').then((data)=>{
+OBJLoader('../obj/house.obj').then((data)=>{
     arch.bindScene(new Scene(data, new BVH()));
     arch.render();
-    sceneTest(arch.scene);
+    // sceneTest(arch.scene);
 });
 
 

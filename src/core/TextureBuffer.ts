@@ -1,3 +1,6 @@
+export const PrimitiveBufferWidth = 1024 * 4;
+export const AcceleratorBufferWidth = 1024 * 3;
+
 export class TextureBuffer {
 
     size: number;
@@ -5,19 +8,19 @@ export class TextureBuffer {
     height: number;
     data: Float32Array;
 
-    constructor(inputData: number[]) {
-    // align data
+    constructor(inputData: number[], bufferWidth: number) {
+        // align data
         const len = inputData.length / 3;
         this.size = len;
-        if(len < 4096) {
+        if(len < bufferWidth) {
             this.width = len
             this.height = 1; 
             this.data = new Float32Array(inputData);
         } else {
-            const lines = Math.ceil(len / 4096);
-            const output = new Float32Array(lines * 4096 * 3);
+            const lines = Math.ceil(len / bufferWidth);
+            const output = new Float32Array(lines * bufferWidth * 3);
             output.set(inputData);
-            this.width = 4096;
+            this.width = bufferWidth;
             this.height = lines;
             this.data = new Float32Array(output);
         }
