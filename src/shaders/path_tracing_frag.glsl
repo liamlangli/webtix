@@ -11,25 +11,30 @@ uniform float inseed;
 uniform int incount;
 uniform vec2 resolution;
 
-uniform vec3 primitiveInfo;     // [size, width, height];
-uniform vec3 acceleratorInfo;  // [size, width, height];
+// [size, width, height];
+uniform vec3 acceleratorInfo;  
+uniform vec3 faceInfo;
+uniform vec3 vertexInfo;
+uniform vec3 normalInfo;
 
-uniform sampler2D primitives;
 uniform sampler2D accelerator;
+uniform sampler2D faces;
+uniform sampler2D vertices;
+uniform sampler2D normals;
 
 in vec3 origin;
 out vec4 color;
 
-float primitiveSize, primitiveWidth, primitiveHeight;
-int pSize;
 float acceleratorSize, acceleratorWidth, acceleratorHeight;
-int aSize;
+float faceSize, faceWidth, faceHeight;
+float vertexSize, vertexWidth, vertexHeight;
+float normalSize, normalWidth, normalHeight;
 
 float seed;
 uint N = 128u;
 uint i;
 
-const float primitiveGap = 6.0;
+const float faceGap = 3.0;
 const float acceleratorGap = 3.0;
 
 // global variable
@@ -46,21 +51,43 @@ vec3 skyColor(vec3 dir) {
     return ground + (sky - ground) * exp(dot(normalize(dir), up));
 }
 
+vec3 requestVertex(float index) {
+    float scalar = index / vertexWidth;
+    float row = floor(scalar) / vertexHeight;
+    float column = fract(scalar);
+    vec2 pos = padding + vec2(column, row);
+    return textureLod(vertices, pos, 0.0).rgb;
+}
+
+vec3 requestNormal(float index) {
+    float scalar = index / normalWidth;
+    float row = floor(scalar) / normalHeight;
+    float column = fract(scalar);
+    vec2 pos = padding + vec2(column, row);
+    return textureLod(normals, pos, 0.0).rgb;
+}
+
 struct primitiveBlock {
     vec3 n0, n1, n2, p0, p1, p2;
 };
 
-primitiveBlock requestPrimitiveBlock(float index) {
-    float scalar = index / primitiveWidth;
-    float row = floor(scalar) / primitiveHeight;
-    float column = fract(scalar);
-    vec2 pos = padding + vec2(column, row);
-    vec3 n0 = textureLod(primitives, pos, 0.0).rgb;
-    vec3 n1 = textureLodOffset(primitives, pos, 0.0, ivec2(1, 0)).rgb;
-    vec3 n2 = textureLodOffset(primitives, pos, 0.0, ivec2(2, 0)).rgb;
-    vec3 p0 = textureLodOffset(primitives, pos, 0.0, ivec2(3, 0)).rgb;
-    vec3 p1 = textureLodOffset(primitives, pos, 0.0, ivec2(4, 0)).rgb;
-    vec3 p2 = textureLodOffset(primitives, pos, 0.0, ivec2(5, 0)).rgb;
+primitiveBlock requestPrimitiveBlock(float faceIndex) {
+    
+    float faceScalar = faceIndex / faceWidth;
+    float faceRow = floor(faceScalar) / faceHeight;
+    float faceColumn = fract(faceScalar);
+    vec2 facePos = padding + vec2(faceColumn, faceRow);
+    vec3 faceInfo0 = textureLod(faces, facePos, 0.0).rgb;
+    vec3 faceInfo1 = textureLodOffset(faces, facePos, 0.0, ivec2(1, 0)).rgb;
+    vec3 faceInfo2 = textureLodOffset(faces, facePos, 0.0, ivec2(2, 0)).rgb;
+
+    vec3 n0 = requestNormal(faceInfo0.y);
+    vec3 n1 = requestNormal(faceInfo1.y);
+    vec3 n2 = requestNormal(faceInfo2.y);
+    vec3 p0 = requestVertex(faceInfo0.x);
+    vec3 p1 = requestVertex(faceInfo1.x);
+    vec3 p2 = requestVertex(faceInfo2.x);
+
     return primitiveBlock(n0, n1, n2, p0, p1, p2);
 }
 
@@ -127,8 +154,8 @@ vec4 primitivesIntersect(vec3 orig, vec3 dir, float start, float end) {
     vec3 minNormal;
     primitiveBlock block;
     vec3 v1, v2;
-    float endIndex = end * primitiveGap;
-    for (float index = start * primitiveGap; index <= endIndex; index += primitiveGap) {
+    float endIndex = end * faceGap;
+    for (float index = start * faceGap; index <= endIndex; index += faceGap) {
         block = requestPrimitiveBlock(index);
 
         v2 = block.p1 - block.p0;
@@ -136,7 +163,7 @@ vec4 primitivesIntersect(vec3 orig, vec3 dir, float start, float end) {
         
         vec3 P = cross(dir, v2);
         float det = dot(v1, P);   //carmer rules devider
-        if ( det > -EPSILON && det < EPSILON)
+        if ( det > -EPSILON)
             continue;
         vec3 T = orig - block.p0;
         float invdet = 1.0 / det;
@@ -197,15 +224,22 @@ vec4 trace(inout vec3 orig, vec3 dir) {
 
 void main()
 {
-    primitiveSize = primitiveInfo.x;
-    primitiveWidth = primitiveInfo.y;
-    primitiveHeight = primitiveInfo.z;
     acceleratorSize = acceleratorInfo.x;
     acceleratorWidth = acceleratorInfo.y;
     acceleratorHeight = acceleratorInfo.z;
 
-    pSize = int(primitiveSize);
-    aSize = int(acceleratorSize);
+    faceSize = faceInfo.x;
+    faceWidth = faceInfo.y;
+    faceHeight = faceInfo.z;
+
+    vertexSize = vertexInfo.x;
+    vertexWidth = vertexInfo.y;
+    vertexHeight = vertexInfo.z;
+
+    normalSize = normalInfo.x;
+    normalWidth = normalInfo.y;
+    normalHeight = normalInfo.z;
+
     i = uint(incount);
     vec2 fc = vec2(gl_FragCoord.xy);
     vec2 fcu = fc / resolution;

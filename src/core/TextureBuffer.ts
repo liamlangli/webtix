@@ -1,4 +1,7 @@
-export const PrimitiveBufferWidth = 1024 * 2;
+export const PrimitiveBufferWidth = 1024 * 2;       // deprecated
+export const VertexBufferWidth = 1024 * 3;
+export const NormalBufferWidth = 1024 * 3;
+export const FaceBufferWidth = 1024 * 2;
 export const AcceleratorBufferWidth = 1024 * 3;
 
 export class TextureBuffer {

@@ -12,6 +12,8 @@ Arch WebGL RayTracing Render Engine
 size始终为vertices.length / 3;
 ```
 
-- bvh & grid accelerator
+- bvh & grid accelerator   
+    [done] see [BVH.md](./BVH.md)
 
 - pbr shading model ( align data to texture )
+    nope
