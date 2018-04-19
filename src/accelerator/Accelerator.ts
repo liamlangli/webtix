@@ -12,7 +12,7 @@ export class Accelerator {
 
     feed(vertices: Float32Array) {
         const arr = new IndexFloatArray(vertices);
-        for (let i = 0, il = vertices.length; i < il; i += 12) {
+        for (let i = 0, il = vertices.length; i < il; i += 18) {
             const p = new Primitive(arr, i);
             this.pList.push(p);
         }
@@ -32,11 +32,15 @@ export class Accelerator {
         for(let i = 0, il = this.pList.length; i < il; ++i) {
             const p = this.pList[i];
             const n0 = p.n0;
+            const n1 = p.n1;
+            const n2 = p.n2;
             const p0 = p.p0;
             const p1 = p.p1;
             const p2 = p.p2;
             res.push(
                 n0.x, n0.y, n0.z,
+                n1.x, n1.y, n1.z,
+                n2.x, n2.y, n2.z,
                 p0.x, p0.y, p0.z,
                 p1.x, p1.y, p1.z,
                 p2.x, p2.y, p2.z

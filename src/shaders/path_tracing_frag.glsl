@@ -29,6 +29,9 @@ float seed;
 uint N = 128u;
 uint i;
 
+const float primitiveGap = 6.0;
+const float acceleratorGap = 3.0;
+
 // global variable
 const vec2 padding = vec2(0.0001);
 const vec3 sky = vec3(0.318, 0.471, 0.624);
@@ -36,16 +39,15 @@ const vec3 ground = vec3(0.619, 0.607, 0.564);
 const vec3 up = vec3(0.0, 1.0, 0.0);
 const float nature_e = 2.718281828;
 
-const vec3 sun = vec3(30.0, 30.0, 30.0);
+const vec3 sun = vec3(300.0);
 
 // global function
 vec3 skyColor(vec3 dir) {
-    // return ground + (sky - ground) * pow( 5.0, dot(normalize(dir), up));
     return ground + (sky - ground) * exp(dot(normalize(dir), up));
 }
 
 struct primitiveBlock {
-    vec3 n0, p0, p1, p2;
+    vec3 n0, n1, n2, p0, p1, p2;
 };
 
 primitiveBlock requestPrimitiveBlock(float index) {
@@ -54,10 +56,12 @@ primitiveBlock requestPrimitiveBlock(float index) {
     float column = fract(scalar);
     vec2 pos = padding + vec2(column, row);
     vec3 n0 = textureLod(primitives, pos, 0.0).rgb;
-    vec3 p0 = textureLodOffset(primitives, pos, 0.0, ivec2(1, 0)).rgb;
-    vec3 p1 = textureLodOffset(primitives, pos, 0.0, ivec2(2, 0)).rgb;
-    vec3 p2 = textureLodOffset(primitives, pos, 0.0, ivec2(3, 0)).rgb;
-    return primitiveBlock(n0, p0, p1, p2);
+    vec3 n1 = textureLodOffset(primitives, pos, 0.0, ivec2(1, 0)).rgb;
+    vec3 n2 = textureLodOffset(primitives, pos, 0.0, ivec2(2, 0)).rgb;
+    vec3 p0 = textureLodOffset(primitives, pos, 0.0, ivec2(3, 0)).rgb;
+    vec3 p1 = textureLodOffset(primitives, pos, 0.0, ivec2(4, 0)).rgb;
+    vec3 p2 = textureLodOffset(primitives, pos, 0.0, ivec2(5, 0)).rgb;
+    return primitiveBlock(n0, n1, n2, p0, p1, p2);
 }
 
 struct accelerateBlock {
@@ -73,6 +77,10 @@ accelerateBlock requestAccelerateBlock(float index) {
     vec3 maxV = textureLodOffset(accelerator, pos, 0.0, ivec2(1, 0)).rgb;
     vec3 info = textureLodOffset(accelerator, pos, 0.0, ivec2(2, 0)).rgb;
     return accelerateBlock(minV, maxV, info);
+}
+
+vec3 centriodNormal(primitiveBlock p, float u, float v) {
+    return p.n0 * (1.0 - u - v) + p.n1 * u + p.n2 * v;
 }
 
 bool contain(vec3 v, vec3 minV, vec3 maxV) {
@@ -117,11 +125,10 @@ vec4 primitivesIntersect(vec3 orig, vec3 dir, float start, float end) {
 
     float mint = 1e10;
     vec3 minNormal;
-    vec2 minuv;
     primitiveBlock block;
     vec3 v1, v2;
-    float endIndex = end * 4.0;
-    for (float index = start * 4.0; index <= endIndex; index += 4.0) {
+    float endIndex = end * primitiveGap;
+    for (float index = start * primitiveGap; index <= endIndex; index += primitiveGap) {
         block = requestPrimitiveBlock(index);
 
         v2 = block.p1 - block.p0;
@@ -129,7 +136,7 @@ vec4 primitivesIntersect(vec3 orig, vec3 dir, float start, float end) {
         
         vec3 P = cross(dir, v2);
         float det = dot(v1, P);   //carmer rules devider
-        if ( det > -EPSILON )
+        if ( det > -EPSILON && det < EPSILON)
             continue;
         vec3 T = orig - block.p0;
         float invdet = 1.0 / det;
@@ -144,7 +151,7 @@ vec4 primitivesIntersect(vec3 orig, vec3 dir, float start, float end) {
         float t = dot(v2, Q) * invdet;
         if (t > EPSILON && t < mint) {
             mint = t;
-            minNormal = block.n0;
+            minNormal = centriodNormal(block, v, u);
         }
     }
 
@@ -174,10 +181,10 @@ vec4 trace(inout vec3 orig, vec3 dir) {
             }
         } else {
             if(block.info.z > 0.0) {
-                index += block.info.z * 3.0;
+                index += block.info.z * acceleratorGap;
             }
         }
-        index += 3.0;
+        index += acceleratorGap;
     }
     
     if (result.w < 1e10) {
@@ -234,5 +241,5 @@ void main()
         return;
     }
 
-    color.rgb = skyColor(view.xyz) * 0.5;
+    color.rgb = skyColor(view.xyz) * 0.42;
 }

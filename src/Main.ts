@@ -225,7 +225,7 @@ export class Arch {
 
             if( ++this.accum_count >= this.sampleCount ) this.abort = true;
 
-            this.status.innerHTML = `sample count:${this.accum_count}`;
+            this.status.innerHTML = `sample count:${this.accum_count}<br>face count:${this.scene.faceCount}`;
         }
         requestAnimationFrame(this.render);
     }
@@ -233,10 +233,10 @@ export class Arch {
 
 const arch = new Arch(dom('view') as HTMLCanvasElement);
 
-OBJLoader('../obj/depart.obj').then((data) => {
+OBJLoader('../obj/house_tri.obj').then((data) => {
     arch.bindScene(new Scene(data, new BVH()));
     arch.render();
-    // sceneTest(arch.scene);
+    sceneTest(arch.scene);
 });
 
 

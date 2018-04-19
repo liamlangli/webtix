@@ -5,6 +5,12 @@ const re_normal  = /^vn\s/;
 const re_face = /^f\s/;
 const re_space   = /\s+/;
 
+
+const ground = [
+    0, 1, 0, 100, 0, 100, 100, 0, -100, -100, 0, -100,
+    0, 1, 0, 100, 0 ,100, -100, 0, -100, -100, 0, 100
+];
+
 export class OBJData {
     constructor(
         public size: number,
@@ -39,22 +45,25 @@ function vertiesAbsorb(data: string) {
 
             while (++j < elements.length) {
                 var is = elements[j].split('/')
-                indices.push(is[0])
-                n = is[2];
+                indices.push(is[0], is[2]);
+                // n = is[2];
             }
 
-            indices.push(n);
             fs.push(indices);
         }
     }
     
     for( i = 0; i < fs.length; ++i ) {
         const v0 = vs[ fs[i][0] - 1 ];
-        const v1 = vs[ fs[i][1] - 1 ];
-        const v2 = vs[ fs[i][2] - 1 ];
-        const n0 = vn[ fs[i][3] - 1 ];
-        res.push(n0[0], n0[1], n0[2]);
+        const n0 = vn[ fs[i][1] - 1 ];
+        const v1 = vs[ fs[i][2] - 1 ];
+        const n1 = vn[ fs[i][3] - 1 ];
+        const v2 = vs[ fs[i][4] - 1 ];
+        const n2 = vn[ fs[i][5] - 1 ];
         res.push(
+            n0[0], n0[1], n0[2],
+            n1[0], n1[1], n1[2],
+            n2[0], n2[1], n2[2],
             v0[0], v0[1], v0[2],
             v1[0], v1[1], v1[2],
             v2[0], v2[1], v2[2]

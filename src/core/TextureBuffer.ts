@@ -1,4 +1,4 @@
-export const PrimitiveBufferWidth = 1024 * 4;
+export const PrimitiveBufferWidth = 1024 * 2;
 export const AcceleratorBufferWidth = 1024 * 3;
 
 export class TextureBuffer {
