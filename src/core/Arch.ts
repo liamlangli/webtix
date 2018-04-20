@@ -50,7 +50,9 @@ export class Arch {
         vertexInfo: null,
         vertices: null,             // tunnel 2
         normalInfo: null,
-        normals: null               // tunnel 3
+        normals: null,              // tunnel 3
+        materialInfo: null,
+        materials: null             // tunnel 4
     };
 
     normalLocations = {
@@ -64,6 +66,7 @@ export class Arch {
     faceTexture: WebGLTexture;
     vertexTexture: WebGLTexture;
     normalTexture: WebGLTexture;
+    materialTexture: WebGLTexture;
 
     vertexArray;
 
@@ -180,6 +183,13 @@ export class Arch {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.texImage2D(gl.TEXTURE_2D, 0, (gl as any).RGB32F, scene.normalBuffer.width, scene.normalBuffer.height, 0, gl.RGB, gl.FLOAT, scene.normalBuffer.data);
 
+        this.materialTexture = gl.createTexture();
+        gl.activeTexture(gl.TEXTURE1);
+        gl.bindTexture(gl.TEXTURE_2D, this.materialTexture);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        gl.texImage2D(gl.TEXTURE_2D, 0, (gl as any).RGB32F, scene.materialBuffer.width, scene.materialBuffer.height, 0, gl.RGB, gl.FLOAT, scene.materialBuffer.data);
+
         this.programTracing = new GLProgram(gl, PathTracingVert, PathTracingFrag, this.tracingLocations);
         this.programNormal = new GLProgram(gl, BasicVert, BasicFrag, this.normalLocations);
 
@@ -227,11 +237,13 @@ export class Arch {
                 gl.uniform3fv( this.tracingLocations.faceInfo, this.scene.faceBuffer.genInfoBuffer());
                 gl.uniform3fv( this.tracingLocations.vertexInfo, this.scene.vertexBuffer.genInfoBuffer());
                 gl.uniform3fv( this.tracingLocations.normalInfo, this.scene.normalBuffer.genInfoBuffer());
+                gl.uniform3fv( this.tracingLocations.materialInfo, this.scene.materialBuffer.genInfoBuffer());
 
                 gl.uniform1i( this.tracingLocations.accelerator, 0);
                 gl.uniform1i( this.tracingLocations.faces, 1);
                 gl.uniform1i( this.tracingLocations.vertices, 2);
                 gl.uniform1i( this.tracingLocations.normals, 3);
+                gl.uniform1i( this.tracingLocations.materials, 4);
 
                 gl.activeTexture( gl.TEXTURE0 );
                 gl.bindTexture( gl.TEXTURE_2D, this.acceleratorTexture );
@@ -244,6 +256,9 @@ export class Arch {
                 
                 gl.activeTexture( gl.TEXTURE3 );
                 gl.bindTexture( gl.TEXTURE_2D, this.normalTexture );
+
+                gl.activeTexture( gl.TEXTURE4 );
+                gl.bindTexture( gl.TEXTURE_2D, this.materialTexture );
 
                 gl.enable( gl.BLEND );
                 gl.blendFunc( gl.ONE, gl.ONE );

@@ -16,19 +16,24 @@ uniform vec3 acceleratorInfo;
 uniform vec3 faceInfo;
 uniform vec3 vertexInfo;
 uniform vec3 normalInfo;
+uniform vec3 materialInfo;
 
 uniform sampler2D accelerator;
 uniform sampler2D faces;
 uniform sampler2D vertices;
 uniform sampler2D normals;
+uniform sampler2D materials;
 
 in vec3 origin;
 out vec4 color;
+
+vec3 outputColor = vec3(0.0);
 
 float acceleratorSize, acceleratorWidth, acceleratorHeight;
 float faceSize, faceWidth, faceHeight;
 float vertexSize, vertexWidth, vertexHeight;
 float normalSize, normalWidth, normalHeight;
+float materialSize, materialWidth, materialHeight;
 
 float seed;
 uint N = 128u;
@@ -44,7 +49,7 @@ const vec3 ground = vec3(0.619, 0.607, 0.564);
 const vec3 up = vec3(0.0, 1.0, 0.0);
 const float nature_e = 2.718281828;
 
-const vec3 sun = vec3(-300.0, 600.0, -300.0);
+const vec3 sunPosition = vec3(-300.0, 600.0, -300.0);
 
 // global function
 vec3 skyColor(vec3 dir) {
@@ -67,8 +72,21 @@ vec3 requestNormal(float index) {
     return textureLod(normals, pos, 0.0).rgb;
 }
 
+struct materialBlock {
+    vec3 diffuse;
+};
+
+materialBlock requestMaterialBlock(float index) {
+    float scalar = index / materialWidth;
+    float row = floor(scalar) / materialHeight;
+    float column = fract(scalar);
+    vec2 pos = padding + vec2(column, row);
+    return materialBlock(textureLod(materials, pos, 0.0).rgb);
+}
+
 struct primitiveBlock {
     vec3 n0, n1, n2, p0, p1, p2;
+    materialBlock material;
 };
 
 primitiveBlock requestPrimitiveBlock(float faceIndex) {
@@ -87,8 +105,9 @@ primitiveBlock requestPrimitiveBlock(float faceIndex) {
     vec3 p0 = requestVertex(faceInfo0.x);
     vec3 p1 = requestVertex(faceInfo1.x);
     vec3 p2 = requestVertex(faceInfo2.x);
+    materialBlock material = requestMaterialBlock(faceInfo0.z);
 
-    return primitiveBlock(n0, n1, n2, p0, p1, p2);
+    return primitiveBlock(n0, n1, n2, p0, p1, p2, material);
 }
 
 struct accelerateBlock {
@@ -127,6 +146,12 @@ vec3 cosWeightedRandomHemisphereDirectionHammersley(const vec3 n)
     vec3 uu = normalize(cross(n, vec3(1.0, 1.0, 0.0))), vv = cross(uu, n);
     float sqrtx = sqrt(r.x);
     return normalize(vec3(sqrtx * cos(r.y) * uu + sqrtx * sin(r.y) * vv + sqrt(1.0 - r.x) * n));
+}
+
+// n has been normalized
+float lightIntensity(vec3 pos, vec3 n, vec3 lightPosition) {
+    vec3 lightDirection = lightPosition - pos;
+    return dot(n, normalize(lightDirection));
 }
 
 float boxIntersect(vec3 minV, vec3 maxV, vec3 ori, vec3 dir) {
@@ -182,6 +207,8 @@ vec4 primitivesIntersect(vec3 orig, vec3 dir, float start, float end, bool test)
             } else {
                 mint = t;
                 minNormal = centriodNormal(block, v, u);
+                float intensity = lightIntensity( orig + dir * mint, minNormal, sunPosition);
+                outputColor = block.material.diffuse * intensity;
             }
 
         }
@@ -247,6 +274,10 @@ void main()
     normalWidth = normalInfo.y;
     normalHeight = normalInfo.z;
 
+    materialSize = materialInfo.x;
+    materialWidth = materialInfo.y;
+    materialHeight = materialInfo.z;
+
     i = uint(incount);
     vec2 fc = vec2(gl_FragCoord.xy);
     vec2 fcu = fc / resolution;
@@ -277,7 +308,7 @@ void main()
 
     float power = 0.8;
     vec3 shake = -cosWeightedRandomHemisphereDirectionHammersley(vec3(1.0)) * 20.0;
-    vec4 inShadow = trace(orig, sun + shake - orig, true);
+    vec4 inShadow = trace(orig, sunPosition + shake - orig, true);
     if (inShadow.w > 0.0) {
         power *= 0.43;
     } else {
@@ -288,7 +319,7 @@ void main()
     vec3 reflect_dir = -cosWeightedRandomHemisphereDirectionHammersley( -hit.xyz );
     hit = trace(orig, reflect_dir, false);
     if (hit.w <= 0.0) {
-        color.rgb = vec3( 1.0 ) * power;
+        color.rgb = outputColor * power;
         return; 
     }
 

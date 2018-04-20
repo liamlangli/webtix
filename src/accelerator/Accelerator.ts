@@ -2,20 +2,22 @@ import { Box3 } from "../math/Box3";
 import { Primitive } from "../geometry/Primitive";
 import { IndexFloatArray, IndexArray } from "../core/IndexArray";
 import { Equals } from "../utils/MathUtil";
-import { OBJData } from "../utils/OBJLoader";
+import { OBJData, OBJPackage, MTLData } from "../utils/OBJLoader";
 
 export class Accelerator {
 
     pList: Primitive[] = [];
     objData: OBJData;
+    mtlData: MTLData;
 
     constructor() {
     }
 
-    feed(objData: OBJData) {
-        this.objData = objData;
-        for (let i = 0, il = objData.faces.length; i < il; ++i) {
-            const p = new Primitive(objData, i);
+    feed(objPack: OBJPackage) {
+        this.objData = objPack.objData;
+        this.mtlData = objPack.mtlData;
+        for (let i = 0, il = this.objData.faces.length; i < il; ++i) {
+            const p = new Primitive(this.objData, i);
             this.pList.push(p);
         }
     }
@@ -40,6 +42,11 @@ export class Accelerator {
     }
 
     genFaceBuffer(): number[] {
+        console.log('Please use Accelerator sub class');
+        return [];
+    }
+
+    genMaterialBuffer(): number[] {
         console.log('Please use Accelerator sub class');
         return [];
     }

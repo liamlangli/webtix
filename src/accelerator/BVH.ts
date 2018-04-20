@@ -3,7 +3,7 @@ import { Box3 } from '../math/Box3';
 import { Vector3 } from '../math/Vector3';
 import { Accelerator, LongestAxis, QuickSort } from './Accelerator';
 import { IndexArray, IndexFloatArray } from '../core/IndexArray';
-import { OBJData } from '../utils/OBJLoader';
+import { OBJData, MaterialNode, OBJPackage } from '../utils/OBJLoader';
 
 class BVHNode {
     box: Box3;
@@ -32,8 +32,8 @@ export class BVH extends Accelerator {
         super();
     }
 
-    feed(objData: OBJData) {
-        super.feed(objData);
+    feed(objPack: OBJPackage) {
+        super.feed(objPack);
     }
 
     build() {
@@ -112,7 +112,7 @@ export class BVH extends Accelerator {
 
     genFaceBuffer(): number[] {
         if (this.objData === undefined) {
-            console.error('please feed accelerator with objdata first')
+            console.error('please feed accelerator with objdata at first')
         }
         const faces = [];
         for(let i = 0, il = this.pList.length; i < il; ++i) {
@@ -122,6 +122,19 @@ export class BVH extends Accelerator {
             );
         }
         return faces;
+    }
+
+    genMaterialBuffer(): number[] {
+        if (this.mtlData === undefined) {
+            console.error('please feed accelerator with mtldata at first')
+        }
+        const materials = [];
+        for(let i = 0, il = this.mtlData.materials.length; i < il; ++i) {
+            const mtl = this.mtlData.materials[i];
+            const diffuse = mtl.diffuse;
+            materials.push(diffuse.R, diffuse.G, diffuse.B);
+        }
+        return materials;
     }
 
     private nodeToBuffer(node: BVHNode): NodeInfo {

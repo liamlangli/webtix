@@ -74,7 +74,7 @@ export class OBJData {
  * 
  */
 export class MaterialNode {
-    name: string;
+    constructor(public name: string) {}
 
     ambient: Color3;
     diffuse: Color3;
@@ -87,16 +87,16 @@ export class MaterialNode {
 
 export class MTLData {
     constructor(
-        public materials: Array<MaterialNode>
+        public materials: MaterialNode[]
     ) {}
 }
 
-function objProcess(data: string, materils: MTLData[]) {
+function objProcess(data: string, materils: MaterialNode[]) {
     const res = [];
     const vs = [];
     const vn = [];
     const fs = [];
-    const mtl_index = -1;
+    let mtl_index = -1;
 
     const lines = data.split('\n');
     var i = -1
@@ -116,11 +116,18 @@ function objProcess(data: string, materils: MTLData[]) {
 
             while (++j < elements.length) {
                 var is = elements[j].split('/')
-                indices.push(parseFloat(is[0]) - 1, parseFloat(is[2]) - 1, 0);
+                indices.push(parseFloat(is[0]) - 1, parseFloat(is[2]) - 1, mtl_index);
             }
             fs.push(indices);
-        } else if ( re_usemtl.test(line) ) {
+        } else if ( re_usemtl.test(line) && materils.length > 0) {
             const mtlName = elements[0];
+            let index = 0;
+            for(;index < materils.length; ++index) {
+                if (mtlName === materils[index].name) {
+                    mtl_index = index;
+                    continue;
+                }
+            }
         }
     }
 
@@ -128,7 +135,31 @@ function objProcess(data: string, materils: MTLData[]) {
 }
 
 function mtlProcess(data: string) {
-    return [];
+
+    const mtls = [];
+    let mtl: MaterialNode;
+    const lines = data.split('\n');
+    var i = -1
+    while ( ++i < lines.length) {
+        const line = lines[i].trim()
+        const elements = line.split(re_space)
+        elements.shift();
+        
+        if ( re_newmtl.test(line) ) {
+            if (mtl) {
+                mtls.push(mtl);
+            } else {
+                mtl = new MaterialNode(elements[0]);
+            }
+        } else if ( re_kd.test(line) ) {
+            if (mtl) {
+                mtl.diffuse = new Color3(parseFloat(elements[0]), parseFloat(elements[1]), parseFloat(elements[2]));
+            }
+        }
+    }
+
+    mtls.push(mtl);
+    return mtls;
 }
 
 export async function OBJLoader( path, fileName ): Promise<OBJPackage> {
