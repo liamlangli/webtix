@@ -6,11 +6,9 @@ import { BVH } from "./accelerator/BVH";
 
 const arch = new Arch(dom('view') as HTMLCanvasElement);
 
-OBJLoader('../obj/colonial.obj').then((data) => {
-    console.log(data);
-    arch.bindScene(new Scene(data, new BVH()));
+OBJLoader('./obj', 'house').then((pack) => {
+    console.log(pack);
+    arch.bindScene(new Scene(pack.objData, new BVH()));
     arch.render();
     // sceneTest(arch.scene);
 });
-
-

@@ -44,7 +44,7 @@ const vec3 ground = vec3(0.619, 0.607, 0.564);
 const vec3 up = vec3(0.0, 1.0, 0.0);
 const float nature_e = 2.718281828;
 
-const vec3 sun = vec3(300.0);
+const vec3 sun = vec3(-300.0, 600.0, -300.0);
 
 // global function
 vec3 skyColor(vec3 dir) {
@@ -148,7 +148,7 @@ float boxIntersect(vec3 minV, vec3 maxV, vec3 ori, vec3 dir) {
     return ext_n;
 }
 
-vec4 primitivesIntersect(vec3 orig, vec3 dir, float start, float end) {
+vec4 primitivesIntersect(vec3 orig, vec3 dir, float start, float end, bool test) {
 
     float mint = 1e10;
     vec3 minNormal;
@@ -177,8 +177,13 @@ vec4 primitivesIntersect(vec3 orig, vec3 dir, float start, float end) {
             continue;
         float t = dot(v2, Q) * invdet;
         if (t > EPSILON && t < mint) {
-            mint = t;
-            minNormal = centriodNormal(block, v, u);
+            if (test) {
+                return vec4(1.0);
+            } else {
+                mint = t;
+                minNormal = centriodNormal(block, v, u);
+            }
+
         }
     }
 
@@ -189,7 +194,7 @@ vec4 primitivesIntersect(vec3 orig, vec3 dir, float start, float end) {
     return vec4(0.0);
 }
 
-vec4 trace(inout vec3 orig, vec3 dir) {
+vec4 trace(inout vec3 orig, vec3 dir, bool test) {
 
     vec4 result = vec4(1.0, 1.0, 1.0, 1e10);
     accelerateBlock block;
@@ -201,7 +206,7 @@ vec4 trace(inout vec3 orig, vec3 dir) {
         ext = boxIntersect(block.minV, block.maxV, orig, dir);
         if (ext >= 0.0) {
             if(block.info.z <= EPSILON) {
-                vec4 tmpResult = primitivesIntersect(orig, dir, block.info.x, block.info.y);
+                vec4 tmpResult = primitivesIntersect(orig, dir, block.info.x, block.info.y, test);
                 if (tmpResult.w > 0.0 && tmpResult.w < result.w) {
                     result = tmpResult;
                 }
@@ -215,7 +220,9 @@ vec4 trace(inout vec3 orig, vec3 dir) {
     }
     
     if (result.w < 1e10) {
-        orig += dir * result.w;
+        if (!test) {
+            orig += dir * result.w;
+        }
         return result;
     }
 
@@ -244,10 +251,10 @@ void main()
     vec2 fc = vec2(gl_FragCoord.xy);
     vec2 fcu = fc / resolution;
     seed = inseed + fcu.x + fcu.y;
-    vec2 aa = fract( sin(vec2(seed, seed + 0.1)) * vec2(43758.5453123, 22578.1459123) );
+    vec2 aa = fract(sin(vec2(seed, seed + 0.1)) * vec2(43758.5453123, 22578.1459123) );
     random_ofs = fract(gl_FragCoord.x * gl_FragCoord.y * inseed + aa.x) * 6.2831;
-    vec4 view = proj * vec4( (fc + aa) / (resolution / 2.0) - 1.0, 0.0, 1.0);
-    view = normalize( MVP * vec4(view.xyz / view.w, 0.0) );
+    vec4 view = proj * vec4((fc + aa) / (resolution / 2.0) - 1.0, 0.0, 1.0);
+    view = normalize(MVP * vec4(view.xyz / view.w, 0.0));
     vec3 orig = origin;
 
     // global boundingbox intersect
@@ -262,18 +269,28 @@ void main()
     }
 
     // start tracing 
-    vec4 hit = trace(orig, view.xyz);
+    vec4 hit = trace(orig, view.xyz, false);
     if (hit.w <= 0.0) {
         color.rgb = skyColor(view.xyz);
         return;
     }
 
-    vec3 reflect_dir = -cosWeightedRandomHemisphereDirectionHammersley( -hit.xyz );
-    hit = trace(orig, reflect_dir);
-    if (hit.w <= 0.0 ) {
-        color.rgb = vec3( 0.8 );
-        return;
+    float power = 0.8;
+    vec3 shake = -cosWeightedRandomHemisphereDirectionHammersley(vec3(1.0)) * 20.0;
+    vec4 inShadow = trace(orig, sun + shake - orig, true);
+    if (inShadow.w > 0.0) {
+        power *= 0.43;
+    } else {
+        power *= 0.84;
     }
 
-    color.rgb = skyColor(view.xyz) * 0.42;
+    i = uint(incount);
+    vec3 reflect_dir = -cosWeightedRandomHemisphereDirectionHammersley( -hit.xyz );
+    hit = trace(orig, reflect_dir, false);
+    if (hit.w <= 0.0) {
+        color.rgb = vec3( 1.0 ) * power;
+        return; 
+    }
+
+    color.rgb = skyColor(view.xyz) * 0.2;
 }

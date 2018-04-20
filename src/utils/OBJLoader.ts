@@ -4,17 +4,38 @@
 
 
 import { TextureBuffer } from "../core/TextureBuffer";
+import { Color3 } from "../math/Color3";
 
-const re_vector  = /^v\s/;
-const re_normal  = /^vn\s/;
-const re_face = /^f\s/;
 const re_space   = /\s+/;
 
+// obj file pattern
+const re_vector = /^v\s/;
+const re_normal = /^vn\s/;
+const re_face   = /^f\s/;
+const re_mtllib = /^mtllib\s/; 
+const re_usemtl = /^usemtl\s/;
+
+// mtl file pattern
+const re_ka         = /^Ka\s/;
+const re_kd         = /^Kd\s/;
+const re_ks         = /^Ks\s/;
+const re_ke         = /^Ke\s/;
+const re_refract    = /^Ni\s/;
+const re_opacity    = /^d\s/;
+const re_illum      = /^illum\s/;
+const re_newmtl     = /^newmtl\s/;
 
 const ground = [
     0, 1, 0, 100, 0, 100, 100, 0, -100, -100, 0, -100,
     0, 1, 0, 100, 0 ,100, -100, 0, -100, -100, 0, 100
 ];
+
+export class OBJPackage {
+    constructor(
+        public objData: OBJData,
+        public mtlData: MTLData
+    ) {}
+}
 
 export class OBJData {
     constructor(
@@ -23,12 +44,59 @@ export class OBJData {
         public faces: Array<Array<number>>,
     ) {}
 }
+/**
+ * 
+ * MTL file description
+ * 
+ * Ns <roughness>
+ * Ka <ambient color>
+ * Kd <diffuse color>
+ * Ks <specular color>
+ * Ke <emissive color>
+ * Ni <refract scalar>
+ * d  <opacity>
+ * illum <illumination model>
+ * 
+ * wavefront file illumination models
+ * 
+ * 0. Color on and Ambient off
+ * 1. Color on and Ambient on
+ * 2. Highlight on
+ * 3. Reflection on and Ray trace on
+ * 4. Transparency: Glass on, Reflection: Ray trace on
+ * 5. Reflection: Fresnel on and Ray trace on
+ * 6. Transparency: Refraction on, Reflection: Fresnel off and Ray trace on
+ * 7. Transparency: Refraction on, Reflection: Fresnel on and Ray trace on
+ * 8. Reflection on and Ray trace off
+ * 9. Transparency: Glass on, Reflection: Ray trace off
+ * 10. Casts shadows onto invisible surfaces
+ * 
+ * 
+ */
+export class MaterialNode {
+    name: string;
 
-function vertiesAbsorb(data: string) {
+    ambient: Color3;
+    diffuse: Color3;
+    specular: Color3;
+    emissive: Color3;
+    refract: number;
+    opacity: number;
+    illumination: number;
+}
+
+export class MTLData {
+    constructor(
+        public materials: Array<MaterialNode>
+    ) {}
+}
+
+function objProcess(data: string, materils: MTLData[]) {
     const res = [];
     const vs = [];
     const vn = [];
     const fs = [];
+    const mtl_index = -1;
 
     const lines = data.split('\n');
     var i = -1
@@ -51,31 +119,25 @@ function vertiesAbsorb(data: string) {
                 indices.push(parseFloat(is[0]) - 1, parseFloat(is[2]) - 1, 0);
             }
             fs.push(indices);
+        } else if ( re_usemtl.test(line) ) {
+            const mtlName = elements[0];
         }
     }
-    
-    // for( i = 0; i < fs.length; ++i ) {
-    //     const v0 = vs[ fs[i][0] - 1 ];
-    //     const n0 = vn[ fs[i][1] - 1 ];
-    //     const v1 = vs[ fs[i][2] - 1 ];
-    //     const n1 = vn[ fs[i][3] - 1 ];
-    //     const v2 = vs[ fs[i][4] - 1 ];
-    //     const n2 = vn[ fs[i][5] - 1 ];
-    //     res.push(
-    //         n0[0], n0[1], n0[2],
-    //         n1[0], n1[1], n1[2],
-    //         n2[0], n2[1], n2[2],
-    //         v0[0], v0[1], v0[2],
-    //         v1[0], v1[1], v1[2],
-    //         v2[0], v2[1], v2[2]
-    //     );
-    // }
-    // return new Float32Array(res);
+
     return new OBJData(vs, vn, fs);
 }
 
-export async function OBJLoader( path ) {
-    const data = await fetch(path);
-    const obj = await data.text();
-    return vertiesAbsorb(obj);
+function mtlProcess(data: string) {
+    return [];
+}
+
+export async function OBJLoader( path, fileName ): Promise<OBJPackage> {
+    const mtlResponse = await fetch(path + '/' + fileName + '.mtl');
+    const mtlData = await mtlResponse.text();
+    const mtlGroup = mtlProcess(mtlData);
+
+    const objResponse = await fetch(path + '/' + fileName + '.obj');
+    const objData = await objResponse.text();
+
+    return new OBJPackage(objProcess(objData, mtlGroup), new MTLData(mtlGroup));
 }
