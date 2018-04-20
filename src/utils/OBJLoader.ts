@@ -99,10 +99,10 @@ function objProcess(data: string, materils: MaterialNode[]) {
     let mtl_index = -1;
 
     const lines = data.split('\n');
-    var i = -1
+    let i = -1;
     while ( ++i < lines.length) {
-        const line = lines[i].trim()
-        const elements = line.split(re_space)
+        const line = lines[i].trim();
+        const elements = line.split(re_space);
         elements.shift();
 
         if ( re_vector.test( line ) ) {
@@ -139,18 +139,17 @@ function mtlProcess(data: string) {
     const mtls = [];
     let mtl: MaterialNode;
     const lines = data.split('\n');
-    var i = -1
+    let i = -1;
     while ( ++i < lines.length) {
-        const line = lines[i].trim()
-        const elements = line.split(re_space)
+        const line = lines[i].trim();
+        const elements = line.split(re_space);
         elements.shift();
         
-        if ( re_newmtl.test(line) ) {
+        if ( re_newmtl.test( line ) ) {
             if (mtl) {
                 mtls.push(mtl);
-            } else {
-                mtl = new MaterialNode(elements[0]);
             }
+            mtl = new MaterialNode(elements[0]);
         } else if ( re_kd.test(line) ) {
             if (mtl) {
                 mtl.diffuse = new Color3(parseFloat(elements[0]), parseFloat(elements[1]), parseFloat(elements[2]));

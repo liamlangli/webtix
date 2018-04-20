@@ -77,6 +77,10 @@ struct materialBlock {
 };
 
 materialBlock requestMaterialBlock(float index) {
+    if (index < 0.0) {
+        return materialBlock(vec3(1.0)); 
+    }
+
     float scalar = index / materialWidth;
     float row = floor(scalar) / materialHeight;
     float column = fract(scalar);
@@ -173,11 +177,17 @@ float boxIntersect(vec3 minV, vec3 maxV, vec3 ori, vec3 dir) {
     return ext_n;
 }
 
-vec4 primitivesIntersect(vec3 orig, vec3 dir, float start, float end, bool test) {
+struct primitiveIntersection {
+    vec3 diffuse, normal;
+    float mint;
+};
+
+primitiveIntersection primitivesIntersect(vec3 orig, vec3 dir, float start, float end, bool test) {
 
     float mint = 1e10;
     vec3 minNormal;
     primitiveBlock block;
+    primitiveBlock minPrimitiveBlock;
     vec3 v1, v2;
     float endIndex = end * faceGap;
     for (float index = start * faceGap; index <= endIndex; index += faceGap) {
@@ -203,28 +213,27 @@ vec4 primitivesIntersect(vec3 orig, vec3 dir, float start, float end, bool test)
         float t = dot(v2, Q) * invdet;
         if (t > EPSILON && t < mint) {
             if (test) {
-                return vec4(1.0);
+                return primitiveIntersection( vec3(0.0), vec3(0.0), 1.0);
             } else {
                 mint = t;
                 minNormal = centriodNormal(block, v, u);
-                float intensity = lightIntensity( orig + dir * mint, minNormal, sunPosition);
-                outputColor = block.material.diffuse * intensity;
+                minPrimitiveBlock = block;
             }
-
         }
     }
 
     if (mint < 1e10) {
-        return vec4(minNormal, mint);
+        return primitiveIntersection(minPrimitiveBlock.material.diffuse, minNormal, mint);
     }
 
-    return vec4(0.0);
+    return primitiveIntersection(vec3(0.0), vec3(0.0), 0.0);
 }
 
 vec4 trace(inout vec3 orig, vec3 dir, bool test) {
 
-    vec4 result = vec4(1.0, 1.0, 1.0, 1e10);
     accelerateBlock block;
+    primitiveIntersection closestIntersection;
+    closestIntersection.mint = 1e10;
     // traversal accelerator
     float ext;
     for(float index = 0.0; index <= acceleratorSize;) {
@@ -233,9 +242,13 @@ vec4 trace(inout vec3 orig, vec3 dir, bool test) {
         ext = boxIntersect(block.minV, block.maxV, orig, dir);
         if (ext >= 0.0) {
             if(block.info.z <= EPSILON) {
-                vec4 tmpResult = primitivesIntersect(orig, dir, block.info.x, block.info.y, test);
-                if (tmpResult.w > 0.0 && tmpResult.w < result.w) {
-                    result = tmpResult;
+                primitiveIntersection intersection = primitivesIntersect(orig, dir, block.info.x, block.info.y, test);
+                if (intersection.mint > 0.0 && intersection.mint < closestIntersection.mint) {
+                    if (test) {
+                        return vec4(1.0);
+                    } else {
+                        closestIntersection = intersection;
+                    }
                 }
             }
         } else {
@@ -246,11 +259,12 @@ vec4 trace(inout vec3 orig, vec3 dir, bool test) {
         index += acceleratorGap;
     }
     
-    if (result.w < 1e10) {
-        if (!test) {
-            orig += dir * result.w;
-        }
-        return result;
+    if (closestIntersection.mint < 1e10) {
+        orig += dir * closestIntersection.mint;
+        // float intensity = lightIntensity( orig, closestIntersection.normal, sunPosition);
+        // outputColor = closestIntersection.diffuse * intensity;
+        outputColor = closestIntersection.diffuse;
+        return vec4(closestIntersection.normal, closestIntersection.mint);
     }
 
     return vec4(0.0);
@@ -319,6 +333,7 @@ void main()
     vec3 reflect_dir = -cosWeightedRandomHemisphereDirectionHammersley( -hit.xyz );
     hit = trace(orig, reflect_dir, false);
     if (hit.w <= 0.0) {
+        // color.rgb = vec3(1.0) * power;
         color.rgb = outputColor * power;
         return; 
     }
