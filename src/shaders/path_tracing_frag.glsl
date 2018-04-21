@@ -266,7 +266,7 @@ vec3 sunShade(materialBlock material, vec3 orig, vec3 dir, vec3 normal) {
         lambertFactor = max(dot(normal, lightDir), 0.0);
         if (lambertFactor > 0.0) {
             // Blinn-Phong
-            vec3 halfDir = normalize(lightDir + dir);
+            vec3 halfDir = normalize(lightDir - dir);
         
             float specAngle = max(dot(normal, halfDir), 0.0);
             float specFactor = pow(specAngle, material.roughness);
@@ -315,7 +315,7 @@ vec4 trace(inout vec3 orig, vec3 dir) {
             orig += dir * closestIntersection.mint;
             vec3 normal = -closestIntersection.normal;
             materialBlock m = requestMaterialBlock(closestIntersection.materialIndex);
-            outColor += depthPower * sunShade(m, orig, reflect(dir, normal), normal);
+            outColor += depthPower * sunShade(m, orig, -dir, normal);
             dir = -cosWeightedRandomHemisphereDirectionHammersley(normal);
             isIntersected = 1.0;
         } else {

@@ -28,4 +28,12 @@ export class TextureBuffer {
     genInfoBuffer():Float32Array {
         return new Float32Array([this.size, this.width, this.height]);
     }
+
+    exportBuffer() {
+
+    }
+
+    loadBuffer() {
+        
+    }
 }

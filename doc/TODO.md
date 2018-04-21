@@ -16,4 +16,4 @@ size始终为vertices.length / 3;
     [done] see [BVH.md](./BVH.md)
 
 - pbr shading model ( align data to texture )
-    nope
+    [replace with blinn phong illumination model] see [Shade.md](./Shade.md)
