@@ -41,11 +41,11 @@ const vec3 ground = vec3(0.619, 0.607, 0.564);
 const vec3 up = vec3(0.0, 1.0, 0.0);
 const float nature_e = 2.718281828;
 
-const vec3 sunPosition = vec3(-60.0, -60.0, -60.0);
+const vec3 sunPosition = vec3(30.0, -60.0, 30.0);
 const vec3 sunColor = vec3(1.0);
-const float sunPower = 30.0;
+const float sunPower = 100.0;
 
-const float ambientFactor = 0.0;
+const float ambientFactor = 0.02;
 
 // global function
 vec3 skyColor(vec3 dir) {
@@ -153,31 +153,6 @@ vec3 cosWeightedRandomHemisphereDirectionHammersley(const vec3 n)
     return normalize(vec3(sqrtx * cos(r.y) * uu + sqrtx * sin(r.y) * vv + sqrt(1.0 - r.x) * n));
 }
 
-vec3 sunShade(materialBlock material, vec3 orig, vec3 dir, vec3 normal) {
-
-    float lambertFactor = 0.0;
-    float specFactor = 0.0;
-
-    vec3 lightDir = sunPosition - orig;
-    float distance = length(lightDir);
-    lightDir = normalize(lightDir);
-    distance = distance;
-    vec3 sunFactor = sunColor * sunPower / distance;
-
-    lambertFactor = max(dot(normal, lightDir), 0.0);
-    if (lambertFactor > 0.0) {
-        // Blinn-Phong
-        vec3 halfDir = normalize(lightDir + dir);
-    
-        float specAngle = max(dot(normal, halfDir), 0.0);
-        float specFactor = pow(specAngle, material.roughness * 4000.0);
-    }
-
-    vec3 diffuseColor = material.diffuse * lambertFactor * sunFactor;
-    vec3 specularColor = material.specular * specFactor * sunFactor * 30.0;
-    return material.ambient * ambientFactor + diffuseColor + specularColor;
-}
-
 float boxIntersect(vec3 minV, vec3 maxV, vec3 ori, vec3 dir) {
     vec3 bmin = (minV - vec3(0.001) - ori) / dir.xyz;
     vec3 bmax = (maxV + vec3(0.001) - ori) / dir.xyz;
@@ -231,9 +206,13 @@ primitiveIntersection primitivesIntersect(vec3 orig, vec3 dir, float start, floa
             continue;
         float t = dot(v2, Q) * invdet;
         if (t > EPSILON && t < mint) {
+            if(test) {
+                return primitiveIntersection(vec3(0.0), 1.0, 0.0);
+            } else {
                 minNormal = centriodNormal(block, v, u);
                 mint = t;
                 minMaterialIndex = block.materialIndex;
+            }
         }
     }
 
@@ -246,13 +225,66 @@ primitiveIntersection primitivesIntersect(vec3 orig, vec3 dir, float start, floa
 
 const float max_depth = 3.0;
 
-vec4 trace(inout vec3 orig, vec3 dir, bool test) {
+bool test(vec3 orig, vec3 dir) {
+    float ext;
+    accelerateBlock block;
+    primitiveBlock pBlock;
+    for(float index = 0.0; index <= acceleratorInfo.x;) {
+         block = requestAccelerateBlock(index);
+         ext = boxIntersect(block.minV, block.maxV, orig, dir);
+         if (ext >= 0.0) {
+                if(block.info.z <= EPSILON) {
+                    primitiveIntersection intersection = primitivesIntersect(orig, dir, block.info.x, block.info.y, true);
+                    if (intersection.mint > 0.0) {
+                        return true;
+                    }
+                }
+        } else {
+            if(block.info.z > 0.0) {
+                index += block.info.z * acceleratorGap;
+            }
+        }
+        index += acceleratorGap;
+    }
+    return false;
+}
+
+vec3 sunShade(materialBlock material, vec3 orig, vec3 dir, vec3 normal) {
+    vec3 sunShake = cosWeightedRandomHemisphereDirectionHammersley(vec3(1.0)) * 10.0;
+    vec3 lightDir = sunPosition + sunShake - orig;
+
+    if(test(orig, dir)) {
+        return vec3(0.0);
+    } else {
+        float lambertFactor = 0.0;
+        float specFactor = 0.0;
+        float D = length(lightDir);
+        lightDir = normalize(lightDir);
+        D = D;
+        vec3 sunFactor = sunColor * sunPower / D;
+
+        lambertFactor = max(dot(normal, lightDir), 0.0);
+        if (lambertFactor > 0.0) {
+            // Blinn-Phong
+            vec3 halfDir = normalize(lightDir + dir);
+        
+            float specAngle = max(dot(normal, halfDir), 0.0);
+            float specFactor = pow(specAngle, material.roughness);
+        }
+
+        vec3 diffuseColor = material.diffuse * lambertFactor * sunFactor;
+        vec3 specularColor = material.specular * specFactor * sunFactor;
+        return material.ambient * ambientFactor + diffuseColor + specularColor;
+    }
+}
+
+vec4 trace(inout vec3 orig, vec3 dir) {
 
     vec3 outColor = vec3(0.0);
     float isIntersected = 0.0;
     for(float depth = 0.0; depth < max_depth; depth += 1.0) {
 
-        float depthPower = pow(0.8, depth);
+        float depthPower = pow(0.9, depth);
 
         accelerateBlock block;
         primitiveIntersection closestIntersection;
@@ -266,7 +298,7 @@ vec4 trace(inout vec3 orig, vec3 dir, bool test) {
             ext = boxIntersect(block.minV, block.maxV, orig, dir);
             if (ext >= 0.0) {
                 if(block.info.z <= EPSILON) {
-                    primitiveIntersection intersection = primitivesIntersect(orig, dir, block.info.x, block.info.y, test);
+                    primitiveIntersection intersection = primitivesIntersect(orig, dir, block.info.x, block.info.y, false);
                     if (intersection.mint > 0.0 && intersection.mint < closestIntersection.mint) {
                         closestIntersection = intersection;
                     }
@@ -282,12 +314,12 @@ vec4 trace(inout vec3 orig, vec3 dir, bool test) {
         if (closestIntersection.mint < 1e10) {
             orig += dir * closestIntersection.mint;
             vec3 normal = -closestIntersection.normal;
-            dir = -cosWeightedRandomHemisphereDirectionHammersley(normal);
             materialBlock m = requestMaterialBlock(closestIntersection.materialIndex);
             outColor += depthPower * sunShade(m, orig, reflect(dir, normal), normal);
+            dir = -cosWeightedRandomHemisphereDirectionHammersley(normal);
             isIntersected = 1.0;
         } else {
-            return vec4(outColor + depthPower * skyColor(dir) * 0.1, isIntersected);
+            return vec4(outColor + skyColor(dir) * depthPower * 0.1, isIntersected);
         }
     }
     return vec4(outColor, isIntersected);
@@ -316,7 +348,7 @@ void main()
     }
 
     // start tracing 
-    vec4 hit = trace(orig, view.xyz, false);
+    vec4 hit = trace(orig, view.xyz);
     if (hit.w <= 0.0) {
         color.rgb = skyColor(view.xyz);
     } else {
