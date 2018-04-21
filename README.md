@@ -8,6 +8,6 @@ more info see [TODO.md](./doc/TODO.md)
 
 ![](https://li-lang.oss-cn-shanghai.aliyuncs.com/WechatIMG73.jpeg)
 
-#### use bvh & skybox
+#### Blinn-Phong illumination model
 
-![](https://li-lang.oss-cn-shanghai.aliyuncs.com/skybox.png)
+![](https://li-lang.oss-cn-shanghai.aliyuncs.com/car.png)
