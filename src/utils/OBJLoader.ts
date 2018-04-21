@@ -16,6 +16,7 @@ const re_mtllib = /^mtllib\s/;
 const re_usemtl = /^usemtl\s/;
 
 // mtl file pattern
+const re_ns         = /^Ns\s/;
 const re_ka         = /^Ka\s/;
 const re_kd         = /^Kd\s/;
 const re_ks         = /^Ks\s/;
@@ -76,13 +77,12 @@ export class OBJData {
 export class MaterialNode {
     constructor(public name: string) {}
 
-    ambient: Color3;
-    diffuse: Color3;
-    specular: Color3;
-    emissive: Color3;
-    refract: number;
-    opacity: number;
-    illumination: number;
+    ambient: Color3 = new Color3();
+    diffuse: Color3 = new Color3();
+    specular: Color3 = new Color3();
+    roughness: number = 96.0;
+    opacity: number = 1.0;
+    refract: number = 1.0;
 }
 
 export class MTLData {
@@ -145,14 +145,34 @@ function mtlProcess(data: string) {
         const elements = line.split(re_space);
         elements.shift();
         
-        if ( re_newmtl.test( line ) ) {
+        if (re_newmtl.test(line)) {
             if (mtl) {
                 mtls.push(mtl);
             }
             mtl = new MaterialNode(elements[0]);
-        } else if ( re_kd.test(line) ) {
+        } else if (re_ka.test(line)) {
             if (mtl) {
-                mtl.diffuse = new Color3(parseFloat(elements[0]), parseFloat(elements[1]), parseFloat(elements[2]));
+                mtl.ambient.set(parseFloat(elements[0]), parseFloat(elements[1]), parseFloat(elements[2]));
+            }
+        } else if (re_kd.test(line)) {
+            if (mtl) {
+                mtl.diffuse.set(parseFloat(elements[0]), parseFloat(elements[1]), parseFloat(elements[2]));
+            }
+        } else if (re_ks.test(line)) {
+            if (mtl) {
+                mtl.specular.set(parseFloat(elements[0]), parseFloat(elements[1]), parseFloat(elements[2]));
+            }
+        } else if (re_ns.test(line)) {
+            if (mtl) {
+                mtl.roughness = parseFloat(elements[0]);
+            }
+        } else if (re_opacity.test(line)) {
+            if (mtl) {
+                mtl.opacity = parseFloat(elements[0]);
+            }
+        } else if (re_refract.test(line)) {
+            if (mtl) {
+                mtl.refract = parseFloat(elements[0]);
             }
         }
     }

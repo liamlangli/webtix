@@ -3,7 +3,7 @@ export const VertexBufferWidth = 1024 * 3;
 export const NormalBufferWidth = 1024 * 3;
 export const FaceBufferWidth = 1024 * 2;
 export const AcceleratorBufferWidth = 1024 * 3;
-export const MaterialBufferWidth = 1024 * 2;
+export const MaterialBufferWidth = 1024 * 1;
 
 export class TextureBuffer {
 

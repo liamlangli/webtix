@@ -60,7 +60,7 @@ export class BVH extends Accelerator {
             return pa.box.center.elements()[node.axis] - pb.box.center.elements()[node.axis];
         };
 
-        if (right - left < 5) {
+        if (right - left < 3) {
             QuickSort(primitives, left, right, compareFn);
             return node;
         }
@@ -131,8 +131,13 @@ export class BVH extends Accelerator {
         const materials = [];
         for(let i = 0, il = this.mtlData.materials.length; i < il; ++i) {
             const mtl = this.mtlData.materials[i];
+            const ambient = mtl.ambient;
             const diffuse = mtl.diffuse;
+            const specular = mtl.specular;
+            materials.push(ambient.R, ambient.G, ambient.B);
             materials.push(diffuse.R, diffuse.G, diffuse.B);
+            materials.push(specular.R, specular.G, specular.B);
+            materials.push(mtl.roughness, mtl.opacity, mtl.refract);
         }
         return materials;
     }

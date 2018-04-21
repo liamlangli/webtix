@@ -27,20 +27,13 @@ uniform sampler2D materials;
 in vec3 origin;
 out vec4 color;
 
-vec3 outputColor = vec3(0.0);
-
-float acceleratorSize, acceleratorWidth, acceleratorHeight;
-float faceSize, faceWidth, faceHeight;
-float vertexSize, vertexWidth, vertexHeight;
-float normalSize, normalWidth, normalHeight;
-float materialSize, materialWidth, materialHeight;
-
 float seed;
 uint N = 128u;
 uint i;
 
-const float faceGap = 3.0;
 const float acceleratorGap = 3.0;
+const float faceGap = 3.0;
+const float materialGap = 4.0;
 
 // global variable
 const vec2 padding = vec2(0.0001);
@@ -49,7 +42,11 @@ const vec3 ground = vec3(0.619, 0.607, 0.564);
 const vec3 up = vec3(0.0, 1.0, 0.0);
 const float nature_e = 2.718281828;
 
-const vec3 sunPosition = vec3(-300.0, 600.0, -300.0);
+const vec3 sunPosition = vec3(60.0, 60.0, 0.0);
+const vec3 sunColor = vec3(1.0);
+const float sunPower = 30.0;
+
+const float ambientFactor = 0.1;
 
 // global function
 vec3 skyColor(vec3 dir) {
@@ -57,46 +54,51 @@ vec3 skyColor(vec3 dir) {
 }
 
 vec3 requestVertex(float index) {
-    float scalar = index / vertexWidth;
-    float row = floor(scalar) / vertexHeight;
+    float scalar = index / vertexInfo.y;
+    float row = floor(scalar) / vertexInfo.z;
     float column = fract(scalar);
     vec2 pos = padding + vec2(column, row);
     return textureLod(vertices, pos, 0.0).rgb;
 }
 
 vec3 requestNormal(float index) {
-    float scalar = index / normalWidth;
-    float row = floor(scalar) / normalHeight;
+    float scalar = index / normalInfo.y;
+    float row = floor(scalar) / normalInfo.z;
     float column = fract(scalar);
     vec2 pos = padding + vec2(column, row);
     return textureLod(normals, pos, 0.0).rgb;
 }
 
 struct materialBlock {
-    vec3 diffuse;
+    vec3 ambient, diffuse, specular;
+    float roughness, opacity, refractFactor;
 };
 
 materialBlock requestMaterialBlock(float index) {
     if (index < 0.0) {
-        return materialBlock(vec3(1.0)); 
+        return materialBlock(vec3(1.0), vec3(1.0), vec3(1.0), 94.0, 1.0, 1.0); 
     }
 
-    float scalar = index / materialWidth;
-    float row = floor(scalar) / materialHeight;
+    float scalar = index * materialGap / materialInfo.y;
+    float row = floor(scalar) / materialInfo.z;
     float column = fract(scalar);
     vec2 pos = padding + vec2(column, row);
-    return materialBlock(textureLod(materials, pos, 0.0).rgb);
+    vec3 ambient = textureLod(materials, pos, 0.0).rgb;
+    vec3 diffuse = textureLodOffset(materials, pos, 0.0, ivec2(1, 0)).rgb;
+    vec3 specular = textureLodOffset(materials, pos, 0.0, ivec2(2, 0)).rgb;
+    vec3 rest = textureLodOffset(materials, pos, 0.0, ivec2(3, 0)).rgb;
+    return materialBlock(ambient, diffuse, specular, rest.x, rest.y, rest.z);
 }
 
 struct primitiveBlock {
     vec3 n0, n1, n2, p0, p1, p2;
-    materialBlock material;
+    float materialIndex;
 };
 
 primitiveBlock requestPrimitiveBlock(float faceIndex) {
     
-    float faceScalar = faceIndex / faceWidth;
-    float faceRow = floor(faceScalar) / faceHeight;
+    float faceScalar = faceIndex / faceInfo.y;
+    float faceRow = floor(faceScalar) / faceInfo.z;
     float faceColumn = fract(faceScalar);
     vec2 facePos = padding + vec2(faceColumn, faceRow);
     vec3 faceInfo0 = textureLod(faces, facePos, 0.0).rgb;
@@ -109,9 +111,8 @@ primitiveBlock requestPrimitiveBlock(float faceIndex) {
     vec3 p0 = requestVertex(faceInfo0.x);
     vec3 p1 = requestVertex(faceInfo1.x);
     vec3 p2 = requestVertex(faceInfo2.x);
-    materialBlock material = requestMaterialBlock(faceInfo0.z);
 
-    return primitiveBlock(n0, n1, n2, p0, p1, p2, material);
+    return primitiveBlock(n0, n1, n2, p0, p1, p2, faceInfo0.z);
 }
 
 struct accelerateBlock {
@@ -119,8 +120,8 @@ struct accelerateBlock {
 };
 
 accelerateBlock requestAccelerateBlock(float index) {
-    float scalar = index / acceleratorWidth;
-    float row = floor(scalar) / acceleratorHeight;
+    float scalar = index / acceleratorInfo.y;
+    float row = floor(scalar) / acceleratorInfo.z;
     float column = fract(scalar);
     vec2 pos = padding + vec2(column, row);
     vec3 minV = textureLod(accelerator, pos, 0.0).rgb;
@@ -152,10 +153,30 @@ vec3 cosWeightedRandomHemisphereDirectionHammersley(const vec3 n)
     return normalize(vec3(sqrtx * cos(r.y) * uu + sqrtx * sin(r.y) * vv + sqrt(1.0 - r.x) * n));
 }
 
-// n has been normalized
-float lightIntensity(vec3 pos, vec3 n, vec3 lightPosition) {
-    vec3 lightDirection = lightPosition - pos;
-    return dot(n, normalize(lightDirection));
+vec3 sunShade(materialBlock material, vec3 orig, vec3 dir, vec3 normal) {
+
+    float lambertFactor = 0.0;
+    float specFactor = 0.0;
+
+    vec3 lightDir = sunPosition - orig;
+    float distance = length(lightDir);
+    lightDir = normalize(lightDir);
+    distance = distance;
+    vec3 sunFactor = sunColor * sunPower / distance;
+
+    lambertFactor = max(dot(normal, lightDir), 0.0);
+    if (lambertFactor > 0.0) {
+        // Blinn-Phong
+        vec3 halfDir = normalize(lightDir + dir);
+    
+        float specAngle = max(dot(normal, halfDir), 0.0);
+        float specFactor = pow(specAngle, material.roughness / 4.0);
+    }
+
+    vec3 diffuseColor = material.diffuse * lambertFactor * sunFactor;
+    vec3 specularColor = material.specular * specFactor * sunFactor;
+    // return material.ambient * ambientFactor + diffuseColor + specularColor;
+    return material.ambient * ambientFactor + diffuseColor;
 }
 
 float boxIntersect(vec3 minV, vec3 maxV, vec3 ori, vec3 dir) {
@@ -178,20 +199,19 @@ float boxIntersect(vec3 minV, vec3 maxV, vec3 ori, vec3 dir) {
 }
 
 struct primitiveIntersection {
-    vec3 diffuse, normal;
-    float mint;
+    vec3 normal;
+    float mint, materialIndex;
 };
 
 primitiveIntersection primitivesIntersect(vec3 orig, vec3 dir, float start, float end, bool test) {
 
     float mint = 1e10;
     vec3 minNormal;
-    primitiveBlock block;
-    primitiveBlock minPrimitiveBlock;
+    float minMaterialIndex;
     vec3 v1, v2;
     float endIndex = end * faceGap;
     for (float index = start * faceGap; index <= endIndex; index += faceGap) {
-        block = requestPrimitiveBlock(index);
+        primitiveBlock block = requestPrimitiveBlock(index);
 
         v2 = block.p1 - block.p0;
         v1 = block.p2 - block.p0;
@@ -212,86 +232,68 @@ primitiveIntersection primitivesIntersect(vec3 orig, vec3 dir, float start, floa
             continue;
         float t = dot(v2, Q) * invdet;
         if (t > EPSILON && t < mint) {
-            if (test) {
-                return primitiveIntersection( vec3(0.0), vec3(0.0), 1.0);
-            } else {
-                mint = t;
                 minNormal = centriodNormal(block, v, u);
-                minPrimitiveBlock = block;
-            }
+                mint = t;
+                minMaterialIndex = block.materialIndex;
         }
     }
 
     if (mint < 1e10) {
-        return primitiveIntersection(minPrimitiveBlock.material.diffuse, minNormal, mint);
+        return primitiveIntersection(minNormal, mint, minMaterialIndex);
     }
 
-    return primitiveIntersection(vec3(0.0), vec3(0.0), 0.0);
+    return primitiveIntersection(vec3(0.0), 0.0, 0.0);
 }
+
+const float max_depth = 3.0;
 
 vec4 trace(inout vec3 orig, vec3 dir, bool test) {
 
-    accelerateBlock block;
-    primitiveIntersection closestIntersection;
-    closestIntersection.mint = 1e10;
-    // traversal accelerator
-    float ext;
-    for(float index = 0.0; index <= acceleratorSize;) {
+    vec3 outColor = vec3(0.0);
+    float isIntersected = 0.0;
+    for(float depth = 0.0; depth < max_depth; depth += 1.0) {
 
-        block = requestAccelerateBlock(index);
-        ext = boxIntersect(block.minV, block.maxV, orig, dir);
-        if (ext >= 0.0) {
-            if(block.info.z <= EPSILON) {
-                primitiveIntersection intersection = primitivesIntersect(orig, dir, block.info.x, block.info.y, test);
-                if (intersection.mint > 0.0 && intersection.mint < closestIntersection.mint) {
-                    if (test) {
-                        return vec4(1.0);
-                    } else {
+        accelerateBlock block;
+        primitiveIntersection closestIntersection;
+        closestIntersection.mint = 1e10;
+
+        // traversal accelerator
+        float ext;
+        for(float index = 0.0; index <= acceleratorInfo.x;) {
+
+            block = requestAccelerateBlock(index);
+            ext = boxIntersect(block.minV, block.maxV, orig, dir);
+            if (ext >= 0.0) {
+                if(block.info.z <= EPSILON) {
+                    primitiveIntersection intersection = primitivesIntersect(orig, dir, block.info.x, block.info.y, test);
+                    if (intersection.mint > 0.0 && intersection.mint < closestIntersection.mint) {
                         closestIntersection = intersection;
                     }
                 }
+            } else {
+                if(block.info.z > 0.0) {
+                    index += block.info.z * acceleratorGap;
+                }
             }
-        } else {
-            if(block.info.z > 0.0) {
-                index += block.info.z * acceleratorGap;
-            }
+            index += acceleratorGap;
         }
-        index += acceleratorGap;
+        
+        if (closestIntersection.mint < 1e10) {
+            orig += dir * closestIntersection.mint;
+            i = uint(incount);
+            materialBlock m = requestMaterialBlock(closestIntersection.materialIndex);
+            outColor += pow(0.6, depth) * sunShade(m, orig, -dir, closestIntersection.normal);
+            dir = -cosWeightedRandomHemisphereDirectionHammersley(-closestIntersection.normal);
+            isIntersected = 1.0;
+        } else {
+            return vec4(outColor, isIntersected);
+        }
     }
-    
-    if (closestIntersection.mint < 1e10) {
-        orig += dir * closestIntersection.mint;
-        // float intensity = lightIntensity( orig, closestIntersection.normal, sunPosition);
-        // outputColor = closestIntersection.diffuse * intensity;
-        outputColor = closestIntersection.diffuse;
-        return vec4(closestIntersection.normal, closestIntersection.mint);
-    }
-
-    return vec4(0.0);
+    return vec4(outColor, isIntersected);
 }
 
 void main()
 {
-    acceleratorSize = acceleratorInfo.x;
-    acceleratorWidth = acceleratorInfo.y;
-    acceleratorHeight = acceleratorInfo.z;
-
-    faceSize = faceInfo.x;
-    faceWidth = faceInfo.y;
-    faceHeight = faceInfo.z;
-
-    vertexSize = vertexInfo.x;
-    vertexWidth = vertexInfo.y;
-    vertexHeight = vertexInfo.z;
-
-    normalSize = normalInfo.x;
-    normalWidth = normalInfo.y;
-    normalHeight = normalInfo.z;
-
-    materialSize = materialInfo.x;
-    materialWidth = materialInfo.y;
-    materialHeight = materialInfo.z;
-
     i = uint(incount);
     vec2 fc = vec2(gl_FragCoord.xy);
     vec2 fcu = fc / resolution;
@@ -305,7 +307,7 @@ void main()
     // global boundingbox intersect
     vec2 accPos = padding;
     vec3 BBmin = textureLod( accelerator, accPos, 0.0).rgb;
-    accPos += vec2(1.0 / acceleratorWidth, 0.0);
+    accPos += vec2(1.0 / acceleratorInfo.y, 0.0);
     vec3 BBmax = textureLod( accelerator, accPos, 0.0).rgb;
     float ext = boxIntersect(BBmin, BBmax, orig, view.xyz);
     if( ext < 0.0 ) {
@@ -317,26 +319,7 @@ void main()
     vec4 hit = trace(orig, view.xyz, false);
     if (hit.w <= 0.0) {
         color.rgb = skyColor(view.xyz);
-        return;
-    }
-
-    float power = 0.8;
-    vec3 shake = -cosWeightedRandomHemisphereDirectionHammersley(vec3(1.0)) * 20.0;
-    vec4 inShadow = trace(orig, sunPosition + shake - orig, true);
-    if (inShadow.w > 0.0) {
-        power *= 0.43;
     } else {
-        power *= 0.84;
+        color.rgb = hit.rgb;
     }
-
-    i = uint(incount);
-    vec3 reflect_dir = -cosWeightedRandomHemisphereDirectionHammersley( -hit.xyz );
-    hit = trace(orig, reflect_dir, false);
-    if (hit.w <= 0.0) {
-        // color.rgb = vec3(1.0) * power;
-        color.rgb = outputColor * power;
-        return; 
-    }
-
-    color.rgb = skyColor(view.xyz) * 0.2;
 }
