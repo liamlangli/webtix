@@ -29,7 +29,6 @@ out vec4 color;
 
 float seed;
 uint N = 128u;
-uint i;
 
 const float acceleratorGap = 3.0;
 const float faceGap = 3.0;
@@ -42,11 +41,11 @@ const vec3 ground = vec3(0.619, 0.607, 0.564);
 const vec3 up = vec3(0.0, 1.0, 0.0);
 const float nature_e = 2.718281828;
 
-const vec3 sunPosition = vec3(60.0, 60.0, 0.0);
+const vec3 sunPosition = vec3(-60.0, -60.0, -60.0);
 const vec3 sunColor = vec3(1.0);
 const float sunPower = 30.0;
 
-const float ambientFactor = 0.1;
+const float ambientFactor = 0.0;
 
 // global function
 vec3 skyColor(vec3 dir) {
@@ -76,7 +75,7 @@ struct materialBlock {
 
 materialBlock requestMaterialBlock(float index) {
     if (index < 0.0) {
-        return materialBlock(vec3(1.0), vec3(1.0), vec3(1.0), 94.0, 1.0, 1.0); 
+        return materialBlock(vec3(0.0), vec3(0.0), vec3(0.0), 94.0, 1.0, 1.0); 
     }
 
     float scalar = index * materialGap / materialInfo.y;
@@ -141,6 +140,7 @@ bool contain(vec3 v, vec3 minV, vec3 maxV) {
 float random_ofs = 0.0;
 vec3 cosWeightedRandomHemisphereDirectionHammersley(const vec3 n)
 {
+    uint i = uint(incount);
     float x = float(i) / float(N);
     i = (i << 16u) | (i >> 16u);
     i = ((i & 0x55555555u) << 1u) | ((i & 0xAAAAAAAAu) >> 1u);
@@ -170,13 +170,12 @@ vec3 sunShade(materialBlock material, vec3 orig, vec3 dir, vec3 normal) {
         vec3 halfDir = normalize(lightDir + dir);
     
         float specAngle = max(dot(normal, halfDir), 0.0);
-        float specFactor = pow(specAngle, material.roughness / 4.0);
+        float specFactor = pow(specAngle, material.roughness * 4000.0);
     }
 
     vec3 diffuseColor = material.diffuse * lambertFactor * sunFactor;
-    vec3 specularColor = material.specular * specFactor * sunFactor;
-    // return material.ambient * ambientFactor + diffuseColor + specularColor;
-    return material.ambient * ambientFactor + diffuseColor;
+    vec3 specularColor = material.specular * specFactor * sunFactor * 30.0;
+    return material.ambient * ambientFactor + diffuseColor + specularColor;
 }
 
 float boxIntersect(vec3 minV, vec3 maxV, vec3 ori, vec3 dir) {
@@ -253,6 +252,8 @@ vec4 trace(inout vec3 orig, vec3 dir, bool test) {
     float isIntersected = 0.0;
     for(float depth = 0.0; depth < max_depth; depth += 1.0) {
 
+        float depthPower = pow(0.8, depth);
+
         accelerateBlock block;
         primitiveIntersection closestIntersection;
         closestIntersection.mint = 1e10;
@@ -280,13 +281,13 @@ vec4 trace(inout vec3 orig, vec3 dir, bool test) {
         
         if (closestIntersection.mint < 1e10) {
             orig += dir * closestIntersection.mint;
-            i = uint(incount);
+            vec3 normal = -closestIntersection.normal;
+            dir = -cosWeightedRandomHemisphereDirectionHammersley(normal);
             materialBlock m = requestMaterialBlock(closestIntersection.materialIndex);
-            outColor += pow(0.6, depth) * sunShade(m, orig, -dir, closestIntersection.normal);
-            dir = -cosWeightedRandomHemisphereDirectionHammersley(-closestIntersection.normal);
+            outColor += depthPower * sunShade(m, orig, reflect(dir, normal), normal);
             isIntersected = 1.0;
         } else {
-            return vec4(outColor, isIntersected);
+            return vec4(outColor + depthPower * skyColor(dir) * 0.1, isIntersected);
         }
     }
     return vec4(outColor, isIntersected);
@@ -294,7 +295,6 @@ vec4 trace(inout vec3 orig, vec3 dir, bool test) {
 
 void main()
 {
-    i = uint(incount);
     vec2 fc = vec2(gl_FragCoord.xy);
     vec2 fcu = fc / resolution;
     seed = inseed + fcu.x + fcu.y;
@@ -320,6 +320,6 @@ void main()
     if (hit.w <= 0.0) {
         color.rgb = skyColor(view.xyz);
     } else {
-        color.rgb = hit.rgb;
+        color.rgb = clamp(hit.rgb, 0.0, 1.0);
     }
 }
