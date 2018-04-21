@@ -5,7 +5,7 @@ Shade
 todo in the feture( maybe not -.- )
 
 ### Blinn_Phong
-current ilumination model   
+current illumination model   
 ```
 
 global:
