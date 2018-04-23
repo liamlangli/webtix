@@ -39,11 +39,11 @@ pseudocode:
     vec3 N = normal
     number D = length(L)
 
-    float lamberFactor = max(0.0, dot(V, L));
+    float lamberFactor = max(0.0, dot(N, L));
     if lamberFactor < 0:
         return black
     else:
-        vec3 H = normalize(L, D)
+        vec3 H = normalize(L, N)
         float specularAngle = max(0.0, dot(N, H))
         float specularFactor = pow(specularAngle, material.roughness)
 

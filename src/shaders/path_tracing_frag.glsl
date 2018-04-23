@@ -41,7 +41,7 @@ const vec3 ground = vec3(0.619, 0.607, 0.564);
 const vec3 up = vec3(0.0, 1.0, 0.0);
 const float nature_e = 2.718281828;
 
-const vec3 sunPosition = vec3(30.0, -60.0, 30.0);
+const vec3 sunPosition = vec3(30.0, 30.0, -30.0);
 const vec3 sunColor = vec3(1.0);
 const float sunPower = 100.0;
 
@@ -223,7 +223,7 @@ primitiveIntersection primitivesIntersect(vec3 orig, vec3 dir, float start, floa
     return primitiveIntersection(vec3(0.0), 0.0, 0.0);
 }
 
-const float max_depth = 3.0;
+const float max_depth = 2.0;
 
 bool test(vec3 orig, vec3 dir) {
     float ext;
@@ -251,24 +251,24 @@ bool test(vec3 orig, vec3 dir) {
 
 vec3 sunShade(materialBlock material, vec3 orig, vec3 dir, vec3 normal) {
     vec3 sunShake = cosWeightedRandomHemisphereDirectionHammersley(vec3(1.0)) * 10.0;
-    vec3 lightDir = sunPosition + sunShake - orig;
+    vec3 L = sunPosition + sunShake - orig;
+    vec3 N = normal;
+    vec3 V = - normalize(dir);
 
-    if(test(orig, dir)) {
+    if(test(orig - dir * 0.1, normalize(L))) {
         return vec3(0.0);
     } else {
         float lambertFactor = 0.0;
         float specFactor = 0.0;
-        float D = length(lightDir);
-        lightDir = normalize(lightDir);
-        D = D;
+        float D = length(L);
+        L = normalize(L);
         vec3 sunFactor = sunColor * sunPower / D;
 
-        lambertFactor = max(dot(normal, lightDir), 0.0);
+        lambertFactor = max(dot(N, L), 0.0);
         if (lambertFactor > 0.0) {
             // Blinn-Phong
-            vec3 halfDir = normalize(lightDir - dir);
-        
-            float specAngle = max(dot(normal, halfDir), 0.0);
+            vec3 H = normalize(L + V);
+            float specAngle = max(dot(V, H), 0.0);
             float specFactor = pow(specAngle, material.roughness);
         }
 
@@ -313,10 +313,10 @@ vec4 trace(inout vec3 orig, vec3 dir) {
         
         if (closestIntersection.mint < 1e10) {
             orig += dir * closestIntersection.mint;
-            vec3 normal = -closestIntersection.normal;
+            vec3 normal = closestIntersection.normal;
             materialBlock m = requestMaterialBlock(closestIntersection.materialIndex);
-            outColor += depthPower * sunShade(m, orig, -dir, normal);
-            dir = -cosWeightedRandomHemisphereDirectionHammersley(normal);
+            outColor += depthPower * sunShade(m, orig, dir, normal);
+            dir = -cosWeightedRandomHemisphereDirectionHammersley(-normal);
             isIntersected = 1.0;
         } else {
             return vec4(outColor + skyColor(dir) * depthPower * 0.1, isIntersected);
