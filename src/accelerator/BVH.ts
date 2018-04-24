@@ -3,7 +3,7 @@ import { Box3 } from '../math/Box3';
 import { Vector3 } from '../math/Vector3';
 import { Accelerator, LongestAxis, QuickSort } from './Accelerator';
 import { IndexArray, IndexFloatArray } from '../core/IndexArray';
-import { OBJData, MaterialNode, OBJPackage } from '../utils/OBJLoader';
+import { OBJData, MaterialNode, OBJPackage } from '../loaders/OBJLoader';
 
 class BVHNode {
     box: Box3;

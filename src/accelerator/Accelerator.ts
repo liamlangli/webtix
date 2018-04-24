@@ -2,7 +2,7 @@ import { Box3 } from "../math/Box3";
 import { Primitive } from "../geometry/Primitive";
 import { IndexFloatArray, IndexArray } from "../core/IndexArray";
 import { Equals } from "../utils/MathUtil";
-import { OBJData, OBJPackage, MTLData } from "../utils/OBJLoader";
+import { OBJData, OBJPackage, MTLData } from "../loaders/OBJLoader";
 
 export class Accelerator {
 
@@ -50,30 +50,6 @@ export class Accelerator {
         console.log('Please use Accelerator sub class');
         return [];
     }
-
-    // deprecated
-    // genPrimitiveBuffer(): number[] {
-    //     const res = [];
-    //     for(let i = 0, il = this.pList.length; i < il; ++i) {
-    //         const p = this.pList[i];
-    //         const n0 = p.n0;
-    //         const n1 = p.n1;
-    //         const n2 = p.n2;
-    //         const p0 = p.p0;
-    //         const p1 = p.p1;
-    //         const p2 = p.p2;
-    //         res.push(
-    //             n0.x, n0.y, n0.z,
-    //             n1.x, n1.y, n1.z,
-    //             n2.x, n2.y, n2.z,
-    //             p0.x, p0.y, p0.z,
-    //             p1.x, p1.y, p1.z,
-    //             p2.x, p2.y, p2.z
-    //         );
-    //     }
-    //     return res;
-    // }
-
 }
 
 export function LongestAxis(box: Box3): number {
