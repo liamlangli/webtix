@@ -48,7 +48,8 @@ export class Arch {
         normalInfo: null,
         normals: null,              // tunnel 3
         materialInfo: null,
-        materials: null             // tunnel 4
+        materials: null,             // tunnel 4
+        envmap: null                // tunnel 5
     };
 
     normalLocations = {
@@ -64,6 +65,8 @@ export class Arch {
     normalTexture: WebGLTexture;
     materialTexture: WebGLTexture;
 
+    envMapTexture: WebGLTexture;
+
     vertexArray;
 
     angleHori = - Math.PI / 2;
@@ -78,10 +81,10 @@ export class Arch {
 
         this.gl = canvas.getContext('webgl2', {preserveDrawingBuffer: true}) as WebGLRenderingContext;
         const ratio = Math.max(window.devicePixelRatio, 2.0);
-        // this.width = canvas.width * ratio;
-        // this.height = canvas.height * ratio;
-        this.width = 960 * 2;
-        this.height = 640 * 2;
+        this.width = canvas.width * ratio;
+        this.height = canvas.height * ratio;
+        // this.width = 960 * 2;
+        // this.height = 640 * 2;
         canvas.width = this.width;
         canvas.height = this.height;
         if (this.gl === undefined) {
@@ -142,7 +145,7 @@ export class Arch {
         const gl = this.gl;
 
         this.acceleratorTexture = gl.createTexture();
-        gl.activeTexture(gl.TEXTURE1);
+        gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, this.acceleratorTexture);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
@@ -156,25 +159,32 @@ export class Arch {
         gl.texImage2D(gl.TEXTURE_2D, 0, (gl as any).RGB32F, scene.faceBuffer.width, scene.faceBuffer.height, 0, gl.RGB, gl.FLOAT, scene.faceBuffer.data);
 
         this.vertexTexture = gl.createTexture();
-        gl.activeTexture(gl.TEXTURE1);
+        gl.activeTexture(gl.TEXTURE2);
         gl.bindTexture(gl.TEXTURE_2D, this.vertexTexture);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.texImage2D(gl.TEXTURE_2D, 0, (gl as any).RGB32F, scene.vertexBuffer.width, scene.vertexBuffer.height, 0, gl.RGB, gl.FLOAT, scene.vertexBuffer.data);
 
         this.normalTexture = gl.createTexture();
-        gl.activeTexture(gl.TEXTURE1);
+        gl.activeTexture(gl.TEXTURE3);
         gl.bindTexture(gl.TEXTURE_2D, this.normalTexture);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.texImage2D(gl.TEXTURE_2D, 0, (gl as any).RGB32F, scene.normalBuffer.width, scene.normalBuffer.height, 0, gl.RGB, gl.FLOAT, scene.normalBuffer.data);
 
         this.materialTexture = gl.createTexture();
-        gl.activeTexture(gl.TEXTURE1);
+        gl.activeTexture(gl.TEXTURE4);
         gl.bindTexture(gl.TEXTURE_2D, this.materialTexture);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.texImage2D(gl.TEXTURE_2D, 0, (gl as any).RGB32F, scene.materialBuffer.width, scene.materialBuffer.height, 0, gl.RGB, gl.FLOAT, scene.materialBuffer.data);
+
+        this.envMapTexture = gl.createTexture();
+        gl.activeTexture(gl.TEXTURE5);
+        gl.bindTexture(gl.TEXTURE_2D, this.envMapTexture);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, this.scene.envMap);
 
         this.programTracing = new GLProgram(gl, PathTracingVert, PathTracingFrag, this.tracingLocations);
         this.programNormal = new GLProgram(gl, BasicVert, BasicFrag, this.normalLocations);
@@ -230,6 +240,7 @@ export class Arch {
                 gl.uniform1i( this.tracingLocations.vertices, 2);
                 gl.uniform1i( this.tracingLocations.normals, 3);
                 gl.uniform1i( this.tracingLocations.materials, 4);
+                gl.uniform1i( this.tracingLocations.envmap, 5);
 
                 gl.activeTexture( gl.TEXTURE0 );
                 gl.bindTexture( gl.TEXTURE_2D, this.acceleratorTexture );
@@ -245,6 +256,9 @@ export class Arch {
 
                 gl.activeTexture( gl.TEXTURE4 );
                 gl.bindTexture( gl.TEXTURE_2D, this.materialTexture );
+
+                gl.activeTexture( gl.TEXTURE5 );
+                gl.bindTexture( gl.TEXTURE_2D, this.envMapTexture );
 
                 gl.enable( gl.BLEND );
                 gl.blendFunc( gl.ONE, gl.ONE );

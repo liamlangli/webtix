@@ -49,10 +49,10 @@ function rgbeToLDR(buffer: Uint8Array, exposure: number, gamma: number, res) {
     return res;
 }
 
-function process(buffer: ArrayBuffer): Uint8Array {
+function process(buffer: ArrayBuffer): HTMLCanvasElement {
     let header = '';
     let pos = 0;
-    const d8 = new Uint8Array(this.response);
+    const d8 = new Uint8Array(buffer);
     let format;
 
     // read header.  
@@ -118,7 +118,7 @@ function process(buffer: ArrayBuffer): Uint8Array {
     const HDRD = context.getImageData(0, 0, width, height);
     rgbeToLDR(img, HDR_Exposure, HDR_Gamma, HDRD.data);
     context.putImageData(HDRD, 0, 0);
-    return HDRData;
+    return canvas;
 }
 
 export async function HDRLoad(path) {

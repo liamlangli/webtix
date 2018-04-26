@@ -5,6 +5,7 @@ precision highp int;
 precision highp sampler2D;
 
 #define EPSILON 0.000001
+#define PI 3.141592653
 
 uniform mat4 MVP, proj;
 uniform float inseed;
@@ -23,6 +24,7 @@ uniform sampler2D faces;
 uniform sampler2D vertices;
 uniform sampler2D normals;
 uniform sampler2D materials;
+uniform sampler2D envmap;
 
 in vec3 origin;
 out vec4 color;
@@ -46,14 +48,14 @@ struct lightBlock {
     float power;
 };
 
-lightBlock sun = lightBlock(vec3(30.0, 30.0, -30.0), vec3(1.0), 100.0);
+lightBlock sun = lightBlock(vec3(30.0, 30.0, -30.0), vec3(1.0), 80.0);
 lightBlock moon = lightBlock(vec3(-30.0, 30.0, 30.0), vec3(1.0), 100.0);
 
 const float ambientFactor = 0.02;
 
 // global function
 vec3 skyColor(vec3 dir) {
-    return ground + (sky - ground) * exp(dot(normalize(dir), up));
+    return 1.0 * textureLod(envmap, vec2(1.0 - (PI + atan(dir.z, dir.x) / (2.0 * PI)), acos(dir.y) / PI), 0.0).rgb;
 }
 
 vec3 requestVertex(float index) {
@@ -75,11 +77,6 @@ vec3 requestNormal(float index) {
 struct materialBlock {
     vec3 ambient, diffuse, specular;
     float roughness, opacity, refractFactor;
-};
-
-struct shadeBlock {
-    vec3 origin, direction, N;
-    materialBlock material;
 };
 
 materialBlock requestMaterialBlock(float index) {
@@ -262,9 +259,11 @@ vec3 lightShade(materialBlock material, lightBlock light, vec3 orig, vec3 dir, v
     vec3 N = normal;
     vec3 V = - normalize(dir);
 
-    if(test(orig - dir * EPSILON, normalize(L))) {
-        return vec3(0.0);
-    }
+    vec3 lightColor = skyColor(reflect(dir, normal));
+
+    // if(test(orig - dir * EPSILON, normalize(L))) {
+    //     return vec3(0.0);
+    // }
 
     float lambertFactor = 0.0;
     float specFactor = 0.0;
@@ -285,10 +284,7 @@ vec3 lightShade(materialBlock material, lightBlock light, vec3 orig, vec3 dir, v
     return material.ambient * ambientFactor + diffuseColor + specularColor;
 }
 
-shadeBlock bsBlock;
-lightBlock reflectLight;
-
-const float max_depth = 3.0;
+const float max_depth = 2.0;
 vec4 trace(inout vec3 orig, vec3 dir) {
 
     vec3 outColor = vec3(0.0);
@@ -327,16 +323,7 @@ vec4 trace(inout vec3 orig, vec3 dir) {
             vec3 normal = closestIntersection.normal;
             materialBlock m = requestMaterialBlock(closestIntersection.materialIndex);
             vec3 shadeColor = depthPower * lightShade(m, sun, orig, dir, normal);
-
-            // regrad reflect color as light
-            vec3 reflectColor = vec3(0.0);
-            if(depth > 0.0) {
-                reflectLight = lightBlock(orig, shadeColor, 30.0);
-                reflectColor = lightShade(bsBlock.material, reflectLight, bsBlock.origin, bsBlock.direction, bsBlock.N); 
-            }
-            outColor += shadeColor + reflectColor;
-            bsBlock = shadeBlock(orig, dir, normal, m);
-
+            outColor += shadeColor;
             dir = -cosWeightedRandomHemisphereDirectionHammersley(-normal);
             isIntersected = 1.0;
         } else {
@@ -364,15 +351,15 @@ void main()
     vec3 BBmax = textureLod( accelerator, accPos, 0.0).rgb;
     float ext = boxIntersect(BBmin, BBmax, orig, view.xyz);
     if( ext < 0.0 ) {
-        color.a = 0.0;
+        color = vec4(skyColor(view.xyz), 1.0); 
         return;
     }
 
     // start tracing 
     vec4 hit = trace(orig, view.xyz);
     if (hit.w <= 0.0) {
-        color.a = 0.0;
+        color = vec4(skyColor(view.xyz), 1.0);
     } else {
-        color = vec4( clamp(hit.rgb, 0.0, 1.0), 1.0);
+        color = vec4(clamp(hit.rgb, 0.0, 1.0), 1.0);
     }
 }

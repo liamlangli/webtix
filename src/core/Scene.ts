@@ -14,16 +14,24 @@ export class Scene {
 
     primitiveBuffer: TextureBuffer;         //deprecated
 
-    constructor(objPack: OBJPackage, public accelerator: Accelerator) {
-        accelerator.feed(objPack);
+    envMap: HTMLCanvasElement;
+
+    constructor( public accelerator: Accelerator) {}
+
+    bindEnvironmentMap(map: HTMLCanvasElement) {
+        this.envMap = map;
+    }
+
+    bindOBJPackage(objPack: OBJPackage) {
+        this.accelerator.feed(objPack);
         this.faceCount = objPack.objData.faces.length;
-        accelerator.build();
+        this.accelerator.build();
         console.log('BVH has been built');
-        this.accelerateBuffer = new TextureBuffer(accelerator.genAccelerateBuffer(), AcceleratorBufferWidth);
-        this.faceBuffer = new TextureBuffer(accelerator.genFaceBuffer(), FaceBufferWidth);
-        this.vertexBuffer = new TextureBuffer(accelerator.genVertexBuffer(), VertexBufferWidth);
-        this.normalBuffer = new TextureBuffer(accelerator.genNormalBuffer(), NormalBufferWidth);
-        this.materialBuffer = new TextureBuffer(accelerator.genMaterialBuffer(), MaterialBufferWidth);
+        this.accelerateBuffer = new TextureBuffer(this.accelerator.genAccelerateBuffer(), AcceleratorBufferWidth);
+        this.faceBuffer = new TextureBuffer(this.accelerator.genFaceBuffer(), FaceBufferWidth);
+        this.vertexBuffer = new TextureBuffer(this.accelerator.genVertexBuffer(), VertexBufferWidth);
+        this.normalBuffer = new TextureBuffer(this.accelerator.genNormalBuffer(), NormalBufferWidth);
+        this.materialBuffer = new TextureBuffer(this.accelerator.genMaterialBuffer(), MaterialBufferWidth);
         console.log('Texture buffers generated.');
     }
 
