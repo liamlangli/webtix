@@ -41,9 +41,13 @@ const vec3 ground = vec3(0.619, 0.607, 0.564);
 const vec3 up = vec3(0.0, 1.0, 0.0);
 const float nature_e = 2.718281828;
 
-const vec3 sunPosition = vec3(30.0, 30.0, -30.0);
-const vec3 sunColor = vec3(1.0);
-const float sunPower = 100.0;
+struct lightBlock {
+    vec3 position, color;
+    float power;
+};
+
+lightBlock sun = lightBlock(vec3(30.0, 30.0, -30.0), vec3(1.0), 100.0);
+lightBlock moon = lightBlock(vec3(-30.0, 30.0, 30.0), vec3(1.0), 100.0);
 
 const float ambientFactor = 0.02;
 
@@ -71,6 +75,11 @@ vec3 requestNormal(float index) {
 struct materialBlock {
     vec3 ambient, diffuse, specular;
     float roughness, opacity, refractFactor;
+};
+
+struct shadeBlock {
+    vec3 origin, direction, N;
+    materialBlock material;
 };
 
 materialBlock requestMaterialBlock(float index) {
@@ -154,8 +163,8 @@ vec3 cosWeightedRandomHemisphereDirectionHammersley(const vec3 n)
 }
 
 float boxIntersect(vec3 minV, vec3 maxV, vec3 ori, vec3 dir) {
-    vec3 bmin = (minV - vec3(0.001) - ori) / dir.xyz;
-    vec3 bmax = (maxV + vec3(0.001) - ori) / dir.xyz;
+    vec3 bmin = (minV - vec3(0.00001) - ori) / dir.xyz;
+    vec3 bmax = (maxV + vec3(0.00001) - ori) / dir.xyz;
 
     vec3 near = min(bmin, bmax);
     vec3 far = max(bmin, bmax);
@@ -223,8 +232,6 @@ primitiveIntersection primitivesIntersect(vec3 orig, vec3 dir, float start, floa
     return primitiveIntersection(vec3(0.0), 0.0, 0.0);
 }
 
-const float max_depth = 2.0;
-
 bool test(vec3 orig, vec3 dir) {
     float ext;
     accelerateBlock block;
@@ -249,35 +256,39 @@ bool test(vec3 orig, vec3 dir) {
     return false;
 }
 
-vec3 sunShade(materialBlock material, vec3 orig, vec3 dir, vec3 normal) {
-    vec3 sunShake = cosWeightedRandomHemisphereDirectionHammersley(vec3(1.0)) * 10.0;
-    vec3 L = sunPosition + sunShake - orig;
+vec3 lightShade(materialBlock material, lightBlock light, vec3 orig, vec3 dir, vec3 normal) {
+    vec3 lightShake = cosWeightedRandomHemisphereDirectionHammersley(vec3(1.0)) * 10.0;
+    vec3 L = light.position + lightShake - orig;
     vec3 N = normal;
     vec3 V = - normalize(dir);
 
     if(test(orig - dir * EPSILON, normalize(L))) {
         return vec3(0.0);
-    } else {
-        float lambertFactor = 0.0;
-        float specFactor = 0.0;
-        float D = length(L);
-        L = normalize(L);
-        vec3 sunFactor = sunColor * sunPower / D;
-
-        lambertFactor = max(dot(N, L), 0.0);
-        if (lambertFactor > 0.0) {
-            // Blinn-Phong
-            vec3 H = normalize(L + V);
-            float specAngle = max(dot(V, H), 0.0);
-            float specFactor = pow(specAngle, material.roughness);
-        }
-
-        vec3 diffuseColor = material.diffuse * lambertFactor * sunFactor;
-        vec3 specularColor = material.specular * specFactor * sunFactor;
-        return material.ambient * ambientFactor + diffuseColor + specularColor;
     }
+
+    float lambertFactor = 0.0;
+    float specFactor = 0.0;
+    float D = length(L);
+    L = normalize(L);
+    vec3 lightFactor = light.color * light.power / D;
+
+    lambertFactor = max(dot(N, L), 0.0);
+    if (lambertFactor > 0.0) {
+        // Blinn-Phong
+        vec3 H = normalize(L + V);
+        float specAngle = max(dot(V, H), 0.0);
+        float specFactor = pow(specAngle, material.roughness);
+    }
+
+    vec3 diffuseColor = material.diffuse * lambertFactor * lightFactor;
+    vec3 specularColor = material.specular * specFactor * lightFactor;
+    return material.ambient * ambientFactor + diffuseColor + specularColor;
 }
 
+shadeBlock bsBlock;
+lightBlock reflectLight;
+
+const float max_depth = 3.0;
 vec4 trace(inout vec3 orig, vec3 dir) {
 
     vec3 outColor = vec3(0.0);
@@ -315,7 +326,17 @@ vec4 trace(inout vec3 orig, vec3 dir) {
             orig += dir * closestIntersection.mint;
             vec3 normal = closestIntersection.normal;
             materialBlock m = requestMaterialBlock(closestIntersection.materialIndex);
-            outColor += depthPower * sunShade(m, orig, dir, normal);
+            vec3 shadeColor = depthPower * lightShade(m, sun, orig, dir, normal);
+
+            // regrad reflect color as light
+            vec3 reflectColor = vec3(0.0);
+            if(depth > 0.0) {
+                reflectLight = lightBlock(orig, shadeColor, 30.0);
+                reflectColor = lightShade(bsBlock.material, reflectLight, bsBlock.origin, bsBlock.direction, bsBlock.N); 
+            }
+            outColor += shadeColor + reflectColor;
+            bsBlock = shadeBlock(orig, dir, normal, m);
+
             dir = -cosWeightedRandomHemisphereDirectionHammersley(-normal);
             isIntersected = 1.0;
         } else {
@@ -343,7 +364,6 @@ void main()
     vec3 BBmax = textureLod( accelerator, accPos, 0.0).rgb;
     float ext = boxIntersect(BBmin, BBmax, orig, view.xyz);
     if( ext < 0.0 ) {
-        // color.rgb = skyColor(view.xyz);
         color.a = 0.0;
         return;
     }
@@ -351,7 +371,6 @@ void main()
     // start tracing 
     vec4 hit = trace(orig, view.xyz);
     if (hit.w <= 0.0) {
-        // color.rgb = skyColor(view.xyz);
         color.a = 0.0;
     } else {
         color = vec4( clamp(hit.rgb, 0.0, 1.0), 1.0);
