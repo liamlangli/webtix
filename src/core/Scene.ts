@@ -1,5 +1,5 @@
 import { Accelerator } from "../accelerator/Accelerator";
-import { OBJData, OBJPackage } from "../utils/OBJLoader";
+import { OBJData, OBJPackage } from "../loaders/OBJLoader";
 import { IndexFloatArray } from "./IndexArray";
 import { TextureBuffer, AcceleratorBufferWidth, PrimitiveBufferWidth, FaceBufferWidth, VertexBufferWidth, NormalBufferWidth, MaterialBufferWidth } from "./TextureBuffer";
 

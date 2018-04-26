@@ -1,9 +1,7 @@
 import { dom, t, rX, rY, i } from '../lib/lan';
 import { HiddenScreen } from '../HiddenScreen';
 import { GLProgram } from '../GLProgram';
-
-import { OBJLoader } from '../utils/OBJLoader';
-
+import { OBJLoader } from '../loaders/OBJLoader';
 import * as BasicVert from '../shaders/basic_vert.glsl';
 import * as BasicFrag from '../shaders/basic_frag.glsl';
 import * as PathTracingVert from '../shaders/path_tracing_vert.glsl';
@@ -41,8 +39,6 @@ export class Arch {
         inseed: null,
         incount: null,
         resolution: null, 
-        // primitiveInfo: null,     //deprecated
-        // primitives: null,        //deprecated
         acceleratorInfo: null,     
         accelerator: null,          // tunnel 0
         faceInfo: null,
@@ -145,16 +141,6 @@ export class Arch {
 
         const gl = this.gl;
 
-        // deprecated
-        // set primitiveTexture buffer 
-        // this.primitiveTexture = gl.createTexture();
-        // gl.activeTexture(gl.TEXTURE0);
-        // gl.bindTexture(gl.TEXTURE_2D, this.primitiveTexture);
-        // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-        // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-        // gl.texImage2D(gl.TEXTURE_2D, 0, (gl as any).RGB32F, scene.primitiveBuffer.width, scene.primitiveBuffer.height, 0, gl.RGB, gl.FLOAT, scene.primitiveBuffer.data);
-
-        // set acceleratorTexture buffer
         this.acceleratorTexture = gl.createTexture();
         gl.activeTexture(gl.TEXTURE1);
         gl.bindTexture(gl.TEXTURE_2D, this.acceleratorTexture);

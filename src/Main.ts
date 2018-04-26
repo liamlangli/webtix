@@ -1,8 +1,9 @@
 import { Arch } from "./core/Arch";
 import { dom } from "./lib/lan";
-import { OBJLoader } from "./utils/OBJLoader";
+import { OBJLoader } from "./loaders/OBJLoader";
 import { Scene } from "./core/Scene";
 import { BVH } from "./accelerator/BVH";
+import { HDRLoad } from "./loaders/HDRLoader";
 
 const canvas = dom('view') as HTMLCanvasElement
 const arch = new Arch(canvas);
@@ -10,6 +11,7 @@ const status = dom('status') as HTMLElement;
 
 OBJLoader('./obj', 'home').then((pack) => {
     console.log(pack);
+    console.log(HDRLoad('./hdr/grass.hdr'));
     arch.bindScene(new Scene(pack, new BVH()));
     arch.render();
     // sceneTest(arch.scene);
