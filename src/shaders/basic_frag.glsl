@@ -10,8 +10,5 @@ out vec4 color;
 
 void main()
 {
-    color = vec4( 
-        sqrt( texelFetch(accum, ivec2(gl_FragCoord.xy), 0).rgb * count ),
-        1.0
-    );
+    color = vec4( sqrt( texelFetch(accum, ivec2(gl_FragCoord.xy), 0).rgba * count ) );
 }

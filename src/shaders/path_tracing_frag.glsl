@@ -255,7 +255,7 @@ vec3 sunShade(materialBlock material, vec3 orig, vec3 dir, vec3 normal) {
     vec3 N = normal;
     vec3 V = - normalize(dir);
 
-    if(test(orig - dir * 0.1, normalize(L))) {
+    if(test(orig - dir * EPSILON, normalize(L))) {
         return vec3(0.0);
     } else {
         float lambertFactor = 0.0;
@@ -343,15 +343,17 @@ void main()
     vec3 BBmax = textureLod( accelerator, accPos, 0.0).rgb;
     float ext = boxIntersect(BBmin, BBmax, orig, view.xyz);
     if( ext < 0.0 ) {
-        color.rgb = skyColor(view.xyz);
+        // color.rgb = skyColor(view.xyz);
+        color.a = 0.0;
         return;
     }
 
     // start tracing 
     vec4 hit = trace(orig, view.xyz);
     if (hit.w <= 0.0) {
-        color.rgb = skyColor(view.xyz);
+        // color.rgb = skyColor(view.xyz);
+        color.a = 0.0;
     } else {
-        color.rgb = clamp(hit.rgb, 0.0, 1.0);
+        color = vec4( clamp(hit.rgb, 0.0, 1.0), 1.0);
     }
 }
