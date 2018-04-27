@@ -83,8 +83,6 @@ export class Arch {
         const ratio = Math.max(window.devicePixelRatio, 2.0);
         this.width = canvas.width * ratio;
         this.height = canvas.height * ratio;
-        // this.width = 960 * 2;
-        // this.height = 640 * 2;
         canvas.width = this.width;
         canvas.height = this.height;
         if (this.gl === undefined) {
@@ -285,6 +283,7 @@ export class Arch {
 
             this.status.innerHTML = `sample count:${this.accum_count}<br>face count:${this.scene.faceCount}`;
         }
+
         requestAnimationFrame(this.render);
     }
 }

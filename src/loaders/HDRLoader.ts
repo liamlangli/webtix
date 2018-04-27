@@ -4,7 +4,7 @@
  */
 
 const HDR_Exposure = 1.0;
-const HDR_Gamma = 2.2;
+const HDR_Gamma = 1.7;
 
 
 /** Convert an RGBE buffer to a Float buffer.
