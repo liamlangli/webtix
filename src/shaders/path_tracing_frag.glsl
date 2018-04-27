@@ -261,9 +261,9 @@ vec3 lightShade(materialBlock material, lightBlock light, vec3 orig, vec3 dir, v
 
     vec3 lightColor = skyColor(reflect(dir, normal));
 
-    // if(test(orig - dir * EPSILON, normalize(L))) {
-    //     return vec3(0.0);
-    // }
+    if(test(orig - dir * EPSILON, normalize(L))) {
+        return vec3(0.0);
+    }
 
     float lambertFactor = 0.0;
     float specFactor = 0.0;
@@ -279,9 +279,7 @@ vec3 lightShade(materialBlock material, lightBlock light, vec3 orig, vec3 dir, v
         float specFactor = pow(specAngle, material.roughness);
     }
 
-    vec3 diffuseColor = material.diffuse * lambertFactor * lightFactor;
-    vec3 specularColor = material.specular * specFactor * lightFactor;
-    return material.ambient * ambientFactor + diffuseColor + specularColor;
+    return material.ambient * ambientFactor + material.diffuse * lambertFactor * lightFactor +  material.specular * specFactor * lightFactor;
 }
 
 const float max_depth = 2.0;
@@ -344,22 +342,7 @@ void main()
     view = normalize(MVP * vec4(view.xyz / view.w, 0.0));
     vec3 orig = origin;
 
-    // global boundingbox intersect
-    vec2 accPos = padding;
-    vec3 BBmin = textureLod( accelerator, accPos, 0.0).rgb;
-    accPos += vec2(1.0 / acceleratorInfo.y, 0.0);
-    vec3 BBmax = textureLod( accelerator, accPos, 0.0).rgb;
-    float ext = boxIntersect(BBmin, BBmax, orig, view.xyz);
-    if( ext < 0.0 ) {
-        color = vec4(skyColor(view.xyz), 1.0); 
-        return;
-    }
-
     // start tracing 
     vec4 hit = trace(orig, view.xyz);
-    if (hit.w <= 0.0) {
-        color = vec4(skyColor(view.xyz), 1.0);
-    } else {
-        color = vec4(clamp(hit.rgb, 0.0, 1.0), 1.0);
-    }
+    color = mix(vec4(skyColor(view.xyz), 1.0), vec4(clamp(hit.rgb, 0.0, 1.0), 1.0), hit.w);
 }
