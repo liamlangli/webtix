@@ -1,6 +1,10 @@
 export class Vector3 {
 
-    constructor(public x: number, public y: number, public z: number) {}
+    constructor(public x?: number, public y?: number, public z?: number) {
+        this.x = x !== undefined ? x : 0;
+        this.y = y !== undefined ? y : 0;
+        this.z = z !== undefined ? z : 0;
+    }
 
     min(v: Vector3):Vector3 {
         this.x = Math.min(this.x, v.x);
@@ -42,7 +46,7 @@ export class Vector3 {
     }
 
     mag():number {
-        return this.x * this.x + this.y * this.y;
+        return this.x * this.x + this.y * this.y + this.z * this.z;
     }
 
     len():number {

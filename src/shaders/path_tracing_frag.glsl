@@ -11,6 +11,7 @@ uniform mat4 MVP, proj;
 uniform float inseed;
 uniform int incount;
 uniform vec2 resolution;
+uniform float useEnvmap;
 
 // [size, width, height];
 uniform vec3 acceleratorInfo;  
@@ -54,11 +55,15 @@ lightBlock moon = lightBlock(vec3(-30.0, 30.0, 30.0), vec3(1.0), 100.0);
 const float ambientFactor = 0.02;
 
 // global function
-vec3 skyColor(vec3 dir) {
-    return 1.0 * textureLod(envmap, vec2(1.0 - (PI + atan(dir.z, dir.x) / (2.0 * PI)), acos(dir.y) / PI), 0.0).rgb;
+vec3 skyColor(const vec3 dir) {
+    return mix(
+        ground + (sky - ground) * exp(dot(normalize(dir), up)),
+        1.0 * textureLod(envmap, vec2(1.0 - (PI + atan(dir.z, dir.x) / (2.0 * PI)), acos(dir.y) / PI), 0.0).rgb,
+        useEnvmap
+    );
 }
 
-vec3 requestVertex(float index) {
+vec3 requestVertex(const float index) {
     float scalar = index / vertexInfo.y;
     float row = floor(scalar) / vertexInfo.z;
     float column = fract(scalar);
@@ -66,7 +71,7 @@ vec3 requestVertex(float index) {
     return textureLod(vertices, pos, 0.0).rgb;
 }
 
-vec3 requestNormal(float index) {
+vec3 requestNormal(const float index) {
     float scalar = index / normalInfo.y;
     float row = floor(scalar) / normalInfo.z;
     float column = fract(scalar);
@@ -79,11 +84,10 @@ struct materialBlock {
     float roughness, opacity, refractFactor;
 };
 
-materialBlock requestMaterialBlock(float index) {
+materialBlock requestMaterialBlock(const float index) {
     if (index < 0.0) {
         return materialBlock(vec3(0.0), vec3(0.0), vec3(0.0), 94.0, 1.0, 1.0); 
     }
-
     float scalar = index * materialGap / materialInfo.y;
     float row = floor(scalar) / materialInfo.z;
     float column = fract(scalar);
@@ -100,7 +104,7 @@ struct primitiveBlock {
     float materialIndex;
 };
 
-primitiveBlock requestPrimitiveBlock(float faceIndex) {
+primitiveBlock requestPrimitiveBlock(const float faceIndex) {
     
     float faceScalar = faceIndex / faceInfo.y;
     float faceRow = floor(faceScalar) / faceInfo.z;
@@ -124,7 +128,7 @@ struct accelerateBlock {
     vec3 minV, maxV, info;
 };
 
-accelerateBlock requestAccelerateBlock(float index) {
+accelerateBlock requestAccelerateBlock(const float index) {
     float scalar = index / acceleratorInfo.y;
     float row = floor(scalar) / acceleratorInfo.z;
     float column = fract(scalar);
@@ -135,12 +139,12 @@ accelerateBlock requestAccelerateBlock(float index) {
     return accelerateBlock(minV, maxV, info);
 }
 
-vec3 centriodNormal(primitiveBlock p, float u, float v) {
+vec3 centriodNormal(const primitiveBlock p, const float u, const float v) {
     return p.n0 * (1.0 - u - v) + p.n1 * u + p.n2 * v;
 }
 
-bool contain(vec3 v, vec3 minV, vec3 maxV) {
-    return v.x < maxV.x && v.y < maxV.y && v.z < maxV.z && v.x > minV.x && v.y > minV.y && v.z > minV.z;
+float contain(const vec3 V, const vec3 minV, const vec3 maxV) {
+    return dot(step(minV, V), step(V, maxV));
 }
 
 float random_ofs = 0.0;
@@ -160,15 +164,15 @@ vec3 cosWeightedRandomHemisphereDirectionHammersley(const vec3 n)
 }
 
 float boxIntersect(vec3 minV, vec3 maxV, vec3 ori, vec3 dir) {
+    if (contain(ori, minV, maxV) > 0.0) {
+        return 0.0;
+    }
+
     vec3 bmin = (minV - vec3(0.00001) - ori) / dir.xyz;
     vec3 bmax = (maxV + vec3(0.00001) - ori) / dir.xyz;
 
     vec3 near = min(bmin, bmax);
     vec3 far = max(bmin, bmax);
-
-    if (contain(ori, minV, maxV) ) {
-        return 0.0;
-    }
 
     float ext_n = max(near.x, max(near.y, near.z));
     float ext_f = min(far.x, min(far.y, far.z));
@@ -320,8 +324,7 @@ vec4 trace(inout vec3 orig, vec3 dir) {
             orig += dir * closestIntersection.mint;
             vec3 normal = closestIntersection.normal;
             materialBlock m = requestMaterialBlock(closestIntersection.materialIndex);
-            vec3 shadeColor = depthPower * lightShade(m, sun, orig, dir, normal);
-            outColor += shadeColor;
+            outColor += depthPower * lightShade(m, sun, orig, dir, normal);
             dir = -cosWeightedRandomHemisphereDirectionHammersley(-normal);
             isIntersected = 1.0;
         } else {

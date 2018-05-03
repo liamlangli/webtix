@@ -9,19 +9,18 @@ const canvas = dom('view') as HTMLCanvasElement
 const arch = new Arch(canvas);
 const status = dom('status') as HTMLElement;
 
-async function Main(): Promise<Scene> {
+function Main() {
     const scene = new Scene(new BVH());
-    const hdr = await HDRLoad('./hdr/grass.hdr');
-    scene.bindEnvironmentMap(hdr);
-    const pack = await OBJLoader('./obj', 'home');
-    scene.bindOBJPackage(pack);
-    return scene;
+    scene.loadScenePackage('scene/car.scene').then(function() {
+        const hdr = HDRLoad('./hdr/grass.hdr').then(function(hdr) {
+            scene.bindEnvironmentMap(hdr);
+            arch.bindScene(scene);
+            arch.render();
+        });
+    });
 }
 
-Main().then((scene) => {
-    arch.bindScene(scene);
-    arch.render();
-})
+Main();
 
 status.onclick = function() {
     
