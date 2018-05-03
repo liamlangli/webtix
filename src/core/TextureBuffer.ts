@@ -5,6 +5,12 @@ export const FaceBufferWidth = 1024 * 2;
 export const AcceleratorBufferWidth = 1024 * 3;
 export const MaterialBufferWidth = 1024 * 1;
 
+export interface TextureBufferInfo {
+    size: number;
+    width: number;
+    height: number;
+}
+
 export class TextureBuffer {
 
     size: number;
@@ -12,7 +18,7 @@ export class TextureBuffer {
     height: number;
     data: Float32Array;
 
-    constructor(inputData: number[], bufferWidth: number) {
+    constructor(inputData: number[] | Float32Array, bufferWidth: number) {
         // align data
         const len = inputData.length / 3;
         this.size = len;
@@ -25,15 +31,25 @@ export class TextureBuffer {
         this.data = new Float32Array(output);
     }
 
+    /**
+     * ## Use at export
+
+     * @returns {size, width, height}
+     */
+    genInfo():TextureBufferInfo {
+        return {
+            size: this.size,
+            width: this.width,
+            height: this.height
+        }
+    }
+
+    /**
+     * ## Use as webgl uniform
+     * 
+     * @returns [size, width, height]
+     */
     genInfoBuffer():Float32Array {
         return new Float32Array([this.size, this.width, this.height]);
-    }
-
-    exportBuffer() {
-
-    }
-
-    loadBuffer() {
-        
     }
 }

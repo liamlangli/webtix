@@ -26,9 +26,15 @@ const re_opacity    = /^d\s/;
 const re_illum      = /^illum\s/;
 const re_newmtl     = /^newmtl\s/;
 
-const ground = [
-    0, 1, 0, 100, 0, 100, 100, 0, -100, -100, 0, -100,
-    0, 1, 0, 100, 0 ,100, -100, 0, -100, -100, 0, 100
+const groundVertices = [
+     100, 0,  100,
+     100, 0, -100,
+    -100, 0, -100,
+    -100, 0,  100
+];
+
+const groundNormal = [
+    0, 1, 0
 ];
 
 export class OBJPackage {
