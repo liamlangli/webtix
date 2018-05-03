@@ -164,12 +164,12 @@ vec3 cosWeightedRandomHemisphereDirectionHammersley(const vec3 n)
 }
 
 float boxIntersect(vec3 minV, vec3 maxV, vec3 ori, vec3 dir) {
-    if (contain(ori, minV, maxV) > 0.0) {
+    if (contain(ori, minV, maxV) >= 3.0) {
         return 0.0;
     }
 
-    vec3 bmin = (minV - vec3(0.00001) - ori) / dir.xyz;
-    vec3 bmax = (maxV + vec3(0.00001) - ori) / dir.xyz;
+    vec3 bmin = (minV - vec3(EPSILON) - ori) / dir.xyz;
+    vec3 bmax = (maxV + vec3(EPSILON) - ori) / dir.xyz;
 
     vec3 near = min(bmin, bmax);
     vec3 far = max(bmin, bmax);
