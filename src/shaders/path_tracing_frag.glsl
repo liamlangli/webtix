@@ -11,6 +11,7 @@ uniform mat4 MVP, proj;
 uniform float inseed;
 uniform int incount;
 uniform vec2 resolution;
+uniform float useEnvmap;
 
 // [size, width, height];
 uniform vec3 acceleratorInfo;  
@@ -55,7 +56,11 @@ const float ambientFactor = 0.02;
 
 // global function
 vec3 skyColor(const vec3 dir) {
-    return 1.0 * textureLod(envmap, vec2(1.0 - (PI + atan(dir.z, dir.x) / (2.0 * PI)), acos(dir.y) / PI), 0.0).rgb;
+    return mix(
+        ground + (sky - ground) * exp(dot(normalize(dir), up)),
+        1.0 * textureLod(envmap, vec2(1.0 - (PI + atan(dir.z, dir.x) / (2.0 * PI)), acos(dir.y) / PI), 0.0).rgb,
+        useEnvmap
+    );
 }
 
 vec3 requestVertex(const float index) {
