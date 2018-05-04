@@ -164,12 +164,12 @@ vec3 cosWeightedRandomHemisphereDirectionHammersley(const vec3 n)
 }
 
 float boxIntersect(vec3 minV, vec3 maxV, vec3 ori, vec3 dir) {
-    if (contain(ori, minV, maxV) > 0.0) {
+    if (contain(ori, minV, maxV) >= 3.0) {
         return 0.0;
     }
 
-    vec3 bmin = (minV - vec3(0.00001) - ori) / dir.xyz;
-    vec3 bmax = (maxV + vec3(0.00001) - ori) / dir.xyz;
+    vec3 bmin = (minV - ori) / dir.xyz;
+    vec3 bmax = (maxV - ori) / dir.xyz;
 
     vec3 near = min(bmin, bmax);
     vec3 far = max(bmin, bmax);
@@ -286,7 +286,7 @@ vec3 lightShade(materialBlock material, lightBlock light, vec3 orig, vec3 dir, v
     return material.ambient * ambientFactor + material.diffuse * lambertFactor * lightFactor +  material.specular * specFactor * lightFactor;
 }
 
-const float max_depth = 2.0;
+const float max_depth = 3.0;
 vec4 trace(inout vec3 orig, vec3 dir) {
 
     vec3 outColor = vec3(0.0);
@@ -305,7 +305,7 @@ vec4 trace(inout vec3 orig, vec3 dir) {
 
             block = requestAccelerateBlock(index);
             ext = boxIntersect(block.minV, block.maxV, orig, dir);
-            if (ext >= 0.0) {
+            if (ext >= 0.0 && ext < closestIntersection.mint) {
                 if(block.info.z <= EPSILON) {
                     primitiveIntersection intersection = primitivesIntersect(orig, dir, block.info.x, block.info.y, false);
                     if (intersection.mint > 0.0 && intersection.mint < closestIntersection.mint) {

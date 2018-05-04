@@ -43,7 +43,7 @@ Thumbs.db
 .resolve
 .cache-loader
 /package-lock.json
-/rollup.config.js
+yarn.lock
 /server/obj/*
 *.obj
 *.mtl
