@@ -39,8 +39,10 @@ const float materialGap = 4.0;
 
 // global variable
 const vec2 padding = vec2(0.0001);
-const vec3 sky = vec3(0.318, 0.471, 0.624);
-const vec3 ground = vec3(0.619, 0.607, 0.564);
+const vec3 skyColor = vec3(0.318, 0.471, 0.624);
+const vec3 groundColor = vec3(0.619, 0.607, 0.564);
+const vec3 groundOrigin = vec3(0.0);
+const vec3 groundNormal = vec3(0.0, 1.0, 0.0);
 const vec3 up = vec3(0.0, 1.0, 0.0);
 const float nature_e = 2.718281828;
 
@@ -55,9 +57,9 @@ lightBlock moon = lightBlock(vec3(-30.0, 30.0, 30.0), vec3(1.0), 100.0);
 const float ambientFactor = 0.02;
 
 // global function
-vec3 skyColor(const vec3 dir) {
+vec3 skyShade(const vec3 dir) {
     return mix(
-        ground + (sky - ground) * exp(dot(normalize(dir), up)),
+        groundColor + (skyColor - groundColor) * exp(dot(normalize(dir), up)),
         1.0 * textureLod(envmap, vec2(1.0 - (PI + atan(dir.z, dir.x) / (2.0 * PI)), acos(dir.y) / PI), 0.0).rgb,
         useEnvmap
     );
@@ -263,7 +265,7 @@ vec3 lightShade(materialBlock material, lightBlock light, vec3 orig, vec3 dir, v
     vec3 N = normal;
     vec3 V = - normalize(dir);
 
-    vec3 lightColor = skyColor(reflect(dir, normal));
+    vec3 lightColor = skyShade(reflect(dir, normal));
 
     if(test(orig - dir * EPSILON, normalize(L))) {
         return vec3(0.0);
@@ -328,7 +330,7 @@ vec4 trace(inout vec3 orig, vec3 dir) {
             dir = -cosWeightedRandomHemisphereDirectionHammersley(-normal);
             isIntersected = 1.0;
         } else {
-            return vec4(outColor + skyColor(dir) * depthPower * 0.1, isIntersected);
+            return vec4(outColor + skyShade(dir) * depthPower * 0.1, isIntersected);
         }
     }
     return vec4(outColor, isIntersected);
@@ -347,5 +349,5 @@ void main()
 
     // start tracing 
     vec4 hit = trace(orig, view.xyz);
-    color = mix(vec4(skyColor(view.xyz), 1.0), vec4(clamp(hit.rgb, 0.0, 1.0), 1.0), hit.w);
+    color = mix(vec4(skyShade(view.xyz), 1.0), vec4(clamp(hit.rgb, 0.0, 1.0), 1.0), hit.w);
 }

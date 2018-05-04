@@ -11,7 +11,7 @@ const status = dom('status') as HTMLElement;
 
 function Main() {
     const scene = new Scene(new BVH());
-    scene.loadScenePackage('scene/car.scene').then(function() {
+    scene.loadScenePackage('scene/home.scene').then(function() {
         const hdr = HDRLoad('./hdr/grass.hdr').then(function(hdr) {
             scene.bindEnvironmentMap(hdr);
             arch.bindScene(scene);
