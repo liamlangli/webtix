@@ -19,7 +19,7 @@ function Main() {
     //     });
     // });
 
-    OBJLoader('obj', 'monkey').then(function(pack:OBJPackage) {
+    OBJLoader('obj', 'house').then(function(pack:OBJPackage) {
         scene.bindOBJPackage(pack);
         HDRLoad('./hdr/grass.hdr').then(function(hdr) {
             scene.bindEnvironmentMap(hdr);

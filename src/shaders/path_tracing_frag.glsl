@@ -18,7 +18,6 @@ out vec4 color;
 
 #include <stdlib>
 #include <light>
-#include <env_shade>
 #include <vertex>
 #include <normal>
 #include <material>
@@ -30,6 +29,7 @@ float seed;
 uint N = 128u;
 lightBlock sun = lightBlock(vec3(30.0, 30.0, -30.0), vec3(1.0), 80.0);
 lightBlock moon = lightBlock(vec3(-30.0, 30.0, 30.0), vec3(1.0), 100.0);
+vec3 sunShake;
 
 vec3 centriodNormal(const primitiveBlock p, const float u, const float v) {
     return p.n0 * (1.0 - u - v) + p.n1 * u + p.n2 * v;
@@ -57,7 +57,7 @@ struct primitiveIntersection {
 };
 
 primitiveIntersection primitivesIntersect(vec3 orig, vec3 dir, float start, float end, bool test) {
-
+    
     float mint = 1e10;
     vec3 minNormal;
     float minMaterialIndex;
@@ -126,9 +126,10 @@ bool test(vec3 orig, vec3 dir) {
     return false;
 }
 
+#include <env_shade>
+
 vec3 lightShade(materialBlock material, lightBlock light, vec3 orig, vec3 dir, vec3 normal) {
-    vec3 lightShake = cosWeightedRandomHemisphereDirectionHammersley(vec3(1.0)) * 10.0;
-    vec3 L = light.position + lightShake - orig;
+    vec3 L = light.position + sunShake - orig;
     vec3 N = normal;
     vec3 V = - normalize(dir);
 
@@ -205,6 +206,8 @@ vec4 trace(inout vec3 orig, vec3 dir) {
 
 void main()
 {
+    sunShake = cosWeightedRandomHemisphereDirectionHammersley(vec3(1.0)) * 10.0;
+
     vec2 fc = vec2(gl_FragCoord.xy);
     vec2 fcu = fc / resolution;
     seed = inseed + fcu.x + fcu.y;

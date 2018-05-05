@@ -76,8 +76,7 @@ export class Arch {
 
     status = dom('status') as HTMLDivElement;
 
-    // sampleCount = 140;
-    sampleCount = 4;
+    sampleCount = 140;
 
     constructor(canvas: HTMLCanvasElement) {
 
@@ -122,7 +121,7 @@ export class Arch {
             if ( e.buttons == 1) {
                 this.angleHori += e.movementX/100;
                 this.angleVer += e.movementY/100;
-                this.angleVer = Math.max(this.angleVer, 0.0);
+                this.angleVer = Math.min(Math.max(this.angleVer, 0.01), Math.PI / 2 - 0.01);
             } 
             this.viewportMV = t(rX(rY(i(), this.angleHori),this.angleVer),[0, 0, -20 + this.zoom]);
             this.diff = true;
@@ -130,6 +129,8 @@ export class Arch {
 
         canvas.onmousewheel = (e) => {
             this.zoom += e.wheelDelta / 120;
+            this.zoom = Math.min(18.0, this.zoom);
+            console.log(this.zoom);
             this.viewportMV = t(rX(rY(i(), this.angleHori),this.angleVer),[0, 0, -20 + this.zoom]);
             this.diff = true;
         }

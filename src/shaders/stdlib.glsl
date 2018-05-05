@@ -5,6 +5,14 @@
 #define PI 3.141592653
 #define Naturn_E 2.718281828
 
+float minElement(vec3 V) {
+    return min(V.x, min(V.y, V.z));
+}
+
+float maxElement(vec3 V) {
+    return max(V.x, max(V.y, V.z));
+}
+
 bool contain(const vec3 V, const vec3 minV, const vec3 maxV) {
     return dot(step(minV, V), step(V, maxV)) >= 3.0;
 }
