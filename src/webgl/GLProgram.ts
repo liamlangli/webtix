@@ -31,7 +31,6 @@ export class GLProgram {
                 source = source.replace(match_include, origin_source);
             }
         }
-        console.log(matches, source);
         return source;
     }
 
@@ -40,7 +39,9 @@ export class GLProgram {
         this.gl.shaderSource(shader, this.preProcess(source));
         this.gl.compileShader(shader);
         const shaderInfo = this.gl.getShaderInfoLog(shader);
-        if ( shaderInfo != '') console.log('shader log info: ' + shaderInfo);
+        if ( shaderInfo != ''){
+            console.log('shader log info: ' + shaderInfo, this.preProcess(source));
+        }
         return shader;
     }
 

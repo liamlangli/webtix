@@ -4,48 +4,36 @@ precision highp float;
 precision highp int;
 precision highp sampler2D;
 
-#define EPSILON 0.000001
-#define PI 3.141592653
-#define Naturn_E 2.718281828
-
+// unifroms
 uniform mat4 MVP, proj;
 uniform float inseed;
 uniform int incount;
 uniform vec2 resolution;
 uniform float useEnvmap;
-
 uniform sampler2D envmap;
 
+// input & output
 in vec3 origin;
 out vec4 color;
 
-float seed;
-uint N = 128u;
-
+#include <stdlib>
 #include <light>
-
-lightBlock sun = lightBlock(vec3(30.0, 30.0, -30.0), vec3(1.0), 80.0);
-lightBlock moon = lightBlock(vec3(-30.0, 30.0, 30.0), vec3(1.0), 100.0);
-
-float groundScale = 10.0;
-float groundConstant = 0.0;
-vec3 groundNormal = vec3(0.0, 1.0, 0.0);
-vec4 projectGround(const vec3 dir, const vec3 orig) {
-    if(dir.y > 0.0) return vec4(0.0);
-    float doniator = dot(dir, groundNormal);
-    float t = max(0.0, -(dot(orig, groundNormal) + groundConstant) / doniator);
-    vec3 hit = orig + t * dir;
-    if(length(hit) > groundScale * groundScale) return vec4(0.0);
-    return vec4(hit, 1.0);
-}
-
 #include <env_shade>
-
 #include <vertex>
 #include <normal>
 #include <material>
 #include <accelerator>
 #include <primitive>
+
+// global variables
+float seed;
+uint N = 128u;
+lightBlock sun = lightBlock(vec3(30.0, 30.0, -30.0), vec3(1.0), 80.0);
+lightBlock moon = lightBlock(vec3(-30.0, 30.0, 30.0), vec3(1.0), 100.0);
+
+vec3 centriodNormal(const primitiveBlock p, const float u, const float v) {
+    return p.n0 * (1.0 - u - v) + p.n1 * u + p.n2 * v;
+}
 
 float random_ofs = 0.0;
 vec3 cosWeightedRandomHemisphereDirectionHammersley(const vec3 n)
@@ -61,33 +49,6 @@ vec3 cosWeightedRandomHemisphereDirectionHammersley(const vec3 n)
     vec3 uu = normalize(cross(n, vec3(1.0, 1.0, 0.0))), vv = cross(uu, n);
     float sqrtx = sqrt(r.x);
     return normalize(vec3(sqrtx * cos(r.y) * uu + sqrtx * sin(r.y) * vv + sqrt(1.0 - r.x) * n));
-}
-
-float contain(const vec3 V, const vec3 minV, const vec3 maxV) {
-    return dot(step(minV, V), step(V, maxV));
-}
-
-float boxIntersect(vec3 minV, vec3 maxV, vec3 ori, vec3 dir) {
-    if (contain(ori, minV, maxV) >= 3.0) {
-        return 0.0;
-    }
-
-    vec3 bmin = (minV - ori) / dir.xyz;
-    vec3 bmax = (maxV - ori) / dir.xyz;
-
-    vec3 near = min(bmin, bmax);
-    vec3 far = max(bmin, bmax);
-
-    float ext_n = max(near.x, max(near.y, near.z));
-    float ext_f = min(far.x, min(far.y, far.z));
-    if(ext_f < 0.0 || ext_n > ext_f) {
-        return -1.0;
-    }
-    return ext_n;
-}
-
-vec3 centriodNormal(const primitiveBlock p, const float u, const float v) {
-    return p.n0 * (1.0 - u - v) + p.n1 * u + p.n2 * v;
 }
 
 struct primitiveIntersection {
@@ -110,7 +71,7 @@ primitiveIntersection primitivesIntersect(vec3 orig, vec3 dir, float start, floa
         
         vec3 P = cross(dir, v2);
         float det = dot(v1, P);   //carmer rules devider
-        if ( det > -EPSILON)
+        if ( det > -EPSILON && det < EPSILON)
             continue;
         vec3 T = orig - block.p0;
         float invdet = 1.0 / det;

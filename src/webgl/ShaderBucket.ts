@@ -1,3 +1,4 @@
+import * as stdlib_glsl from '../shaders/stdlib.glsl';
 import * as vertex_glsl from '../shaders/texture_request/vertex.glsl';
 import * as normal_glsl from '../shaders/texture_request/normal.glsl';
 import * as material_glsl from '../shaders/texture_request/material.glsl';
@@ -8,6 +9,7 @@ import * as env_shade_glsl from '../shaders/env_shade.glsl';
 
 const bucket = new Map<string, any>();
 
+bucket.set('stdlib', stdlib_glsl);
 bucket.set('vertex', vertex_glsl);
 bucket.set('normal', normal_glsl);
 bucket.set('material', material_glsl);
