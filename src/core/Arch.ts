@@ -121,6 +121,7 @@ export class Arch {
             if ( e.buttons == 1) {
                 this.angleHori += e.movementX/100;
                 this.angleVer += e.movementY/100;
+                this.angleVer = Math.max(this.angleVer, 0.0);
             } 
             this.viewportMV = t(rX(rY(i(), this.angleHori),this.angleVer),[0, 0, -20 + this.zoom]);
             this.diff = true;
