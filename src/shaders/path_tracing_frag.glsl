@@ -6,6 +6,7 @@ precision highp sampler2D;
 
 #define EPSILON 0.000001
 #define PI 3.141592653
+#define Naturn_E 2.718281828
 
 uniform mat4 MVP, proj;
 uniform float inseed;
@@ -13,18 +14,6 @@ uniform int incount;
 uniform vec2 resolution;
 uniform float useEnvmap;
 
-// [size, width, height];
-uniform vec3 acceleratorInfo;  
-uniform vec3 faceInfo;
-uniform vec3 vertexInfo;
-uniform vec3 normalInfo;
-uniform vec3 materialInfo;
-
-uniform sampler2D accelerator;
-uniform sampler2D faces;
-uniform sampler2D vertices;
-uniform sampler2D normals;
-uniform sampler2D materials;
 uniform sampler2D envmap;
 
 in vec3 origin;
@@ -33,143 +22,30 @@ out vec4 color;
 float seed;
 uint N = 128u;
 
-const float acceleratorGap = 3.0;
-const float faceGap = 3.0;
-const float materialGap = 4.0;
-
-// global variable
-const vec2 padding = vec2(0.0001);
-const vec3 skyColor = vec3(0.318, 0.471, 0.624);
-const vec3 groundColor = vec3(0.619, 0.607, 0.564);
-const vec3 up = vec3(0.0, 1.0, 0.0);
-const float nature_e = 2.718281828;
-
-struct lightBlock {
-    vec3 position, color;
-    float power;
-};
+#include <light>
 
 lightBlock sun = lightBlock(vec3(30.0, 30.0, -30.0), vec3(1.0), 80.0);
 lightBlock moon = lightBlock(vec3(-30.0, 30.0, 30.0), vec3(1.0), 100.0);
-
-const float ambientFactor = 0.02;
-
 
 float groundScale = 10.0;
 float groundConstant = 0.0;
 vec3 groundNormal = vec3(0.0, 1.0, 0.0);
 vec4 projectGround(const vec3 dir, const vec3 orig) {
-    if(dir.y > 0.0) {
-        return vec4(0.0);
-    }
+    if(dir.y > 0.0) return vec4(0.0);
     float doniator = dot(dir, groundNormal);
-    float t = -(dot(orig, groundNormal) + groundConstant) / doniator;
+    float t = max(0.0, -(dot(orig, groundNormal) + groundConstant) / doniator);
     vec3 hit = orig + t * dir;
     if(length(hit) > groundScale * groundScale) return vec4(0.0);
     return vec4(hit, 1.0);
 }
-// global function
-vec3 envShade(const vec3 dir, const vec3 orig) {
 
-    vec3 sampleDir = dir;
+#include <env_shade>
 
-    vec4 pos = projectGround(dir, orig);
-    if(pos.w > 0.0) {
-        vec3 hit = pos.xyz;
-        hit.y = -sqrt(groundScale * groundScale - sqrt(dot(hit, hit)));
-        sampleDir = normalize(hit);
-    }
-        
-    return mix(
-        groundColor + (skyColor - groundColor) * exp(dot(normalize(sampleDir), up)),
-        1.0 * textureLod(envmap, vec2(1.0 - (PI + atan(sampleDir.z, sampleDir.x) / (2.0 * PI)), acos(sampleDir.y) / PI), 0.0).rgb,
-        useEnvmap
-    );
-}
-
-vec3 requestVertex(const float index) {
-    float scalar = index / vertexInfo.y;
-    float row = floor(scalar) / vertexInfo.z;
-    float column = fract(scalar);
-    vec2 pos = padding + vec2(column, row);
-    return textureLod(vertices, pos, 0.0).rgb;
-}
-
-vec3 requestNormal(const float index) {
-    float scalar = index / normalInfo.y;
-    float row = floor(scalar) / normalInfo.z;
-    float column = fract(scalar);
-    vec2 pos = padding + vec2(column, row);
-    return textureLod(normals, pos, 0.0).rgb;
-}
-
-struct materialBlock {
-    vec3 ambient, diffuse, specular;
-    float roughness, opacity, refractFactor;
-};
-
-materialBlock requestMaterialBlock(const float index) {
-    if (index < 0.0) {
-        return materialBlock(vec3(0.0), vec3(0.0), vec3(0.0), 94.0, 1.0, 1.0); 
-    }
-    float scalar = index * materialGap / materialInfo.y;
-    float row = floor(scalar) / materialInfo.z;
-    float column = fract(scalar);
-    vec2 pos = padding + vec2(column, row);
-    vec3 ambient = textureLod(materials, pos, 0.0).rgb;
-    vec3 diffuse = textureLodOffset(materials, pos, 0.0, ivec2(1, 0)).rgb;
-    vec3 specular = textureLodOffset(materials, pos, 0.0, ivec2(2, 0)).rgb;
-    vec3 rest = textureLodOffset(materials, pos, 0.0, ivec2(3, 0)).rgb;
-    return materialBlock(ambient, diffuse, specular, rest.x, rest.y, rest.z);
-}
-
-struct primitiveBlock {
-    vec3 n0, n1, n2, p0, p1, p2;
-    float materialIndex;
-};
-
-primitiveBlock requestPrimitiveBlock(const float faceIndex) {
-    
-    float faceScalar = faceIndex / faceInfo.y;
-    float faceRow = floor(faceScalar) / faceInfo.z;
-    float faceColumn = fract(faceScalar);
-    vec2 facePos = padding + vec2(faceColumn, faceRow);
-    vec3 faceInfo0 = textureLod(faces, facePos, 0.0).rgb;
-    vec3 faceInfo1 = textureLodOffset(faces, facePos, 0.0, ivec2(1, 0)).rgb;
-    vec3 faceInfo2 = textureLodOffset(faces, facePos, 0.0, ivec2(2, 0)).rgb;
-
-    vec3 n0 = requestNormal(faceInfo0.y);
-    vec3 n1 = requestNormal(faceInfo1.y);
-    vec3 n2 = requestNormal(faceInfo2.y);
-    vec3 p0 = requestVertex(faceInfo0.x);
-    vec3 p1 = requestVertex(faceInfo1.x);
-    vec3 p2 = requestVertex(faceInfo2.x);
-
-    return primitiveBlock(n0, n1, n2, p0, p1, p2, faceInfo0.z);
-}
-
-struct accelerateBlock {
-    vec3 minV, maxV, info;
-};
-
-accelerateBlock requestAccelerateBlock(const float index) {
-    float scalar = index / acceleratorInfo.y;
-    float row = floor(scalar) / acceleratorInfo.z;
-    float column = fract(scalar);
-    vec2 pos = padding + vec2(column, row);
-    vec3 minV = textureLod(accelerator, pos, 0.0).rgb;
-    vec3 maxV = textureLodOffset(accelerator, pos, 0.0, ivec2(1, 0)).rgb;
-    vec3 info = textureLodOffset(accelerator, pos, 0.0, ivec2(2, 0)).rgb;
-    return accelerateBlock(minV, maxV, info);
-}
-
-vec3 centriodNormal(const primitiveBlock p, const float u, const float v) {
-    return p.n0 * (1.0 - u - v) + p.n1 * u + p.n2 * v;
-}
-
-float contain(const vec3 V, const vec3 minV, const vec3 maxV) {
-    return dot(step(minV, V), step(V, maxV));
-}
+#include <vertex>
+#include <normal>
+#include <material>
+#include <accelerator>
+#include <primitive>
 
 float random_ofs = 0.0;
 vec3 cosWeightedRandomHemisphereDirectionHammersley(const vec3 n)
@@ -185,6 +61,10 @@ vec3 cosWeightedRandomHemisphereDirectionHammersley(const vec3 n)
     vec3 uu = normalize(cross(n, vec3(1.0, 1.0, 0.0))), vv = cross(uu, n);
     float sqrtx = sqrt(r.x);
     return normalize(vec3(sqrtx * cos(r.y) * uu + sqrtx * sin(r.y) * vv + sqrt(1.0 - r.x) * n));
+}
+
+float contain(const vec3 V, const vec3 minV, const vec3 maxV) {
+    return dot(step(minV, V), step(V, maxV));
 }
 
 float boxIntersect(vec3 minV, vec3 maxV, vec3 ori, vec3 dir) {
@@ -206,6 +86,10 @@ float boxIntersect(vec3 minV, vec3 maxV, vec3 ori, vec3 dir) {
     return ext_n;
 }
 
+vec3 centriodNormal(const primitiveBlock p, const float u, const float v) {
+    return p.n0 * (1.0 - u - v) + p.n1 * u + p.n2 * v;
+}
+
 struct primitiveIntersection {
     vec3 normal;
     float mint, materialIndex;
@@ -217,8 +101,8 @@ primitiveIntersection primitivesIntersect(vec3 orig, vec3 dir, float start, floa
     vec3 minNormal;
     float minMaterialIndex;
     vec3 v1, v2;
-    float endIndex = end * faceGap;
-    for (float index = start * faceGap; index <= endIndex; index += faceGap) {
+    float endIndex = end * primitiveGap;
+    for (float index = start * primitiveGap; index <= endIndex; index += primitiveGap) {
         primitiveBlock block = requestPrimitiveBlock(index);
 
         v2 = block.p1 - block.p0;

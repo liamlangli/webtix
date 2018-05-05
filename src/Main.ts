@@ -1,6 +1,6 @@
 import { Arch } from "./core/Arch";
 import { dom } from "./lib/lan";
-import { OBJLoader } from "./loaders/OBJLoader";
+import { OBJLoader, OBJPackage } from "./loaders/OBJLoader";
 import { Scene } from "./core/Scene";
 import { BVH } from "./accelerator/BVH";
 import { HDRLoad } from "./loaders/HDRLoader";
@@ -11,8 +11,17 @@ const status = dom('status') as HTMLElement;
 
 function Main() {
     const scene = new Scene(new BVH());
-    scene.loadScenePackage('scene/home.scene').then(function() {
-        const hdr = HDRLoad('./hdr/grass.hdr').then(function(hdr) {
+    // scene.loadScenePackage('scene/home.scene').then(function() {
+    //         HDRLoad('./hdr/grass.hdr').then(function(hdr) {
+    //         scene.bindEnvironmentMap(hdr);
+    //         arch.bindScene(scene);
+    //         arch.render();
+    //     });
+    // });
+
+    OBJLoader('obj', 'monkey').then(function(pack:OBJPackage) {
+        scene.bindOBJPackage(pack);
+        HDRLoad('./hdr/grass.hdr').then(function(hdr) {
             scene.bindEnvironmentMap(hdr);
             arch.bindScene(scene);
             arch.render();

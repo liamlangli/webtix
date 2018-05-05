@@ -1,3 +1,8 @@
+import { ShaderBucket } from "./ShaderBucket";
+
+const include_pattern = /#include <.+?>/g;
+const shader_name_pattern = /<(.+?)>/g;
+
 export class GLProgram {
 
     program:  WebGLProgram;
@@ -14,9 +19,25 @@ export class GLProgram {
         });
     }
 
+
+
+    preProcess(source: string): string {
+        const matches = source.match(include_pattern);
+        if(matches) {
+            for(let i = 0, il = matches.length; i < il; ++i) {
+                const match_include = matches[i]
+                const shader_name_match = match_include.match(shader_name_pattern)[0];
+                const origin_source = ShaderBucket.request(shader_name_match.replace(/(<|>)/g, ''));
+                source = source.replace(match_include, origin_source);
+            }
+        }
+        console.log(matches, source);
+        return source;
+    }
+
     buildShader( source, type ) {
         const shader = this.gl.createShader(type);
-        this.gl.shaderSource(shader, source);
+        this.gl.shaderSource(shader, this.preProcess(source));
         this.gl.compileShader(shader);
         const shaderInfo = this.gl.getShaderInfoLog(shader);
         if ( shaderInfo != '') console.log('shader log info: ' + shaderInfo);

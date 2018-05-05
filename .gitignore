@@ -44,6 +44,6 @@ Thumbs.db
 .cache-loader
 /package-lock.json
 yarn.lock
-/server/obj/*
+/server/obj
 *.obj
 *.mtl

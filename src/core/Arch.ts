@@ -1,6 +1,6 @@
 import { dom, t, rX, rY, i } from '../lib/lan';
-import { HiddenScreen } from '../HiddenScreen';
-import { GLProgram } from '../GLProgram';
+import { HiddenScreen } from '../webgl/HiddenScreen';
+import { GLProgram } from '../webgl/GLProgram';
 import { OBJLoader } from '../loaders/OBJLoader';
 import * as BasicVert from '../shaders/basic_vert.glsl';
 import * as BasicFrag from '../shaders/basic_frag.glsl';
@@ -41,8 +41,8 @@ export class Arch {
         resolution: null, 
         acceleratorInfo: null,     
         accelerator: null,          // tunnel 0
-        faceInfo: null,
-        faces: null,                // tunnel 1
+        primitiveInfo: null,
+        primitives: null,                // tunnel 1
         vertexInfo: null,
         vertices: null,             // tunnel 2
         normalInfo: null,
@@ -76,7 +76,8 @@ export class Arch {
 
     status = dom('status') as HTMLDivElement;
 
-    sampleCount = 140;
+    // sampleCount = 140;
+    sampleCount = 4;
 
     constructor(canvas: HTMLCanvasElement) {
 
@@ -232,13 +233,13 @@ export class Arch {
                 gl.uniform2fv( this.tracingLocations.resolution, new Float32Array([this.width, this.height]) );
 
                 gl.uniform3fv( this.tracingLocations.acceleratorInfo, this.scene.accelerateBuffer.genInfoBuffer());
-                gl.uniform3fv( this.tracingLocations.faceInfo, this.scene.faceBuffer.genInfoBuffer());
+                gl.uniform3fv( this.tracingLocations.primitiveInfo, this.scene.faceBuffer.genInfoBuffer());
                 gl.uniform3fv( this.tracingLocations.vertexInfo, this.scene.vertexBuffer.genInfoBuffer());
                 gl.uniform3fv( this.tracingLocations.normalInfo, this.scene.normalBuffer.genInfoBuffer());
                 gl.uniform3fv( this.tracingLocations.materialInfo, this.scene.materialBuffer.genInfoBuffer());
 
                 gl.uniform1i( this.tracingLocations.accelerator, 0);
-                gl.uniform1i( this.tracingLocations.faces, 1);
+                gl.uniform1i( this.tracingLocations.primitives, 1);
                 gl.uniform1i( this.tracingLocations.vertices, 2);
                 gl.uniform1i( this.tracingLocations.normals, 3);
                 gl.uniform1i( this.tracingLocations.materials, 4);
