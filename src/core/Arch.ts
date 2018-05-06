@@ -130,7 +130,6 @@ export class Arch {
         canvas.onmousewheel = (e) => {
             this.zoom += e.wheelDelta / 120;
             this.zoom = Math.min(18.0, this.zoom);
-            console.log(this.zoom);
             this.viewportMV = t(rX(rY(i(), this.angleHori),this.angleVer),[0, 0, -20 + this.zoom]);
             this.diff = true;
         }

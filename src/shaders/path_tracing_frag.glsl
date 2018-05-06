@@ -110,12 +110,12 @@ bool test(vec3 orig, vec3 dir) {
          block = requestAccelerateBlock(index);
          ext = boxIntersect(block.minV, block.maxV, orig, dir);
          if (ext >= 0.0) {
-                if(block.info.z <= EPSILON) {
-                    primitiveIntersection intersection = primitivesIntersect(orig, dir, block.info.x, block.info.y, true);
-                    if (intersection.mint > 0.0) {
-                        return true;
-                    }
+            if(block.info.z <= EPSILON) {
+                primitiveIntersection intersection = primitivesIntersect(orig, dir, block.info.x, block.info.y, true);
+                if (intersection.mint > 0.0) {
+                    return true;
                 }
+            }
         } else {
             if(block.info.z > 0.0) {
                 index += block.info.z * acceleratorGap;
@@ -206,7 +206,7 @@ vec4 trace(inout vec3 orig, vec3 dir) {
 
 void main()
 {
-    sunShake = cosWeightedRandomHemisphereDirectionHammersley(vec3(1.0)) * 10.0;
+    sunShake = cosWeightedRandomHemisphereDirectionHammersley(vec3(1.0)) * 3.0;
 
     vec2 fc = vec2(gl_FragCoord.xy);
     vec2 fcu = fc / resolution;

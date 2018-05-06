@@ -10,7 +10,7 @@ const FileSaver = require('file-saver');
 const BlobType = { type: "application/octet-binary" };
 
 export class Scene {
-    
+    objPack: OBJPackage;
     faceCount: number;
     accelerateBuffer: TextureBuffer;
     faceBuffer: TextureBuffer;
@@ -29,6 +29,7 @@ export class Scene {
     }
 
     bindOBJPackage(objPack: OBJPackage) {
+        this.objPack = objPack;
         this.accelerator.feed(objPack);
         this.faceCount = objPack.objData.faces.length;
         this.accelerator.build();
@@ -51,11 +52,11 @@ export class Scene {
         const zip = new JSZip();
         zip.file('scene.json', JSON.stringify(sceneInfo));
 
-        zip.file('acc.buffer', new Blob([this.accelerateBuffer.data], BlobType));
-        zip.file('face.buffer', new Blob([this.faceBuffer.data], BlobType));
-        zip.file('vertex.buffer', new Blob([this.vertexBuffer.data], BlobType));
-        zip.file('normal.buffer', new Blob([this.normalBuffer.data], BlobType));
-        zip.file('material.buffer', new Blob([this.materialBuffer.data], BlobType));
+        zip.file('acc.buffer', new Blob([new Float32Array(this.accelerator.genAccelerateBuffer())], BlobType));
+        zip.file('face.buffer', new Blob([new Float32Array(this.accelerator.genFaceBuffer())], BlobType));
+        zip.file('vertex.buffer', new Blob([new Float32Array(this.accelerator.genVertexBuffer())], BlobType));
+        zip.file('normal.buffer', new Blob([new Float32Array(this.accelerator.genNormalBuffer())], BlobType));
+        zip.file('material.buffer', new Blob([new Float32Array(this.accelerator.genMaterialBuffer())], BlobType));
 
         const zipBlob = await zip.generateAsync({type:'blob'});
         FileSaver.saveAs(zipBlob, name + '.scene');
