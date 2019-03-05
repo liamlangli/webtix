@@ -76,7 +76,7 @@ export class Arch {
 
     status = dom('status') as HTMLDivElement;
 
-    sampleCount = 140;
+    sampleCount = 100;
 
     constructor(canvas: HTMLCanvasElement) {
 
@@ -127,7 +127,7 @@ export class Arch {
             this.diff = true;
         }
 
-        canvas.onmousewheel = (e) => {
+        (canvas as any).onmousewheel = (e) => {
             this.zoom += e.wheelDelta / 120;
             this.zoom = Math.min(18.0, this.zoom);
             this.viewportMV = t(rX(rY(i(), this.angleHori),this.angleVer),[0, 0, -20 + this.zoom]);

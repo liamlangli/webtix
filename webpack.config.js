@@ -7,7 +7,8 @@ function devServer() {
     return {
         contentBase: root("./server"),
         inline: true,
-        port: 7666
+        port: 7666,
+        host: '0.0.0.0'
     }
 }
 
