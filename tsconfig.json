@@ -1,21 +1,13 @@
 {
-    "compilerOptions": {
-        "target": "esnext",
-        "allowJs": true,
-        "noImplicitAny": false,
-        "module": "commonjs",
-        "removeComments": false,
-        "sourceMap": true,
-        "rootDir": ".",
-        "lib": [
-            "esnext",
-            "dom"
-        ],
-    },
-    "include": [
-        "src/**/*.ts",
+  "compilerOptions": {
+    "target": "esnext",
+    "declaration": true,
+    "strict": true,
+    "module": "commonjs",
+    "sourceMap": true,
+    "lib": [
+      "esnext",
+      "dom"
     ],
-    "exclude": [
-        "node_modules",
-    ]
+  }
 }

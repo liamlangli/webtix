@@ -1,95 +1,99 @@
 export class Vector3 {
 
-    constructor(public x?: number, public y?: number, public z?: number) {
-        this.x = x !== undefined ? x : 0;
-        this.y = y !== undefined ? y : 0;
-        this.z = z !== undefined ? z : 0;
-    }
+  public x: number = 0;
+  public y: number = 0;
+  public z: number = 0;
 
-    min(v: Vector3):Vector3 {
-        this.x = Math.min(this.x, v.x);
-        this.y = Math.min(this.y, v.y);
-        this.z = Math.min(this.z, v.z);
-        return this;
-    }
+  constructor(x?: number, y?: number, z?: number) {
+    this.x = x !== undefined ? x : 0;
+    this.y = y !== undefined ? y : 0;
+    this.z = z !== undefined ? z : 0;
+  }
 
-    max(v: Vector3):Vector3 {
-        this.x = Math.max(this.x, v.x);
-        this.y = Math.max(this.y, v.y);
-        this.z = Math.max(this.z, v.z);
-        return this;
-    }
+  min(v: Vector3): Vector3 {
+    this.x = Math.min(this.x, v.x);
+    this.y = Math.min(this.y, v.y);
+    this.z = Math.min(this.z, v.z);
+    return this;
+  }
 
-    add(v: Vector3):Vector3 {
-        this.x += v.x;
-        this.y += v.y;
-        this.z += v.z;
-        return this;
-    }
+  max(v: Vector3): Vector3 {
+    this.x = Math.max(this.x, v.x);
+    this.y = Math.max(this.y, v.y);
+    this.z = Math.max(this.z, v.z);
+    return this;
+  }
 
-    sub(v: Vector3):Vector3 {
-        this.x -= v.x;
-        this.y -= v.y;
-        this.z -= v.z;
-        return this;
-    }
+  add(v: Vector3): Vector3 {
+    this.x += v.x;
+    this.y += v.y;
+    this.z += v.z;
+    return this;
+  }
 
-    mult(scalar: number) {
-        this.x *= scalar;
-        this.y *= scalar;
-        this.z *= scalar;
-        return this;
-    }
+  sub(v: Vector3): Vector3 {
+    this.x -= v.x;
+    this.y -= v.y;
+    this.z -= v.z;
+    return this;
+  }
 
-    dot(v: Vector3):number {
-        return this.x * v.x + this.y * v.y + this.z * v.z;
-    }
+  mult(scalar: number) {
+    this.x *= scalar;
+    this.y *= scalar;
+    this.z *= scalar;
+    return this;
+  }
 
-    mag():number {
-        return this.x * this.x + this.y * this.y + this.z * this.z;
-    }
+  dot(v: Vector3): number {
+    return this.x * v.x + this.y * v.y + this.z * v.z;
+  }
 
-    len():number {
-        return Math.sqrt(this.mag());
-    }
+  mag(): number {
+    return this.x * this.x + this.y * this.y + this.z * this.z;
+  }
 
-    normalize():Vector3 {
-        return this.mult(1.0 / this.len());
-    }
+  len(): number {
+    return Math.sqrt(this.mag());
+  }
 
-    cross(v: Vector3):Vector3 {
-        return new Vector3(this.y * v.z - this.z * v.y, this.x * v.z - this.z * v.x, this.x * v.y - this.y * v.x);
-    }
+  normalize(): Vector3 {
+    return this.mult(1.0 / this.len());
+  }
 
-    set(x: number, y: number, z: number):Vector3 {
-        this.x = x;
-        this.y = y;
-        this.z = z;
-        return this;
-    }
+  cross(v: Vector3): Vector3 {
+    return new Vector3(this.y * v.z - this.z * v.y, this.x * v.z - this.z * v.x, this.x * v.y - this.y * v.x);
+  }
 
-    copy(v: Vector3):Vector3 {
-        this.x = v.x;
-        this.y = v.y;
-        this.z = v.z;
-        return this;
-    }
+  set(x: number, y: number, z: number): Vector3 {
+    this.x = x;
+    this.y = y;
+    this.z = z;
+    return this;
+  }
 
-    clone():Vector3 {
-        return new Vector3(this.x, this.y, this.z);
-    }
+  copy(v: Vector3): Vector3 {
+    this.x = v.x;
+    this.y = v.y;
+    this.z = v.z;
+    return this;
+  }
 
-    minElement():number {
-        return Math.min(this.x, Math.min(this.y, this.z));
-    }
+  clone(): Vector3 {
+    return new Vector3(this.x, this.y, this.z);
+  }
 
-    maxElement():number {
-        return Math.max(this.x, Math.max(this.y, this.z));
-    }
+  minElement(): number {
+    return Math.min(this.x, Math.min(this.y, this.z));
+  }
 
-    elements():Float32Array {
-        return new Float32Array([this.x, this.y, this.z]);
-    }
+  maxElement(): number {
+    return Math.max(this.x, Math.max(this.y, this.z));
+  }
+
+  elements(): Float32Array {
+    return new Float32Array([this.x, this.y, this.z]);
+  }
 }
 
 type Point3 = Vector3;
