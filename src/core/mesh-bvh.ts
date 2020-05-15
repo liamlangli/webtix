@@ -21,6 +21,10 @@ class NodeInfo {
   }
 }
 
+/**
+ * Mesh BVH
+ * prefer build bvh on worker
+ */
 export class MeshBVH {
 
   private split(primitives: Primitive[], left: number, right: number): BVHNode {
