@@ -1,9 +1,3 @@
-export const VertexBufferWidth = 1024 * 3;
-export const NormalBufferWidth = 1024 * 3;
-export const FaceBufferWidth = 1024 * 2;
-export const AcceleratorBufferWidth = 1024 * 3;
-export const MaterialBufferWidth = 1024 * 1;
-
 export interface TextureBufferInfo {
   count: number;
   width: number;
@@ -22,7 +16,7 @@ export class TextureBuffer {
   height: number;
   data: Float32Array;
 
-  constructor(inputData: number[] | Float32Array, bufferWidth: number) {
+  constructor(inputData: number[] | Float32Array, bufferWidth: number = 1024 * 4) {
     // align data with RGB color format
     const length = inputData.length / 3;
     this.count = length;
