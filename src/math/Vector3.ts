@@ -1,3 +1,5 @@
+import { BufferArray } from "../types";
+
 export class Vector3 {
 
   public x: number = 0;
@@ -91,9 +93,19 @@ export class Vector3 {
     return Math.max(this.x, Math.max(this.y, this.z));
   }
 
-  elements(): Float32Array {
-    return new Float32Array([this.x, this.y, this.z]);
+  read(buffer: BufferArray, offset: number = 0): Vector3 {
+    this.x = buffer[offset];
+    this.y = buffer[offset + 1];
+    this.z = buffer[offset + 2];
+    return this;
+  }
+
+  write(buffer: BufferArray, offset: number = 0): Vector3 {
+    buffer[offset] = this.x;
+    buffer[offset + 1] = this.y;
+    buffer[offset + 2] = this.z;
+    return this;
   }
 }
 
-type Point3 = Vector3;
+export type Point3 = Vector3;
