@@ -2,38 +2,59 @@
  * axes align bounding box
  */
 
-import { Vector3 } from "./vector3";
+import { Point3, Vector3 } from "./vector3";
+import { BufferArray } from "../types";
 
 export class Box3 {
 
-  public minV: Vector3 = new Vector3(Infinity, Infinity, Infinity);
-  public maxV: Vector3 = new Vector3(-Infinity, -Infinity, -Infinity);
-  public center: Vector3 = new Vector3(0, 0, 0);
+  public min: Point3 = new Vector3(Infinity, Infinity, Infinity);
+  public max: Point3 = new Vector3(-Infinity, -Infinity, -Infinity);
 
-  constructor(min?: Vector3, max?: Vector3) {
+  private _center: Point3 = new Vector3(0, 0, 0);
+  public get center(): Point3 {
+    return this._center.copy(this.max).sub(this.min).mult(0.5).add(this.min);
+  }
+
+  constructor(min?: Point3, max?: Point3) {
     if (min !== undefined) {
-      this.minV.copy(min);
+      this.min.copy(min);
     }
     if (max !== undefined) {
-      this.maxV.copy(max);
+      this.max.copy(max);
     }
-    this.computeCenter();
   }
 
-  computeCenter(): Vector3 {
-    return this.center.copy(this.minV.clone().mult(0.5).add(this.maxV.clone().mult(0.5)));
+  reset(): Box3 {
+    this.min.set(Infinity, Infinity, Infinity);
+    this.max.set(-Infinity, -Infinity, -Infinity);
+    return this;
   }
 
-  append(b: Box3): Box3 {
-    this.minV.min(b.minV);
-    this.maxV.max(b.maxV);
-    this.computeCenter();
+  expandByBox3(b: Box3): Box3 {
+    this.min.min(b.min);
+    this.max.max(b.max);
+    return this;
+  }
+
+  expandByPoint3(v: Point3): Box3 {
+    this.min.min(v);
+    this.max.max(v);
     return this;
   }
 
   clone(): Box3 {
-    return new Box3(this.minV, this.maxV);
+    return new Box3(this.min, this.max);
   }
 
-}
+  read(buffer: BufferArray, offset: number = 0): Box3 {
+    this.min.read(buffer, offset);
+    this.max.read(buffer, offset + 3);
+    return this;
+  }
 
+  write(buffer: BufferArray, offset: number = 0): Box3 {
+    this.min.write(buffer, offset);
+    this.max.write(buffer, offset + 3);
+    return this;
+  }
+}
