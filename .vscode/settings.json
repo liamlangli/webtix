@@ -1,7 +1,12 @@
 {
   "cSpell.words": [
+    "arraybuffer",
     "devtool",
+    "esnext",
     "glsl",
-    "mult"
+    "mult",
+    "stdlib",
+    "wasm",
+    "webtix"
   ]
 }

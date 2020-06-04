@@ -1,11 +1,11 @@
-import * as stdlib_glsl from '../shaders/stdlib.glsl';
-import * as vertex_glsl from '../shaders/texture-buffer-sampler/vertex.glsl';
-import * as normal_glsl from '../shaders/texture-buffer-sampler/normal.glsl';
-import * as material_glsl from '../shaders/texture-buffer-sampler/material.glsl';
-import * as primitive_glsl from '../shaders/texture-buffer-sampler/primitive.glsl';
-import * as accelerator_glsl from '../shaders/texture-buffer-sampler/accelerator.glsl';
-import * as light_glsl from '../shaders/light.glsl';
-import * as env_shade_glsl from '../shaders/env_shade.glsl';
+import * as stdlib_glsl from '../kernel/stdlib.glsl';
+import * as vertex_glsl from '../kernel/texture-buffer-sampler/vertex.glsl';
+import * as normal_glsl from '../kernel/texture-buffer-sampler/normal.glsl';
+import * as material_glsl from '../kernel/texture-buffer-sampler/material.glsl';
+import * as primitive_glsl from '../kernel/texture-buffer-sampler/primitive.glsl';
+import * as accelerator_glsl from '../kernel/texture-buffer-sampler/accelerator.glsl';
+import * as light_glsl from '../kernel/light.glsl';
+import * as env_shade_glsl from '../kernel/env_shade.glsl';
 
 const bucket = new Map<string, any>();
 

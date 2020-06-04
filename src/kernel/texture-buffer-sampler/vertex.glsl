@@ -2,6 +2,8 @@
 #define vertex_request
 
 uniform sampler2D vertices;
+
+// [nRows, nColumns, Count]
 uniform vec3 vertexInfo;
 
 vec3 requestVertex(const float index) {

@@ -2,11 +2,18 @@
 #define accelerator_request
 
 uniform sampler2D accelerator;
-uniform vec3 acceleratorInfo;  
+
+// [nRows, nColumns, Count]
+uniform vec3 acceleratorInfo;
+
+// three pixels pre node
 const float acceleratorGap = 3.0;
 
 struct accelerateBlock {
-  vec3 minV, maxV, info;
+  vec3 minV, maxV;
+
+  // [count, index, axis]
+  vec3 info;
 };
 
 accelerateBlock requestAccelerateBlock(const float index) {

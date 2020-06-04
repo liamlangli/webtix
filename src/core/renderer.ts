@@ -1,7 +1,7 @@
 import { SwapTarget } from '../webgl/swap-target';
 import { GPUPipeline } from '../webgl/pipeline';
-import * as PathTracingVert from '../shaders/path_tracing_vert.glsl';
-import * as PathTracingFrag from '../shaders/path_tracing_frag.glsl';
+import * as PathTracingVert from '../kernel/path_tracing_vert.glsl';
+import * as PathTracingFrag from '../kernel/path_tracing_frag.glsl';
 import { GPUDevice } from '../device';
 import { GPUTextureDescriptor } from '../webgl/texture';
 import { NearestFilter } from '../webgl/webgl2-constant';
@@ -25,7 +25,7 @@ export class Renderer {
 
   constructor(canvas: HTMLCanvasElement) {
 
-    const context = canvas.getContext('webgl2', { preserveDrawingBuffer: true }) as WebGL2RenderingContext;
+    const context = canvas.getContext('webgl2', { preserveDrawingBuffer: true, antialias: false }) as WebGL2RenderingContext;
     if (!context) {
       throw 'Require WebGL2 Support.';
     }

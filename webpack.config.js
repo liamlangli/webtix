@@ -1,53 +1,47 @@
-const path = require("path");
-const webpack = require("webpack");
+const path = require('path');
+const webpack = require('webpack');
 const root = (...args) => path.resolve(__dirname, ...args);
 
-function devServer() {
-  return {
-    contentBase: root("./server"),
-    inline: true,
-    port: 1994,
-    host: '0.0.0.0'
-  }
+const mode = 'development';
+
+const devServer = {
+  contentBase: root('./server'),
+  inline: true,
+  port: 1994,
+  host: '0.0.0.0'
 }
 
-function entries() {
-  return {
-    app: "./src/main.ts",
-  };
+const entry = {
+  app: './src/main.ts',
 }
 
-function rules() {
-  return [
-    { test: /\.ts$/, loader: "ts-loader", exclude: /node_modules/ },
-    { test: /\.js$/, loader: "babel-loader", exclude: /node_modules/, options: { cacheDirectory: true } },
-    { test: /\.glsl$/, loader: "raw-loader", exclude: /node_modules/ }
-  ];
+const output = {
+  filename: '[name].js',
+  path: root('./server'),
+  publicPath: '/'
 }
 
-function plugins() {
-  return [
-    new webpack.HotModuleReplacementPlugin()
-  ];
-}
+const rules = [
+  { test: /\.ts$/, loader: 'ts-loader', exclude: /node_modules/ },
+  { test: /\.js$/, loader: 'babel-loader', exclude: /node_modules/, options: { cacheDirectory: true } },
+  { test: /\.glsl$/, loader: 'raw-loader', exclude: /node_modules/ }
+]
+
+const plugins = [
+  new webpack.HotModuleReplacementPlugin()
+];
 
 const config = {
-  mode: "development",
-  entry: entries(),
-  output: {
-    filename: "[name].js",
-    path: root("./build"),
-    publicPath: '/dist/'
-  },
-  devtool: "source-map",
+  mode, entry, output,
+  devtool: 'source-map',
   resolve: {
-    extensions: [".ts", ".js", ".glsl"]
+    extensions: ['.ts', '.js', '.glsl']
   },
   module: {
-    rules: rules()
+    rules
   },
-  plugins: plugins(),
-  devServer: devServer()
+  plugins,
+  devServer
 };
 
 module.exports = config;

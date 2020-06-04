@@ -4,7 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "dev": "webpack-dev-server"
+    "dev": "webpack-dev-server --watch"
   },
   "devDependencies": {
     "raw-loader": "^0.5.1",
