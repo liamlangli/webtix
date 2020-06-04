@@ -1,8 +1,9 @@
 #ifndef material_request
 #define material_request
 
-uniform sampler2D materials;
+uniform sampler2D materialTexture;
 uniform vec3 materialInfo;
+
 const float materialGap = 4.0;
 
 struct materialBlock {

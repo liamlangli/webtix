@@ -14,9 +14,10 @@ export class TextureBuffer {
   count: number; // Pixel Count
   width: number;
   height: number;
+
   data: Float32Array;
 
-  constructor(inputData: number[] | Float32Array, bufferWidth: number = 1024 * 4) {
+  constructor(name: string, inputData: number[] | Float32Array, bufferWidth: number = 1024 * 4) {
     // align data with RGB color format
     const length = inputData.length / 3;
     this.count = length;
@@ -28,5 +29,7 @@ export class TextureBuffer {
     this.height = lines;
     this.data = new Float32Array(output);
   }
+
+  activate(): void {}
 
 }

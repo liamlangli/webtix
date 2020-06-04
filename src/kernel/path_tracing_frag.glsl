@@ -36,7 +36,7 @@ vec3 centriodNormal(const primitiveBlock p, const float u, const float v) {
 }
 
 float random_ofs = 0.0;
-vec3 cosWeightedRandomHemisphereDirectionHammersley(const vec3 n)
+vec3 rand_hammersley_cos(const vec3 n)
 {
   uint i = uint(incount);
   float x = float(i) / float(N);
@@ -206,7 +206,7 @@ vec4 trace(inout vec3 orig, vec3 dir) {
 
 void main()
 {
-  sunShake = cosWeightedRandomHemisphereDirectionHammersley(vec3(1.0)) * 3.0;
+  sunShake = rand_hammersley_cos(vec3(1.0)) * 3.0;
 
   vec2 fc = vec2(gl_FragCoord.xy);
   vec2 fcu = fc / resolution;

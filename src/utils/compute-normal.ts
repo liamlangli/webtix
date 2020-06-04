@@ -10,7 +10,7 @@ const BUFFER_STRIDE_TRIANGLE = 3;
 const BUFFER_STRIDE_POSITION = 3;
 
 /**
- * compute normal attribute area weight
+ * compute area weight normal
  */
 export function compute_normal_indexed(index: Uint32Array, position: Float32Array): Float32Array {
   const normal = new Float32Array(position.length);

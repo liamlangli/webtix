@@ -1,9 +1,9 @@
 #ifndef normal_request
 #define normal_request
 
-uniform sampler2D normals;
+uniform sampler2D normalTexture;
 
-// [nRows, nColumns, Count]
+// [Count, nRows, nColumns]
 uniform vec3 normalInfo;
 
 vec3 requestNormal(const float index) {
