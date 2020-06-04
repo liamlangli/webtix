@@ -15,6 +15,11 @@ export class Box3 {
     return this._center.copy(this.max).sub(this.min).mult(0.5).add(this.min);
   }
 
+  private _size: Vector3 = new Vector3(0, 0, 0);
+  public get size(): Vector3 {
+    return this._size.copy(this.max).sub(this.min);
+  }
+
   constructor(min?: Point3, max?: Point3) {
     if (min !== undefined) {
       this.min.copy(min);
@@ -49,12 +54,14 @@ export class Box3 {
   read(buffer: BufferArray, offset: number = 0): Box3 {
     this.min.read(buffer, offset);
     this.max.read(buffer, offset + 3);
+    this._center.read(buffer, offset + 6);
     return this;
   }
 
   write(buffer: BufferArray, offset: number = 0): Box3 {
     this.min.write(buffer, offset);
     this.max.write(buffer, offset + 3);
+    this.center.write(buffer, offset + 6);
     return this;
   }
 }

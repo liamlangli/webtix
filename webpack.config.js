@@ -1,6 +1,5 @@
 const path = require("path");
 const webpack = require("webpack");
-const ProgressBarPlugin = require("progress-bar-webpack-plugin");
 const root = (...args) => path.resolve(__dirname, ...args);
 
 function devServer() {
@@ -28,7 +27,6 @@ function rules() {
 
 function plugins() {
   return [
-    new ProgressBarPlugin(),
     new webpack.HotModuleReplacementPlugin()
   ];
 }
@@ -36,7 +34,6 @@ function plugins() {
 const config = {
   mode: "development",
   entry: entries(),
-  watch: true,
   output: {
     filename: "[name].js",
     path: root("./build"),
