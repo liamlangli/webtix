@@ -9,8 +9,8 @@ We want that you could implement your customized ray-tracing algorithm by just w
 Assume that ray-tracing developers would like to share their render result with others mostly. So we implement project with webgl & typescript. which was easy to share and present.
 
 ## Core Component
-- [ ] BVH builder
+- [x] BVH builder
 - [ ] Builtin memory allocator
-- [ ] Buffer texture sampler
+- [x] Buffer texture sampler
 - [ ] BSDF solver kernel
 - [ ] Free camera control
