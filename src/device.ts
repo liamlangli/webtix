@@ -1,7 +1,7 @@
 import { GPUTexture, GPUTextureDescriptor, GPUTextureInternal } from "./webgl/texture";
 import { GPUBufferDescriptor, GPUBufferInternal, GPUBuffer } from "./webgl/buffer";
 import { GPUVertexArray, GPUVertexArrayInternal } from "./webgl/vertex-array";
-import { GPUPipeline } from "./webgl/pipeline";
+import { GPUPipeline, GPUPipelineDescriptor } from "./webgl/pipeline";
 
 export type GPUContext = WebGL2RenderingContext;
 
@@ -53,8 +53,8 @@ export class GPUDevice {
     return vertexArray;
   }
 
-  createPipeline(vertexShader: string, fragmentShader: string): GPUPipeline {
-    const pipeline = new GPUPipeline(this, vertexShader, fragmentShader);
+  createPipeline(descriptor: GPUPipelineDescriptor): GPUPipeline {
+    const pipeline = new GPUPipeline(this, descriptor);
     return pipeline;
   }
 

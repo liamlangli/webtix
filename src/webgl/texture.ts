@@ -1,5 +1,5 @@
 import { GPUDevice } from "../device";
-import { TextureFilter, PixelFormat, LinearFilter, LinearMipMapLinearFilter, RGBFormat, TextureType, TextureDataType, TEXTURE_2D, FloatType } from "./webgl2-constant";
+import { TextureFilter, PixelFormat, LinearFilter, RGBFormat, TextureType, TextureDataType, TEXTURE_2D, FloatType } from "./webgl2-constant";
 import { BufferArray } from "../types";
 
 export interface GPUTexture {
@@ -54,7 +54,7 @@ export class GPUTextureInternal implements GPUTexture {
   bufferData(data: BufferArray, width: number, height: number, level: number = 0): void {
     const gl = this.device.getContext<WebGL2RenderingContext>();
     gl.bindTexture(this.type, this.texture);
-    gl.texImage2D(this.type, level, this.internalFormat, width, height, 0, this.format, this.type, data);
+    gl.texImage2D(this.type, level, this.internalFormat, width, height, 0, this.format, this.dataType, data);
     gl.bindTexture(this.type, null);
   }
 

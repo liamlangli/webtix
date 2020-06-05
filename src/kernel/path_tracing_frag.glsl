@@ -18,8 +18,8 @@ out vec4 color;
 
 #include <stdlib>
 #include <light>
-#include <vertex>
-#include <normal>
+#buffer <position>
+#buffer <normal>
 #include <material>
 #include <accelerator>
 #include <primitive>
@@ -195,7 +195,7 @@ vec4 trace(inout vec3 orig, vec3 dir) {
       vec3 normal = closestIntersection.normal;
       materialBlock m = requestMaterialBlock(closestIntersection.materialIndex);
       outColor += depthPower * lightShade(m, sun, orig, dir, normal);
-      dir = -cosWeightedRandomHemisphereDirectionHammersley(-normal);
+      dir = -rand_hammersley_cos(-normal);
       isIntersected = 1.0;
     } else {
       return vec4(outColor + envShade(dir, orig) * depthPower * 0.1, isIntersected);

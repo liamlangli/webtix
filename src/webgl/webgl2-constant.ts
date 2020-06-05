@@ -1,15 +1,11 @@
 // Filters
 export enum TextureFilter {}
-export const NearestFilter: TextureFilter = 1003;
-export const NearestMipmapNearestFilter: TextureFilter = 1004;
-export const NearestMipMapNearestFilter: TextureFilter = 1004;
-export const NearestMipmapLinearFilter: TextureFilter = 1005;
-export const NearestMipMapLinearFilter: TextureFilter = 1005;
-export const LinearFilter: TextureFilter = 1006;
-export const LinearMipmapNearestFilter: TextureFilter = 1007;
-export const LinearMipMapNearestFilter: TextureFilter = 1007;
-export const LinearMipmapLinearFilter: TextureFilter = 1008;
-export const LinearMipMapLinearFilter: TextureFilter = 1008;
+export const NearestFilter: TextureFilter = 9728;
+export const NearestMipmapNearestFilter: TextureFilter = 9984;
+export const NearestMipmapLinearFilter: TextureFilter = 9986;
+export const LinearFilter: TextureFilter = 9729;
+export const LinearMipmapNearestFilter: TextureFilter = 9985;
+export const LinearMipmapLinearFilter: TextureFilter = 9987;
 
 // Mapping modes
 export enum Mapping { }
@@ -18,34 +14,29 @@ export const CubeReflectionMapping: Mapping = 301;
 
 // Data types
 export enum TextureDataType { }
-export const UnsignedByteType: TextureDataType = 1009;
-export const ByteType: TextureDataType = 1010;
-export const ShortType: TextureDataType = 1011;
-export const UnsignedShortType: TextureDataType = 1012;
-export const IntType: TextureDataType = 1013;
-export const UnsignedIntType: TextureDataType = 1014;
-export const FloatType: TextureDataType = 1015;
-export const HalfFloatType: TextureDataType = 1016;
-export const UnsignedShort4444Type: TextureDataType = 1017;
-export const UnsignedShort5551Type: TextureDataType = 1018;
-export const UnsignedShort565Type: TextureDataType = 1019;
-export const UnsignedInt248Type: TextureDataType = 1020;
+export const UnsignedByteType: TextureDataType = 5121;
+export const ByteType: TextureDataType = 5120;
+export const ShortType: TextureDataType = 5122;
+export const UnsignedShortType: TextureDataType = 5123;
+export const IntType: TextureDataType = 5124;
+export const UnsignedIntType: TextureDataType = 5125;
+export const FloatType: TextureDataType = 5126;
+export const HalfFloatType: TextureDataType = 5131;
 
 // Pixel formats
 export enum PixelFormat { }
-export const AlphaFormat: PixelFormat = 1021;
-export const RGBFormat: PixelFormat = 1022;
-export const RGBAFormat: PixelFormat = 1023;
-export const LuminanceFormat: PixelFormat = 1024;
-export const LuminanceAlphaFormat: PixelFormat = 1025;
-export const RGBEFormat: PixelFormat = 1026;
-export const DepthFormat: PixelFormat = 1027;
-export const DepthStencilFormat: PixelFormat = 1028;
-export const RedFormat: PixelFormat = 1029;
-export const RedIntegerFormat: PixelFormat = 1030;
-export const RGFormat: PixelFormat = 1031;
-export const RGIntegerFormat: PixelFormat = 1032;
-export const RGBIntegerFormat: PixelFormat = 1033;
+export const AlphaFormat: PixelFormat = 6406;
+export const RGBFormat: PixelFormat = 6407;
+export const RGBAFormat: PixelFormat = 6408;
+export const LuminanceFormat: PixelFormat = 6409;
+export const LuminanceAlphaFormat: PixelFormat = 6410;
+export const DepthFormat: PixelFormat = 6145;
+export const DepthStencilFormat: PixelFormat = 34041;
+export const RedFormat: PixelFormat = 6403;
+export const RedIntegerFormat: PixelFormat = 36244;
+export const RGFormat: PixelFormat = 33319;
+export const RGIntegerFormat: PixelFormat = 33320;
+export const RGBIntegerFormat: PixelFormat = 36248;
 
 // Compressed texture formats
 // DDS / ST3C Compressed texture formats
@@ -99,6 +90,4 @@ export const GPUShort: GPUBufferDataType = 0x1402;
 export const GPUUnsignedShort: GPUBufferDataType = 0x1403;
 export const GPUInt: GPUBufferDataType = 0x1404;
 export const GPUUnsignedInt: GPUBufferDataType = 0x1405;
-export const GPUFloat: GPUBufferDataType = 0x1406;
-
-
+export const GPUFloat: GPUBufferDataType = 5126;

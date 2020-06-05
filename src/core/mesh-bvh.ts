@@ -87,7 +87,7 @@ export function bvh_build_geometry_indexed(indexBuffer: Uint32Array, positionBuf
   bvh_node_count = 0;
   bvh_split_balanced(0, triangleCount);
 
-  const result = bvh;
+  const result = new Float32Array(bvh.buffer, 0, bvh_node_count * BUFFER_STRIDE_BVH_NODE);
   boxes = undefined;
   bvh = undefined;
 

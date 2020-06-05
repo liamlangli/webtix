@@ -64,7 +64,11 @@ export class Vector3 {
   }
 
   cross(v: Vector3): Vector3 {
-    return new Vector3(this.y * v.z - this.z * v.y, this.x * v.z - this.z * v.x, this.x * v.y - this.y * v.x);
+    return this.crossVector(this, v);
+  }
+
+  crossVector(a: Vector3, b: Vector3): Vector3 {
+    return this.set(a.y * b.z - a.z * b.y, a.x * b.z - a.z * b.x, a.x * b.y - a.y * b.x);
   }
 
   set(x: number, y: number, z: number): Vector3 {

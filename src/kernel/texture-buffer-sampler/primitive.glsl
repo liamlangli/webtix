@@ -20,13 +20,13 @@ primitiveBlock requestPrimitiveBlock(const float primitiveIndex) {
   vec3 primitiveInfo1 = textureLodOffset(primitives, facePos, 0.0, ivec2(1, 0)).rgb;
   vec3 primitiveInfo2 = textureLodOffset(primitives, facePos, 0.0, ivec2(2, 0)).rgb;
 
-  vec3 p0 = requestVertex(primitiveInfo0.x);
-  vec3 p1 = requestVertex(primitiveInfo1.x);
-  vec3 p2 = requestVertex(primitiveInfo2.x);
+  vec3 p0 = fetch_position(primitiveInfo0.x);
+  vec3 p1 = fetch_position(primitiveInfo1.x);
+  vec3 p2 = fetch_position(primitiveInfo2.x);
 
-  vec3 n0 = requestNormal(primitiveInfo0.y);
-  vec3 n1 = requestNormal(primitiveInfo1.y);
-  vec3 n2 = requestNormal(primitiveInfo2.y);
+  vec3 n0 = fetch_normal(primitiveInfo0.y);
+  vec3 n1 = fetch_normal(primitiveInfo1.y);
+  vec3 n2 = fetch_normal(primitiveInfo2.y);
 
   return primitiveBlock(n0, n1, n2, p0, p1, p2, primitiveInfo0.z);
 }
