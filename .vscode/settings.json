@@ -1,5 +1,7 @@
 {
   "cSpell.words": [
+    "Mitsuba",
+    "Optix",
     "arraybuffer",
     "devtool",
     "esnext",
@@ -9,6 +11,7 @@
     "mult",
     "stdlib",
     "wasm",
+    "webgl",
     "webtix"
   ]
 }
