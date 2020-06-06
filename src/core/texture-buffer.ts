@@ -1,7 +1,6 @@
-import { Vector3 } from "../math/vector3";
 import { GPUTexture, GPUTextureDescriptor } from "../webgl/texture";
 import { GPUDevice } from "../device";
-import { RGBFormat, NearestFilter } from "../webgl/webgl2-constant";
+import { NearestFilter } from "../webgl/webgl2-constant";
 
 export interface TextureBufferInfo {
   count: number;
@@ -11,33 +10,73 @@ export interface TextureBufferInfo {
 
 const MAX_TEXTURE_SIZE = 8192;
 const BUFFER_STRIDE_PIXEL_RGB = 3;
+const LOWER_A_CHAR_CODE = 97;
+
+interface texture_buffer_layout {
+  width: number;
+  height: number;
+  count: number;
+  stride: number;
+}
 
 /**
  * generate shader node code
+ * warn:
+ *    Don't try to understand this function. It's just use to generate shader code
+ * for read buffered from texture.
+ *    Peace
  * @param layout count, width, height
  */
-function shader_node_texture_buffer_stringify(name: string, stride: number, layout: Vector3): string {
-  if (stride === 1) {
+function shader_node_texture_buffer_stringify(name: string, layout: texture_buffer_layout): string {
+
+  const { width, height, count, stride } = layout;
+
+  // define output struct
+  let output_struct = '';
+  if (stride > 1) {
+    output_struct =
+`struct ${name}_block {
+  vec3 a;
+`;
+    for (let i = 1; i < stride; ++i)
+    {
+      output_struct += `  vec3 ${String.fromCharCode(LOWER_A_CHAR_CODE + i)};\n`;
+    }
+    output_struct += '};\n';
+  }
+
+  // define fetch pixel
+  let fetch_pixels = `vec3 a = textureLod(${name}_buffer, pos, 0.0).rgb;\n  return a;`;
+  if (stride > 1) {
+    let param = 'a';
+    let label = '';
+    fetch_pixels = `vec3 a = textureLod(${name}_buffer, pos, 0.0).rgb;\n`;
+    for (let i = 1; i < stride; ++i)
+    {
+      label = String.fromCharCode(LOWER_A_CHAR_CODE + i);
+      fetch_pixels += `  vec3 ${label} = textureLodOffset(${name}_buffer, pos, 0.0, ivec2(${i}, 0)).rgb;\n`;
+      param += `, ${label}`;
+    }
+    fetch_pixels += `  return ${name}_block(${param});`;
+  }
+
     return `
 #ifndef ${name}_fetch
 #define ${name}_fetch
 
-vec3 ${name}_size = vec3(${layout.x.toFixed(4)}, ${layout.y.toFixed(4)}, ${layout.z.toFixed(4)});
+texture_buffer_layout ${name}_layout = texture_buffer_layout(${width.toFixed(1)}, ${height.toFixed(1)}, ${count.toFixed(1)}, ${stride.toFixed(1)});
 uniform sampler2D ${name}_buffer;
-
-vec3 fetch_${name}(const float index) {
-  float scalar = index / ${name}_size.y;
-  float row = floor(scalar) / ${name}_size.z;
+${output_struct}
+${stride > 1 ? name + '_block' : 'vec3' } fetch_${name}(const float index) {
+  float scalar = index / ${name}_layout.width;
+  float row = floor(scalar) / ${name}_layout.height;
   float column = fract(scalar);
-  vec2 pos = vec2(0.5 / ${name}_size.yz) + vec2(column, row);
-  return textureLod(${name}_buffer, pos, 0.0).rgb;
+  vec2 pos = vec2(0.5 / vec2(${name}_layout.width, ${name}_layout.height)) + vec2(column, row);
+  ${fetch_pixels}
 }
 
 #endif
-    `;
-  }
-
-  return ``;
+`;
 }
 
 /**
@@ -77,7 +116,11 @@ export class TextureBuffer {
   }
 
   toString(): string {
-    return shader_node_texture_buffer_stringify(this.name, this.stride, new Vector3(this.count, this.width, this.height));
+    const width = this.width;
+    const height = this.height;
+    const count = this.count;
+    const stride = this.stride;
+    return shader_node_texture_buffer_stringify(this.name, { width, height, count, stride });
   }
 
   createGPUTexture(device: GPUDevice): GPUTexture {

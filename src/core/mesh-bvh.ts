@@ -118,7 +118,7 @@ function bvh_node_compare_func_axis(a: number, b: number): number {
 function bvh_save_leaf_node(index: number): void {
   node.box.read(boxes!, index * BUFFER_STRIDE_BOX);
   node.index = index;
-  node.count = 1;
+  node.count = 0;
   node.axis = axis;
   node.write(bvh!, bvh_node_count * BUFFER_STRIDE_BVH_NODE);
   bvh_node_count++;

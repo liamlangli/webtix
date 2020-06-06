@@ -7,6 +7,8 @@ import { compute_normal_indexed } from "./utils/compute-normal";
 import { TextureBuffer } from "./core/texture-buffer";
 import { UniformBlock } from "./webgl/uniform-block";
 import { GPUPipelineDescriptor } from "./webgl/pipeline";
+import { Matrix4 } from "./math/mat4";
+import { Vector3 } from "./math/vector3";
 
 const canvas = document.getElementById('view') as HTMLCanvasElement
 const renderer = new Renderer(canvas);
@@ -57,6 +59,14 @@ async function main() {
   uniform_block.create_uniform_texture(texture_buffer_normal.name + 'Buffer', texture_normal, 2);
   uniform_block.create_uniform_texture(texture_buffer_index.name + 'Buffer', texture_index, 3);
 
+  // view
+  const target = new Vector3(0, 0, 0);
+  const up = new Vector3(0, 1, 0);
+  const origin = new Vector3(0, 0, -1000);
+  const view_matrix = new Matrix4().look_at(origin, target, up);
+  uniform_block.create_uniform_matrix4('view_matrix', view_matrix);
+  uniform_block.create_uniform_vector4('camera_data', origin.x, origin.y, origin.z, Math.PI / 2);
+
   const pipeline_descriptor = new GPUPipelineDescriptor();
   pipeline_descriptor.vertexShader = PathTracingVert as any;
   pipeline_descriptor.fragmentShader = PathTracingFrag as any;
@@ -64,7 +74,11 @@ async function main() {
   pipeline_descriptor.block = uniform_block;
 
   const pipeline = device.createPipeline(pipeline_descriptor);
-  console.log(pipeline);
+  renderer.setPipeline(pipeline);
+
+
+
+  renderer.start();
 }
 
 main();

@@ -1,22 +1,20 @@
-import { SwapTarget } from '../webgl/swap-target';
 import { GPUPipeline } from '../webgl/pipeline';
-import * as PathTracingVert from '../kernel/path_tracing_vert.glsl';
-import * as PathTracingFrag from '../kernel/path_tracing_frag.glsl';
 import { GPUDevice } from '../device';
-import { GPUTextureDescriptor } from '../webgl/texture';
-import { NearestFilter } from '../webgl/webgl2-constant';
-import { GPUScene } from './gpu-scene';
 import { GPUVertexArray } from '../webgl/vertex-array';
-import { createScreenQuad } from '../utils/prefeb';
+import { createScreenQuad } from '../utils/prefab';
 
 export class Renderer {
 
   device: GPUDevice;
+  pipeline?: GPUPipeline;
 
   width: number;
   height: number;
 
-  screenQuadVertexArray: GPUVertexArray;
+  private screenQuadVertexArray: GPUVertexArray;
+
+  private frame_index: number = 0;
+  private sample_count: number = 120;
 
   constructor(canvas: HTMLCanvasElement) {
 
@@ -32,6 +30,8 @@ export class Renderer {
     this.height = canvas.height * ratio;
     canvas.width = this.width;
     canvas.height = this.height;
+
+    context.viewport(0, 0, this.width, this.height);
   
     this.device.getExtension('EXT_color_buffer_float');
     this.device.getExtension('OES_texture_float_linear');
@@ -44,17 +44,22 @@ export class Renderer {
     this.screenQuadVertexArray = createScreenQuad(this.device);
   }
 
-  bindScene(scene: GPUScene) {
+  frame(): void {
+    if (this.frame_index++ >= this.sample_count) {
+      return;
+    }
 
-    const textureBufferDescriptor = new GPUTextureDescriptor();
-    textureBufferDescriptor.magFilter = NearestFilter;
-    textureBufferDescriptor.minFilter = NearestFilter;
+    if (this.pipeline) {
+      const gl = this.device.getContext<WebGL2RenderingContext>();
+      this.screenQuadVertexArray.activate();
+      gl.drawArrays(gl.TRIANGLES, 0, 6);
+      gl.bindVertexArray(null);
+    }
   }
 
-  frame(): void {
-    this.screenQuadVertexArray.activate();
-    // gl.drawArrays(gl.TRIANGLES, 0, 6);
-    // (gl as any).bindVertexArray(null);
+  setPipeline(pipeline: GPUPipeline): void {
+    this.pipeline = pipeline;
+    this.pipeline.activate();
   }
 
   start = (): void  => {

@@ -1,18 +1,12 @@
 #version 300 es
-
-#define POSITION_LOCATION 0
-
 precision highp float;
-precision highp int;
 
-uniform mat4 MVP;
+layout(location = 0) in vec3 position;
 
-layout(location = POSITION_LOCATION) in vec3 position;
-
-out vec3 origin;
+out vec2 uv;
 
 void main()
 {
-  origin = ( MVP * vec4(0.0, 0.0, 0.0, 1.0) ).xyz;
-  gl_Position = vec4( position, 1.0 );
+  uv = position.xy;
+  gl_Position = vec4(position, 1.0);
 }

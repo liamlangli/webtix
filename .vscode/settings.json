@@ -8,8 +8,10 @@
     "fract",
     "glsl",
     "ifndef",
+    "ivec",
     "mult",
     "stdlib",
+    "struct",
     "wasm",
     "webgl",
     "webtix"

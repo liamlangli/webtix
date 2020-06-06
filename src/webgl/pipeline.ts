@@ -74,7 +74,7 @@ export class GPUPipeline {
     const shaderInfo = gl.getShaderInfoLog(shader);
 
     if (shaderInfo != '') {
-      const optimized_source = this.flatten(source).split(/\n/g).map(function (line, n) { return `${n}:${line}`;}).join('\n');
+      const optimized_source = this.flatten(source).split(/\n/g).map(function (line, n) { return `${n + 1}:${line}`;}).join('\n');
       console.log(`error in shader:\n${shaderInfo}\nsource_code:\n' ${optimized_source}`);
     }
 
