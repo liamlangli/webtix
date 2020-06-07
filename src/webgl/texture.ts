@@ -17,8 +17,8 @@ export class GPUTextureDescriptor {
   format: PixelFormat = RGBFormat;
   internalFormat: GLenum = WebGL2RenderingContext.RGB32F;
 
-  flipY: boolean = false;
-  premultiplyAlpha: boolean = true;
+  flipY: boolean = true;
+  premultiplyAlpha: boolean = false;
 }
 
 export class GPUTextureInternal implements GPUTexture {

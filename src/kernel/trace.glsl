@@ -56,7 +56,7 @@ bool trace(const ray r, out trace_result result) {
   return false;
 }
 
-// traver
+// trace
 bool trace_shadow(const ray r) {
   float t, i;
   bvh_block block;

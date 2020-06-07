@@ -1,4 +1,4 @@
-import { Vector3 } from './Vector3';
+import { Vector3 } from './vector3';
 
 let x: Vector3 = new Vector3();
 let y: Vector3 = new Vector3();

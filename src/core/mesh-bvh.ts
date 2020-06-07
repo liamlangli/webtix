@@ -7,6 +7,7 @@ enum Axis { X = 0, Y = 1, Z = 2 };
 const BUFFER_OFFSET_BVH_COUNT = 6;
 const BUFFER_STRIDE_BVH_NODE = 9;
 const BUFFER_STRIDE_POINT = 3;
+const BUFFER_STRIDE_INDEX = 3;
 const BUFFER_STRIDE_BOX = 9;
 // boxes buffer structure [minX, minY, minZ, maxX, maxY, maxZ, centerX, centerY, centerZ]
 const BUFFER_BOX_OFFSET_CENTER = 6;
@@ -14,7 +15,7 @@ const BUFFER_BOX_OFFSET_CENTER = 6;
 
 export interface BVH {
   nodes: Float32Array;
-  index: Uint32Array;
+  index: Float32Array;
   count: number;
 }
 
@@ -93,7 +94,18 @@ export function bvh_build_geometry_indexed(indexBuffer: Uint32Array, positionBuf
 
   const duration = performance.now() - start;
   console.log(`[bvh_build_geometry_indexed] bvh build finished, cost ${duration.toFixed(3)}ms`);
-  return { nodes: result!, index, count: bvh_node_count } as BVH;
+
+  const newIndex = new Float32Array(indexBuffer.length);
+  for (let i = 0; i < triangleCount; ++i)
+  {
+    const current = i * BUFFER_STRIDE_INDEX;
+    const previous = index[i] * BUFFER_STRIDE_INDEX;
+    newIndex[current] = indexBuffer[previous];
+    newIndex[current + 1] = indexBuffer[previous + 1];
+    newIndex[current + 2] = indexBuffer[previous + 2];
+  }
+
+  return { nodes: result!, index: newIndex, count: bvh_node_count } as BVH;
 }
 
 export function bvh_build_geometry(position: Float32Array) {
@@ -115,9 +127,9 @@ function bvh_node_compare_func_axis(a: number, b: number): number {
   return boxes![a * BUFFER_STRIDE_BOX + BUFFER_BOX_OFFSET_CENTER + axis] - boxes![b * BUFFER_STRIDE_BOX + BUFFER_BOX_OFFSET_CENTER + axis];
 }
 
-function bvh_save_leaf_node(index: number): void {
-  node.box.read(boxes!, index * BUFFER_STRIDE_BOX);
-  node.index = index;
+function bvh_save_leaf_node(i: number): void {
+  node.box.read(boxes!, i * BUFFER_STRIDE_BOX);
+  node.index = index![i];
   node.count = 0;
   node.axis = axis;
   node.write(bvh!, bvh_node_count * BUFFER_STRIDE_BVH_NODE);
@@ -154,7 +166,7 @@ function bvh_split_balanced(from: number, to: number): number {
   const node_index = bvh_node_count;
   node.write(bvh!, bvh_node_count * BUFFER_STRIDE_BVH_NODE);
   node.axis = axis;
-  node.index = from;
+  node.index = 0;
   bvh_node_count++;
 
   const pivot = (from + (to - from) * 0.5) | 0;

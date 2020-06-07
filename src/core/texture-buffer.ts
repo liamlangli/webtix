@@ -20,10 +20,9 @@ interface texture_buffer_layout {
 }
 
 /**
- * generate shader node code
- * warn:
+ * @warning
  *    Don't try to understand this function. It's just use to generate shader code
- * for read buffered from texture.
+ * to read buffered data from texture.
  *    Peace
  * @param layout count, width, height
  */
@@ -99,7 +98,8 @@ export class TextureBuffer {
     // align data with RGB color format
 
     // max pixel on the same row
-    const bufferWidth = ((MAX_TEXTURE_SIZE / stride) | 0) * stride;
+    const width = (MAX_TEXTURE_SIZE / stride) | 0;
+    const bufferWidth = width * stride;
 
     const length = inputData.length / BUFFER_STRIDE_PIXEL_RGB;
     this.count = length;
@@ -108,9 +108,9 @@ export class TextureBuffer {
     const output = new Float32Array(lines * bufferWidth * stride * BUFFER_STRIDE_PIXEL_RGB);
     output.set(inputData);
 
-    this.width = bufferWidth;
+    this.width = width;
     this.height = lines;
-    this.data = new Float32Array(output);
+    this.data = output;
     this.name = name;
     this.stride = stride;
   }

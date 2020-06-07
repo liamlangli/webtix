@@ -14,7 +14,7 @@ export class Renderer {
   private screenQuadVertexArray: GPUVertexArray;
 
   private frame_index: number = 0;
-  private sample_count: number = 120;
+  private sample_count: number = 1;
 
   constructor(canvas: HTMLCanvasElement) {
 

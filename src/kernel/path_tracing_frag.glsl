@@ -26,13 +26,23 @@ void main()
 {
   float fov = camera_data.w;
   vec3 origin = camera_data.xyz;
-  vec3 tardiget = (view_matrix * vec4(uv, atan(fov), 1.0)).xyz;
-  vec3 direction = ;
-  ray r = ray(origin, normalize(target));
+  vec3 target = (view_matrix * vec4(uv - 0.5, atan(fov), 1.)).xyz;
+  ray r = ray(origin, -normalize(target));
 
   trace_result result;
 
   // start tracing 
   bool hit = trace(r, result);
-  color = vec4(vec3(float(hit)), 1.0);
+  if (hit) {
+    color = vec4(result.normal, 1.0);
+  } else {
+    color = vec4(vec3(0.0), 1.0);
+    // color = vec4(fetch_normal(2.0) * .5 + .5, 1.);
+    // color = vec4(texture(normal_buffer, uv).rgb * .5 + .5, 1.0);
+    // color = vec4(texture(position_buffer, uv).rgb + 0.5, 1.0);
+  }
+
+  // color = vec4(block.p0, 1.0);
+  // color = vec4(texture(normal_buffer, uv).rgb * 0.5 + 0.5, 1.0);
+  // color = vec4(texture(position_buffer, uv).rgb, 1.0);
 }
