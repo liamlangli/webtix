@@ -38,11 +38,12 @@ async function main() {
   const normalBuffer = normal!.array as Float32Array;
 
   const bvh = bvh_build_geometry_indexed(indexBuffer, positionBuffer);
+  console.log(bvh);
 
   const texture_buffer_bvh = new TextureBuffer('bvh', bvh.nodes, 3);
   const texture_buffer_position = new TextureBuffer('position', positionBuffer);
   const texture_buffer_normal = new TextureBuffer('normal', normalBuffer);
-  const texture_buffer_index = new TextureBuffer('index', new Float32Array(bvh.index));
+  const texture_buffer_index = new TextureBuffer('index', bvh.index);
 
   const buffers = new Map();
   buffers.set(texture_buffer_bvh.name, texture_buffer_bvh);

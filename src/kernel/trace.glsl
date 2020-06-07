@@ -38,13 +38,10 @@ bool trace(const ray r, out trace_result result) {
       }
 
     } else {
-
-      // skip node children
-      if(NOT_LEAF(block)) {
+      if(NOT_LEAF(block))
         i += BVH_CHILD_COUNT(block) * bvh_layout.stride;
-      }
-
     }
+
   }
 
   if (near_intersection.t < MAX_RAY_DISTANCE) {
@@ -68,17 +65,19 @@ bool trace_shadow(const ray r) {
     block = fetch_bvh(i);
     t = box_intersect(BVH_BOX_MIN(block), BVH_BOX_MAX(block), r);
     if (t >= 0.0) {
+
       if(IS_LEAF(block)) {
         p_block = fetch_primitive(BVH_PRIMITIVE_INDEX(block));
         intersection = primitive_intersect(p_block, r);
         if (intersection.t > 0.0)
           return true;
       }
+
     } else {
-      if(NOT_LEAF(block)) {
+      if(NOT_LEAF(block))
         i += BVH_CHILD_COUNT(block) * bvh_layout.stride;
-      }
     }
+
   }
 
   return false;

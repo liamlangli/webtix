@@ -6,12 +6,11 @@ import { Vector3 } from '../math/vector3';
 enum Axis { X = 0, Y = 1, Z = 2 };
 const BUFFER_OFFSET_BVH_COUNT = 6;
 const BUFFER_STRIDE_BVH_NODE = 9;
-const BUFFER_STRIDE_POINT = 3;
+const BUFFER_STRIDE_POSITION = 3;
 const BUFFER_STRIDE_INDEX = 3;
 const BUFFER_STRIDE_BOX = 9;
 // boxes buffer structure [minX, minY, minZ, maxX, maxY, maxZ, centerX, centerY, centerZ]
 const BUFFER_BOX_OFFSET_CENTER = 6;
-
 
 export interface BVH {
   nodes: Float32Array;
@@ -36,7 +35,7 @@ class BVHNode {
 }
 
 // temp object
-const box0 = new Box3();
+const box = new Box3();
 const point = new Vector3();
 const node = new BVHNode();
 
@@ -47,7 +46,7 @@ let bvh_node_count = 0;
 let axis = Axis.X;
 
 // bounding boxes pointer
-let index: Uint32Array | undefined;
+let index: Uint32Array | undefined;  // triangle index
 let boxes: Float32Array | undefined;
 let bvh: Float32Array | undefined;
 
@@ -72,16 +71,16 @@ export function bvh_build_geometry_indexed(indexBuffer: Uint32Array, positionBuf
     // init triangle index
     index[i] = i;
 
-    box0.reset();
-    for (let j = 0; j < BUFFER_STRIDE_POINT; ++j) {
-      const pTriangle = indexBuffer[i * BUFFER_STRIDE_POINT + j];
-      point.read(positionBuffer, pTriangle * BUFFER_STRIDE_POINT);
-      box0.expandByPoint3(point);
+    box.reset();
+    for (let j = 0; j < BUFFER_STRIDE_INDEX; ++j) {
+      const p = indexBuffer[i * BUFFER_STRIDE_INDEX + j];
+      point.read(positionBuffer, p * BUFFER_STRIDE_POSITION);
+      box.expandByPoint3(point);
     }
-
+    
     // save triangle box
     const pBox = i * BUFFER_STRIDE_BOX;
-    box0.write(boxes, pBox);
+    box.write(boxes, pBox);
 
   }
 
@@ -128,8 +127,8 @@ function bvh_node_compare_func_axis(a: number, b: number): number {
 }
 
 function bvh_save_leaf_node(i: number): void {
-  node.box.read(boxes!, i * BUFFER_STRIDE_BOX);
-  node.index = index![i];
+  node.box.read(boxes!, index![i] * BUFFER_STRIDE_BOX);
+  node.index = i;
   node.count = 0;
   node.axis = axis;
   node.write(bvh!, bvh_node_count * BUFFER_STRIDE_BVH_NODE);
@@ -155,24 +154,24 @@ function bvh_split_balanced(from: number, to: number): number {
 
   node.box.reset();
   for (let i = from; i < to; ++i) {
-    box0.read(boxes!, i * BUFFER_STRIDE_BOX);
-    node.box.expandByBox3(box0);
+    box.read(boxes!, index![i] * BUFFER_STRIDE_BOX);
+    node.box.expandByBox3(box);
   }
 
   // find longest axis
-  axis = bvh_box_longest_axis(box0);
+  axis = bvh_box_longest_axis(node.box);
   QuickSort(index, from, to, bvh_node_compare_func_axis);
 
   const node_index = bvh_node_count;
-  node.write(bvh!, bvh_node_count * BUFFER_STRIDE_BVH_NODE);
   node.axis = axis;
-  node.index = 0;
+  node.index = from;
+  node.write(bvh!, bvh_node_count * BUFFER_STRIDE_BVH_NODE);
   bvh_node_count++;
 
   const pivot = (from + (to - from) * 0.5) | 0;
   const left = bvh_split_balanced(from, pivot);
   const right = bvh_split_balanced(pivot, to);
-  const count = left + right + 1;
+  const count = left + right;
 
   // write children count
   bvh![node_index * BUFFER_STRIDE_BVH_NODE + BUFFER_OFFSET_BVH_COUNT] = count;

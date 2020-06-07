@@ -14,10 +14,10 @@ in vec2 uv;
 out vec4 color;
 
 #include <stdlib>
-#buffer <index>
 #buffer <bvh>
 #buffer <position>
 #buffer <normal>
+#buffer <index>
 #include <primitive>
 #include <trace>
 
@@ -34,7 +34,8 @@ void main()
   // start tracing 
   bool hit = trace(r, result);
   if (hit) {
-    color = vec4(result.normal, 1.0);
+    // color = vec4(result.normal, 1.0);
+    color = vec4(1.0);
   } else {
     color = vec4(vec3(0.0), 1.0);
     // color = vec4(fetch_normal(2.0) * .5 + .5, 1.);

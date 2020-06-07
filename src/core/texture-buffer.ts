@@ -99,16 +99,16 @@ export class TextureBuffer {
 
     // max pixel on the same row
     const width = (MAX_TEXTURE_SIZE / stride) | 0;
-    const bufferWidth = width * stride;
+    const buffer_width = width * stride;
 
     const length = inputData.length / BUFFER_STRIDE_PIXEL_RGB;
     this.count = length;
 
-    const lines = Math.ceil(length / bufferWidth);
-    const output = new Float32Array(lines * bufferWidth * stride * BUFFER_STRIDE_PIXEL_RGB);
+    const lines = Math.ceil(length / buffer_width);
+    const output = new Float32Array(lines * buffer_width * stride * BUFFER_STRIDE_PIXEL_RGB);
     output.set(inputData);
 
-    this.width = width;
+    this.width = buffer_width;
     this.height = lines;
     this.data = output;
     this.name = name;

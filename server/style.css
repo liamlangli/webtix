@@ -9,22 +9,13 @@ body {
 }
 
 #view {
-  margin-left: calc(50% - 320px);
+  margin-left: calc(50% - 256px);
   padding: 0;
   margin-top: 100px;
-  width: 640px;
-  height: 480px;
+  width: 512px;
+  height: 512px;
   border-radius: 4px;
   background-color: rgba(0, 0, 0, 0.0);
-}
-
-#test {
-  margin-left: calc(50% - 480px);
-  padding: 0;
-  margin-top: 20px;
-  width: 960px;
-  height: 640px;
-  border-radius: 4px;
 }
 
 #status {
