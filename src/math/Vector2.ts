@@ -54,7 +54,7 @@ export class Vector2 {
     return this.mult(1.0 / this.len());
   }
 
-  set(x: number, y: number, z: number): Vector2 {
+  set(x: number, y: number): Vector2 {
     this.x = x;
     this.y = y;
     return this;
@@ -70,11 +70,11 @@ export class Vector2 {
     return new Vector2(this.x, this.y);
   }
 
-  minElement(): number {
+  min_element(): number {
     return Math.min(this.x, this.y);
   }
 
-  maxElement(): number {
+  max_element(): number {
     return Math.max(this.x, this.y);
   }
 
@@ -83,4 +83,4 @@ export class Vector2 {
   }
 }
 
-type Point3 = Vector2;
+export type Point2 = Vector2;

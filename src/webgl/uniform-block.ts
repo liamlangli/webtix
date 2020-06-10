@@ -2,70 +2,11 @@ import { GPUDevice } from "../device";
 import { GPUTexture } from "./texture";
 import { GPUPipeline } from "./pipeline";
 import { Matrix4 } from "../math/mat4";
-
-export interface Uniform {
-  name: string;
-  location?: WebGLUniformLocation;
-  upload(device: GPUDevice): void;
-}
-
-export class UniformVector4 implements Uniform {
-
-  location?: WebGLUniformLocation;
-  
-  private x: number;
-  private y: number;
-  private z: number;
-  private w: number;
-
-  constructor(public name: string, x?: number, y?: number, z?: number, w?: number) {
-    this.x = x || 0;
-    this.y = y || 0;
-    this.z = z || 0;
-    this.w = w || 0;
-  }
-
-  set(x: number, y: number, z: number, w: number): UniformVector4 {
-    this.x = x;
-    this.y = y;
-    this.z = z;
-    this.w = w;
-    return this;
-  }
-
-  upload(device: GPUDevice): void {
-    const gl = device.getContext<WebGL2RenderingContext>();
-    gl.uniform4f(this.location!, this.x, this.y, this.z, this.w);
-  }
-
-}
-
-export class UniformTexture implements Uniform {
-
-  location?: WebGLUniformLocation | undefined;
-
-  constructor(public name: string, public texture: GPUTexture, public slot: number) {}
-
-  upload(device: GPUDevice): void {
-    const gl = device.getContext<WebGL2RenderingContext>();
-    this.texture.activate(this.slot);
-    gl.uniform1i(this.location!, this.slot);
-  }
-
-}
-
-export class UniformMatrix4 implements Uniform {
-
-  constructor(public name: string, public matrix: Matrix4) {}
-
-  location?: WebGLUniformLocation | undefined;
-
-  upload(device: GPUDevice): void {
-    const gl = device.getContext<WebGL2RenderingContext>();
-    gl.uniformMatrix4fv(this.location!, false, this.matrix.elements);
-  }
-
-}
+import { Uniform } from "./uniform/uniform";
+import { UniformVector4 } from "./uniform/uniform-vector4";
+import { UniformTexture } from "./uniform/uniform-texture";
+import { UniformMatrix4 } from "./uniform/uniform-mat4";
+import { isUniformStruct, UniformStruct } from "./uniform/uniform-struct";
 
 export class UniformBlock {
 
@@ -93,6 +34,13 @@ export class UniformBlock {
     return uniform;
   }
 
+  create_uniform_struct(name: string, buffer: Float32Array, slot: number): UniformStruct {
+    const uniform = new UniformStruct(name, buffer, slot);
+    this.uniforms.push(uniform);
+    this.uniform_map.set(name, uniform);
+    return uniform;
+  }
+
   get<T extends Uniform>(name: string): T | undefined {
     return this.uniform_map.get(name) as T;
   }
@@ -101,7 +49,12 @@ export class UniformBlock {
     const gl = pipeline.device.getContext<WebGL2RenderingContext>();
     for (let i = 0; i < this.uniforms.length; ++i) {
       const uniform = this.uniforms[i];
-      uniform.location = gl.getUniformLocation(pipeline.program, uniform.name)!;
+      if (isUniformStruct(uniform)) {
+        uniform.location = gl.getUniformBlockIndex(pipeline.program, uniform.name);
+        gl.uniformBlockBinding(pipeline.program, uniform.location as any, uniform.slot);
+      } else {
+        uniform.location = gl.getUniformLocation(pipeline.program, uniform.name)!;
+      }
     }
   }
 

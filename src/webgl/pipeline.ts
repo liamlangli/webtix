@@ -16,11 +16,12 @@ export class GPUPipelineDescriptor {
 export class GPUPipeline {
 
   program: WebGLProgram;
+  block?: UniformBlock;
+
   private vertexShader: string;
   private fragmentShader: string;
 
   private buffers?: Map<string, TextureBuffer>;
-  private block?: UniformBlock;
 
   constructor(public device: GPUDevice, descriptor: GPUPipelineDescriptor) {
     const gl = this.device.getContext<WebGL2RenderingContext>();

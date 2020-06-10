@@ -113,7 +113,7 @@ export function bvh_build_geometry(position: Float32Array) {
 
 function bvh_box_longest_axis(box: Box3): number {
   const size = box.size;
-  const max = size.maxElement();
+  const max = size.max_element();
   switch(max) {
     case size.x: return Axis.X;
     case size.y: return Axis.Y;

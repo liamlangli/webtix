@@ -1,4 +1,5 @@
 import { BufferArray } from "../types";
+import { Spherical } from "./spherical";
 
 export class Vector3 {
 
@@ -64,10 +65,10 @@ export class Vector3 {
   }
 
   cross(v: Vector3): Vector3 {
-    return this.crossVector(this, v);
+    return this.cross_vector(this, v);
   }
 
-  crossVector(a: Vector3, b: Vector3): Vector3 {
+  cross_vector(a: Vector3, b: Vector3): Vector3 {
     return this.set(a.y * b.z - a.z * b.y, a.x * b.z - a.z * b.x, a.x * b.y - a.y * b.x);
   }
 
@@ -89,12 +90,20 @@ export class Vector3 {
     return new Vector3(this.x, this.y, this.z);
   }
 
-  minElement(): number {
+  min_element(): number {
     return Math.min(this.x, Math.min(this.y, this.z));
   }
 
-  maxElement(): number {
+  max_element(): number {
     return Math.max(this.x, Math.max(this.y, this.z));
+  }
+
+  from_spherical(s: Spherical): Vector3 {
+    const sinRadius = Math.sin(s.theta) * s.radius;
+    this.x = sinRadius * Math.sin(s.phi);
+    this.y = Math.cos(s.theta) * s.radius;
+    this.z = sinRadius * Math.cos(s.phi);
+    return this;
   }
 
   read(buffer: BufferArray, offset: number = 0): Vector3 {

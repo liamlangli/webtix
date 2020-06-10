@@ -95,7 +95,7 @@ export class Matrix4 {
     }
 
     z.normalize();
-    x.crossVector(up, z);
+    x.cross_vector(up, z);
     if (x.mag() === 0) {
       if (Math.abs(up.z) === 1) {
         z.x += 0.0001;
@@ -103,11 +103,11 @@ export class Matrix4 {
         z.z += 0.0001;
       }
       z.normalize();
-      x.crossVector(up, z);
+      x.cross_vector(up, z);
     }
 
     x.normalize();
-    y.crossVector(z, x);
+    y.cross_vector(z, x);
 
     te[0] = x.x; te[4] = y.x; te[8] = z.x;
     te[1] = x.y; te[5] = y.y; te[9] = z.y;

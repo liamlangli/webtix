@@ -28,6 +28,8 @@ bool trace(const ray r, out trace_result result) {
     t = box_intersect(BVH_BOX_MIN(block), BVH_BOX_MAX(block), r);
     if (t >= 0.0 && t < near_intersection.t) {
 
+      // return true;
+
       if(IS_LEAF(block)) {
         p_block = fetch_primitive(BVH_PRIMITIVE_INDEX(block));
         intersection = primitive_intersect(p_block, r);

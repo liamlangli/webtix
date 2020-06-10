@@ -8,7 +8,7 @@ export interface TextureBufferInfo {
   height: number;
 }
 
-const MAX_TEXTURE_SIZE = 8192;
+const MAX_TEXTURE_SIZE = 4096;
 const BUFFER_STRIDE_PIXEL_RGB = 3;
 const LOWER_A_CHAR_CODE = 97;
 
@@ -98,14 +98,14 @@ export class TextureBuffer {
     // align data with RGB color format
 
     // max pixel on the same row
-    const width = (MAX_TEXTURE_SIZE / stride) | 0;
-    const buffer_width = width * stride;
+    const row_max_data_count = (MAX_TEXTURE_SIZE / stride) | 0;
+    const buffer_width = row_max_data_count * stride;
 
     const length = inputData.length / BUFFER_STRIDE_PIXEL_RGB;
     this.count = length;
 
     const lines = Math.ceil(length / buffer_width);
-    const output = new Float32Array(lines * buffer_width * stride * BUFFER_STRIDE_PIXEL_RGB);
+    const output = new Float32Array(lines * buffer_width * BUFFER_STRIDE_PIXEL_RGB);
     output.set(inputData);
 
     this.width = buffer_width;
