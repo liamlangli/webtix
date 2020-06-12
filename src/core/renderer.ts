@@ -37,7 +37,8 @@ export class Renderer {
 
     const context = canvas.getContext('webgl2', { preserveDrawingBuffer: true, antialias: false }) as WebGL2RenderingContext;
     if (!context) {
-      throw 'Require WebGL2 Support.';
+      alert('require webgl2.0 supported.');
+      throw 'require webgl2.0 supported.';
     }
 
     this.device = new GPUDevice(context);
@@ -51,7 +52,7 @@ export class Renderer {
     context.viewport(0, 0, this.width, this.height);
   
     this.device.getExtension('EXT_color_buffer_float');
-    this.device.getExtension('OES_texture_float_linear');
+    this.device.getExtension('OES_texture_float_linear'); // this might be unnecessary
 
     canvas.oncontextmenu = function (e) {
       e.preventDefault();
@@ -101,7 +102,7 @@ export class Renderer {
     const texture_buffer_bvh = new TextureBuffer('bvh', bvh.nodes, 3);
     const texture_buffer_position = new TextureBuffer('position', positionBuffer);
     const texture_buffer_normal = new TextureBuffer('normal', normalBuffer);
-    // const texture_buffer_uv = new TextureBuffer('uv', uvBuffer);
+    const texture_buffer_uv = new TextureBuffer('uv', uvBuffer);
     const texture_buffer_index = new TextureBuffer('index', bvh.index);
   
     const buffers = new Map();
@@ -109,21 +110,21 @@ export class Renderer {
     buffers.set(texture_buffer_position.name, texture_buffer_position);
     buffers.set(texture_buffer_normal.name, texture_buffer_normal);
     buffers.set(texture_buffer_index.name, texture_buffer_index);
-    // buffers.set(texture_buffer_uv.name, texture_buffer_uv);
+    buffers.set(texture_buffer_uv.name, texture_buffer_uv);
   
     const texture_bvh = texture_buffer_bvh.createGPUTexture(device);
     const texture_position = texture_buffer_position.createGPUTexture(device);
     const texture_normal = texture_buffer_normal.createGPUTexture(device);
     const texture_index = texture_buffer_index.createGPUTexture(device);
-    // const texture_uv = texture_buffer_uv.createGPUTexture(device);
+    const texture_uv = texture_buffer_uv.createGPUTexture(device);
     
     const uniform_block = new UniformBlock();
     uniform_block.create_uniform_texture(texture_buffer_bvh.name + '_buffer', texture_bvh, 1);
     uniform_block.create_uniform_texture(texture_buffer_position.name + '_buffer', texture_position, 2);
     uniform_block.create_uniform_texture(texture_buffer_normal.name + '_buffer', texture_normal, 3);
     uniform_block.create_uniform_texture(texture_buffer_index.name + '_buffer', texture_index, 4);
-    // uniform_block.create_uniform_texture(texture_buffer_uv.name + '_buffer', texture_uv, 4);
-  
+    uniform_block.create_uniform_texture(texture_buffer_uv.name + '_buffer', texture_uv, 5);
+
     // view
     this.camera_uniform = uniform_block.create_uniform_struct('Camera', new Float32Array(16), 0);
   

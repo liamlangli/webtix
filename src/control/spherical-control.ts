@@ -18,7 +18,7 @@ export class SphericalControl {
 
   offset: Vector3 = new Vector3();
 
-  speed: number = 0.1;
+  speed: number = 1.0;
 
   constructor(public element: HTMLCanvasElement) {
     element.addEventListener('mousedown', this.onmousedown, false);
@@ -38,7 +38,7 @@ export class SphericalControl {
     this.rotate_left(2 * Math.PI * this.delta.x / this.element.clientWidth * this.speed);
     this.rotate_up(2 * Math.PI * this.delta.y / this.element.clientHeight * this.speed);
 
-    this.end.copy(this.start);
+    this.start.copy(this.end);
     
     this.update();
     EventHub.fire(GlobalEvent.MouseMove);
