@@ -42,7 +42,7 @@ export class Renderer {
 
     this.device = new GPUDevice(context);
 
-    const ratio = 1;
+    const ratio = 2.0;
     this.width = canvas.width * ratio;
     this.height = canvas.height * ratio;
     canvas.width = this.width;
@@ -61,7 +61,7 @@ export class Renderer {
     this.screenQuadVertexArray = createScreenQuad(this.device);
 
     this.camera = new Camera(Math.PI / 2, 1.0);
-    this.camera.position.set(0, 0, -3000);
+    this.camera.position.set(0, 0, -2.0);
 
     this.control = new SphericalControl(canvas);
     this.control.spherical.from_vector3(this.camera.position);
@@ -74,14 +74,17 @@ export class Renderer {
   async launch(): Promise<void> {
     const device = this.device;
 
-    const geometry = await draco_decode('draco/sphere.drc');
+    const geometry = await draco_decode('draco/helmet.drc');
     const position = draco_get_attribute(geometry, 'position');
-    if (position === undefined) {
-      throw `invalid geometry because of position attribute wasn\'t exists`;
+    const uv = draco_get_attribute(geometry, 'uv');
+
+    if (position === undefined || uv === undefined) {
+      throw `require position & uv attribute.`;
     }
   
     const indexBuffer = geometry.index.array as Uint32Array;
     const positionBuffer = position.array as Float32Array;
+    const uvBuffer = uv!.array as Float32Array;
   
     let normal = draco_get_attribute(geometry, 'normal');
     if (normal === undefined) {
@@ -98,6 +101,7 @@ export class Renderer {
     const texture_buffer_bvh = new TextureBuffer('bvh', bvh.nodes, 3);
     const texture_buffer_position = new TextureBuffer('position', positionBuffer);
     const texture_buffer_normal = new TextureBuffer('normal', normalBuffer);
+    // const texture_buffer_uv = new TextureBuffer('uv', uvBuffer);
     const texture_buffer_index = new TextureBuffer('index', bvh.index);
   
     const buffers = new Map();
@@ -105,17 +109,20 @@ export class Renderer {
     buffers.set(texture_buffer_position.name, texture_buffer_position);
     buffers.set(texture_buffer_normal.name, texture_buffer_normal);
     buffers.set(texture_buffer_index.name, texture_buffer_index);
+    // buffers.set(texture_buffer_uv.name, texture_buffer_uv);
   
     const texture_bvh = texture_buffer_bvh.createGPUTexture(device);
     const texture_position = texture_buffer_position.createGPUTexture(device);
     const texture_normal = texture_buffer_normal.createGPUTexture(device);
     const texture_index = texture_buffer_index.createGPUTexture(device);
+    // const texture_uv = texture_buffer_uv.createGPUTexture(device);
     
     const uniform_block = new UniformBlock();
     uniform_block.create_uniform_texture(texture_buffer_bvh.name + '_buffer', texture_bvh, 0);
     uniform_block.create_uniform_texture(texture_buffer_position.name + '_buffer', texture_position, 1);
     uniform_block.create_uniform_texture(texture_buffer_normal.name + '_buffer', texture_normal, 2);
     uniform_block.create_uniform_texture(texture_buffer_index.name + '_buffer', texture_index, 3);
+    // uniform_block.create_uniform_texture(texture_buffer_uv.name + '_buffer', texture_uv, 4);
   
     // view
     this.camera_uniform = uniform_block.create_uniform_struct('Camera', new Float32Array(16), 0);

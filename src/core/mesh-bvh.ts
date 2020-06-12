@@ -9,7 +9,6 @@ const BUFFER_STRIDE_BVH_NODE = 9;
 const BUFFER_STRIDE_POSITION = 3;
 const BUFFER_STRIDE_INDEX = 3;
 const BUFFER_STRIDE_BOX = 9;
-// boxes buffer structure [minX, minY, minZ, maxX, maxY, maxZ, centerX, centerY, centerZ]
 const BUFFER_BOX_OFFSET_CENTER = 6;
 
 export interface BVH {
@@ -34,7 +33,6 @@ class BVHNode {
   }
 }
 
-// temp object
 const box = new Box3();
 const point = new Vector3();
 const node = new BVHNode();
@@ -48,7 +46,7 @@ let axis = Axis.X;
 // bounding boxes pointer
 let index: Uint32Array | undefined;  // triangle index
 let boxes: Float32Array | undefined;
-let bvh: Float32Array | undefined;
+let bvh: Float32Array | undefined; // [minX, minY, minZ, maxX, maxY, maxZ, centerX, centerY, centerZ]
 
 /**
  * array buffer in-place bvh build
