@@ -2,6 +2,7 @@ import { ShaderLib } from "./shader-lib";
 import { GPUDevice } from "../device";
 import { TextureBuffer } from "../core/texture-buffer";
 import { UniformBlock } from "./uniform-block";
+import { ObjectMap } from "../types";
 
 const include_pattern = /#include <(.+)>/g;
 const buffer_pattern = /#buffer <(.+)>/g;
@@ -11,12 +12,14 @@ export class GPUPipelineDescriptor {
   fragmentShader: string = '';
   buffers?: Map<string, TextureBuffer>;
   block?: UniformBlock;
+  defines: ObjectMap<string> = {};
 }
 
 export class GPUPipeline {
 
   program: WebGLProgram;
   block?: UniformBlock;
+  defines?: ObjectMap<string>;
 
   private vertexShader: string;
   private fragmentShader: string;
@@ -30,6 +33,7 @@ export class GPUPipeline {
     this.fragmentShader = descriptor.fragmentShader;
     this.buffers = descriptor.buffers || new Map();
     this.block = descriptor.block;
+    this.defines = descriptor.defines || {};
 
     this.program = gl.createProgram()!;
     gl.attachShader(this.program, this.compile(this.vertexShader, gl.VERTEX_SHADER));
@@ -62,6 +66,13 @@ export class GPUPipeline {
       const buffer_node = buffer.toString();
       source = source.replace(match_pattern, buffer_node);
     }
+
+    const define_source = Object.getOwnPropertyNames(this.defines).map(
+      (name: string) => {
+        return `#define ${name} ${this.defines![name]}`
+      }
+    ).join('\n');
+    source = source.replace('#constants', define_source);
 
     return source;
   }

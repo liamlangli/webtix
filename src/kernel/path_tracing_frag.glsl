@@ -2,6 +2,7 @@
 precision highp float;
 precision highp int;
 precision highp sampler2D;
+#constants
 
 // uniforms
 layout(std140) uniform Camera {
@@ -15,6 +16,8 @@ layout(std140) uniform Camera {
 in vec2 uv;
 out vec4 color;
 
+bool terminated = false;
+
 #include <stdlib>
 #buffer <bvh>
 #buffer <position>
@@ -22,23 +25,32 @@ out vec4 color;
 #buffer <index>
 #include <primitive>
 #include <trace>
+#include <ray_generate>
+#include <ray_closest_hit>
+#include <ray_missed>
 
 void main()
 {
   // ray create
-  vec3 origin = position.xyz;
-  vec3 X = normalize(cross(forward.xyz, up.xyz));
-  vec3 Y = normalize(cross(X, forward.xyz));
-  vec3 direction = normalize(forward.xyz * atan(fov) + X * uv.x + Y * uv.y);
-  ray r = ray(origin, direction);
-
+  ray r;
   trace_result result;
+  bool hit;
 
-  // start tracing 
-  bool hit = trace(r, result);
-  if (hit) {
-    color = vec4(result.normal * .5 + .5, 1.0);
-  } else {
-    color = vec4(direction * 0.5 + 0.5, 1.0);
+  r = ray_generate();
+
+  int i;
+  for(i = 0; i < TRACE_DEPTH; ++i) {
+    // start tracing 
+    hit = trace(r, result);
+    if (hit) {
+      r = ray_closest_hit(r, result);
+    } else {
+      ray_missed(r);
+      return;
+    }
+
+    if (terminated) {
+      return;
+    }
   }
 }
