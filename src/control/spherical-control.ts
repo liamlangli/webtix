@@ -18,7 +18,7 @@ export class SphericalControl {
 
   offset: Vector3 = new Vector3();
 
-  speed: number = 0.01;
+  speed: number = 0.1;
 
   constructor(public element: HTMLCanvasElement) {
     element.addEventListener('mousedown', this.onmousedown, false);
