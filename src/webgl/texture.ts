@@ -46,6 +46,7 @@ export class GPUTextureInternal implements GPUTexture {
 
     gl.texParameteri(descriptor.type, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(descriptor.type, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
     gl.texParameteri(descriptor.type, gl.TEXTURE_MIN_FILTER, descriptor.minFilter);
     gl.texParameteri(descriptor.type, gl.TEXTURE_MAG_FILTER, descriptor.magFilter);
     gl.bindTexture(this.type, null);

@@ -14,16 +14,16 @@ struct texture_buffer_layout {
   float width, height, count, stride;
 };
 
-float minElement(vec3 V) {
-  return min(V.x, min(V.y, V.z));
+float min_element(vec3 v) {
+  return min(v.x, min(v.y, v.z));
 }
 
-float maxElement(vec3 V) {
-  return max(V.x, max(V.y, V.z));
+float max_element(vec3 v) {
+  return max(v.x, max(v.y, v.z));
 }
 
-bool contain(const vec3 V, const vec3 minV, const vec3 maxV) {
-  return dot(step(minV, V), step(V, maxV)) >= 3.0;
+bool contain(const vec3 v, const vec3 b, const vec3 t) {
+  return dot(step(b, v), step(v, t)) >= 3.0;
 }
 
 float box_intersect(const vec3 minV, const vec3 maxV, const ray r) {

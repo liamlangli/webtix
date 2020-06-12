@@ -118,10 +118,10 @@ export class Renderer {
     // const texture_uv = texture_buffer_uv.createGPUTexture(device);
     
     const uniform_block = new UniformBlock();
-    uniform_block.create_uniform_texture(texture_buffer_bvh.name + '_buffer', texture_bvh, 0);
-    uniform_block.create_uniform_texture(texture_buffer_position.name + '_buffer', texture_position, 1);
-    uniform_block.create_uniform_texture(texture_buffer_normal.name + '_buffer', texture_normal, 2);
-    uniform_block.create_uniform_texture(texture_buffer_index.name + '_buffer', texture_index, 3);
+    uniform_block.create_uniform_texture(texture_buffer_bvh.name + '_buffer', texture_bvh, 1);
+    uniform_block.create_uniform_texture(texture_buffer_position.name + '_buffer', texture_position, 2);
+    uniform_block.create_uniform_texture(texture_buffer_normal.name + '_buffer', texture_normal, 3);
+    uniform_block.create_uniform_texture(texture_buffer_index.name + '_buffer', texture_index, 4);
     // uniform_block.create_uniform_texture(texture_buffer_uv.name + '_buffer', texture_uv, 4);
   
     // view

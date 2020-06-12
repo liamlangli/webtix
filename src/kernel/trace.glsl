@@ -28,8 +28,6 @@ bool trace(const ray r, out trace_result result) {
     t = box_intersect(BVH_BOX_MIN(block), BVH_BOX_MAX(block), r);
     if (t >= 0.0 && t < near_intersection.t) {
 
-      // return true;
-
       if(IS_LEAF(block)) {
         p_block = fetch_primitive(BVH_PRIMITIVE_INDEX(block));
         intersection = primitive_intersect(p_block, r);
@@ -41,14 +39,13 @@ bool trace(const ray r, out trace_result result) {
 
     } else {
       if(NOT_LEAF(block))
-        i += BVH_CHILD_COUNT(block) * bvh_layout.stride;
+        i += BVH_CHILD_COUNT(block) * bvh_layout.stride - bvh_layout.stride;
     }
-
   }
 
   if (near_intersection.t < MAX_RAY_DISTANCE) {
     result.position = r.origin + r.direction * near_intersection.t;
-    result.normal = primitive_centriod_normal(near_primitive, near_intersection.u, near_intersection.v);
+    result.normal = primitive_centriod_normal(near_primitive, near_intersection.v, near_intersection.u);
     return true;
   }
 

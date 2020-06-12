@@ -127,6 +127,7 @@ export class TextureBuffer {
     const descriptor = new GPUTextureDescriptor();
     descriptor.magFilter = NearestFilter;
     descriptor.minFilter = NearestFilter;
+    descriptor.flipY = false;
 
     const texture = device.createTexture(descriptor);
     texture.bufferData(this.data, this.width, this.height);

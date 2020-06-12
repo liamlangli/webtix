@@ -54,7 +54,7 @@ export class SphericalControl {
   }
 
   rotate_up(angle: number): void {
-    this.spherical.theta = math_clamp(this.spherical.theta + angle, 1e-3, Math.PI);
+    this.spherical.theta = math_clamp(this.spherical.theta - angle, 1e-3, Math.PI);
   }
 
   update(): void {

@@ -83,7 +83,8 @@ export function bvh_build_geometry_indexed(indexBuffer: Uint32Array, positionBuf
   }
 
   bvh_node_count = 0;
-  bvh_split_balanced(0, triangleCount);
+  const count = bvh_split_balanced(0, triangleCount);
+  console.assert(bvh_node_count === count, `incorrect bvh node count ${bvh_node_count} ${count}.`);
 
   const result = new Float32Array(bvh.buffer, 0, bvh_node_count * BUFFER_STRIDE_BVH_NODE);
   boxes = undefined;
@@ -169,12 +170,11 @@ function bvh_split_balanced(from: number, to: number): number {
   const pivot = (from + (to - from) * 0.5) | 0;
   const left = bvh_split_balanced(from, pivot);
   const right = bvh_split_balanced(pivot, to);
-  const count = left + right;
 
   // write children count
-  bvh![node_index * BUFFER_STRIDE_BVH_NODE + BUFFER_OFFSET_BVH_COUNT] = count;
+  bvh![node_index * BUFFER_STRIDE_BVH_NODE + BUFFER_OFFSET_BVH_COUNT] = left + right;
 
-  return count;
+  return left + right + 1;
 }
 
 function bvh_split_sah() {
