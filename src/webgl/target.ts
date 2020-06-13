@@ -1,6 +1,6 @@
 import { GPUDevice } from "../device";
 import { GPUTexture, GPUTextureDescriptor } from "./texture";
-import { RGBAFormat } from "./webgl2-constant";
+import { RGBAFormat, NearestFilter } from "./webgl2-constant";
 
 export class Target {
 
@@ -17,13 +17,13 @@ export class Target {
 
     const color_attachment_descriptor = new GPUTextureDescriptor();
     color_attachment_descriptor.format = RGBAFormat;
+    color_attachment_descriptor.minFilter = NearestFilter;
+    color_attachment_descriptor.magFilter = NearestFilter;
     this.color_attachment = device.createTexture(color_attachment_descriptor);
     const texture = this.color_attachment.raw<WebGLTexture>();
 
     gl.bindTexture(gl.TEXTURE_2D, texture);
     gl.texImage2D(gl.TEXTURE_2D, 0, (gl as any).RGBA32F, width, height, 0, gl.RGBA, gl.FLOAT, null);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
     gl.bindTexture(gl.TEXTURE_2D, null);
 
     this.depthBuffer = gl.createRenderbuffer()!;

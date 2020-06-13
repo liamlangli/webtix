@@ -2,6 +2,7 @@ import { GPUPipeline } from '../webgl/pipeline';
 import { GPUDevice } from '../device';
 import { GPUVertexArray } from '../webgl/vertex-array';
 import { createScreenQuad } from '../utils/prefab';
+import { Color4, Color3 } from '../math/color';
 
 export class Renderer {
 
@@ -12,6 +13,8 @@ export class Renderer {
 
   width: number;
   height: number;
+
+  clear_color: Color4 = new Color4(0, 0, 0, 0);
 
   private screenQuadVertexArray: GPUVertexArray;
 
@@ -42,6 +45,20 @@ export class Renderer {
     }
 
     this.screenQuadVertexArray = createScreenQuad(this.device);
+  }
+
+  clear(colorMask: boolean, depthMask: boolean, stencilMask: boolean): void {
+    const gl = this.device.getContext<WebGL2RenderingContext>();
+    const color = this.clear_color;
+    if (colorMask)
+      gl.clearColor(color.R, color.G, color.B, color.A);
+
+    let mask = 0;
+    if (colorMask) mask |= gl.COLOR_BUFFER_BIT;
+    if (depthMask) mask |= gl.DEPTH_BUFFER_BIT;
+    if (stencilMask) mask |= gl.STENCIL_BUFFER_BIT;
+
+    gl.clear(mask);
   }
 
   render(): void {

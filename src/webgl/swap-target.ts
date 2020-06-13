@@ -28,19 +28,6 @@ export class SwapTarget {
     gl.viewport(0, 0, this.width, this.height);
   }
 
-  clear(color: Color4, colorMask: boolean, depthMask: boolean, stencilMask: boolean): void {
-    const gl = this.gl;
-    if (colorMask)
-      gl.clearColor(color.R, color.G, color.B, color.A);
-
-    let mask = 0;
-    if (colorMask) mask |= gl.COLOR_BUFFER_BIT;
-    if (depthMask) mask |= gl.DEPTH_BUFFER_BIT;
-    if (stencilMask) mask |= gl.STENCIL_BUFFER_BIT;
-
-    gl.clear(mask);
-  }
-
   unbind(): void {
     const gl = this.gl;
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);

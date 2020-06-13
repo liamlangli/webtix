@@ -20,7 +20,7 @@ in vec2 uv;
 out vec4 color;
 
 bool terminated = false;
-float frame_index, sample_count;
+float frame_index, sample_count, random_seed;
 
 #include <stdlib>
 #buffer <bvh>
@@ -42,6 +42,7 @@ void main()
 
   frame_index = frame_status.x;
   sample_count = frame_status.y;
+  random_seed = frame_status.z;
 
   r = ray_generate();
 

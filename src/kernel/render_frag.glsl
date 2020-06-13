@@ -9,7 +9,9 @@ uniform float index;
 in vec2 uv;
 out vec4 color;
 
+#include <stdlib>
+
 void main()
 {
-  color = texture(frame, uv);
+  color = vec4(linear_to_srgb(texture(frame, uv).rgb), 1.0);
 }

@@ -1,8 +1,8 @@
 import { Spherical } from "../math/spherical";
 import { Vector3 } from "../math/vector3";
 import { Vector2 } from "../math/vector2";
-import EventHub from "../core/event";
-import { GlobalEvent } from "../core/global-event";
+import EventHub from "../event/event";
+import { GlobalEvent } from "../event/global-event";
 import { math_clamp } from "../math/math-utils";
 
 export class SphericalControl {

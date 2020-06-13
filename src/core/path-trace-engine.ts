@@ -14,8 +14,8 @@ import * as PathTracingFrag from '../kernel/path_tracing_frag.glsl';
 import * as BlendFrag from '../kernel/blend_frag.glsl';
 import * as RenderFrag from '../kernel/render_frag.glsl';
 import { SwapTarget } from "../webgl/swap-target";
-import EventHub from "./event";
-import { GlobalEvent } from "./global-event";
+import EventHub from "../event/event";
+import { GlobalEvent } from "../event/global-event";
 import { Target } from "../webgl/target";
 import { ShaderLib } from "../webgl/shader-lib";
 import { KERNEL_RAY_GENERATE, KERNEL_RAY_CLOSEST_HIT, KERNEL_RAY_MISSED } from "../constants";
@@ -49,7 +49,7 @@ export class PathTraceEngine extends Engine {
 
   private last_defer_time: number = 0;
   private defer_frame_index: number = 0;
-  private defer_sample_count: number = 16;
+  private defer_sample_count: number = 2;
   private defer_delay: number = 200;
 
   private need_draw: boolean = true;
@@ -198,7 +198,7 @@ export class PathTraceEngine extends Engine {
     camera.position.copy(this.control.target);
     camera.look_at(this.control.center);
     camera.write(this.camera_uniform!.buffer);
-    this.trace_block.get<UniformVector4>(FRAME_STATUS_LABEL)!.set(this.defer_frame_index, this.defer_sample_count, -1, -1);
+    this.trace_block.get<UniformVector4>(FRAME_STATUS_LABEL)!.set(this.defer_frame_index, this.defer_sample_count, Math.random(), -1);
   }
 
   frame = (time?: number): void => {
@@ -214,7 +214,7 @@ export class PathTraceEngine extends Engine {
     }
 
     if (defer_render) {
-      this.defer_frame_index++;
+      console.log('defer render');
 
       // render trace result
       this.render_target.bind();
@@ -234,13 +234,13 @@ export class PathTraceEngine extends Engine {
         this.swap_target.unbind();
       }
 
-
       // display
       this.renderer.setPipeline(this.render_pipeline!);
-      this.render_block.get<UniformVector4>(FRAME_STATUS_LABEL)!.set(this.defer_frame_index, this.defer_sample_count, -1, -1);
+      this.render_block.get<UniformVector4>(FRAME_STATUS_LABEL)!.set(this.defer_frame_index, this.defer_sample_count, Math.random(), -1);
       this.render_block.get<UniformTexture>(FRAME_TEXTURE_LABEL)!.set(this.swap_target.back.color_attachment);
       this.renderer.render();
 
+      this.defer_frame_index++;
     }
   }
 
