@@ -20,7 +20,6 @@ import { Target } from "../webgl/target";
 import { ShaderLib } from "../webgl/shader-lib";
 import { KERNEL_RAY_GENERATE, KERNEL_RAY_CLOSEST_HIT, KERNEL_RAY_MISSED } from "../constants";
 import { UniformTexture } from "../webgl/uniform/uniform-texture";
-import { UniformFloat } from "../webgl/uniform/uniform-float";
 import { UniformVector4 } from "../webgl/uniform/uniform-vector4";
 
 const TRACE_DEPTH_LABEL = 'TRACE_DEPTH';
@@ -49,7 +48,7 @@ export class PathTraceEngine extends Engine {
 
   private last_defer_time: number = 0;
   private defer_frame_index: number = 0;
-  private defer_sample_count: number = 2;
+  private defer_sample_count: number = 120;
   private defer_delay: number = 200;
 
   private need_draw: boolean = true;
@@ -73,13 +72,13 @@ export class PathTraceEngine extends Engine {
     this.blend_pipeline_descriptor.vertexShader = ScreenVert as any;
     this.blend_pipeline_descriptor.fragmentShader = BlendFrag as any;
     this.blend_block = new UniformBlock();
+    this.blend_block.create_uniform_vector4(FRAME_STATUS_LABEL);
     this.blend_pipeline_descriptor.block = this.blend_block;
 
     const render_pipeline_descriptor = new GPUPipelineDescriptor();
     render_pipeline_descriptor.vertexShader = ScreenVert as any;
     render_pipeline_descriptor.fragmentShader = RenderFrag as any;
     this.render_block = new UniformBlock();
-    this.render_block.create_uniform_vector4(FRAME_STATUS_LABEL);
     this.render_block.create_uniform_texture(FRAME_TEXTURE_LABEL, this.swap_target.back.color_attachment);
     render_pipeline_descriptor.block = this.render_block;
     this.render_pipeline = this.device.createPipeline(render_pipeline_descriptor);
@@ -214,32 +213,31 @@ export class PathTraceEngine extends Engine {
     }
 
     if (defer_render) {
-      console.log('defer render');
 
-      // render trace result
-      this.render_target.bind();
-      this.update();
-      this.renderer.render();
-      this.render_target.unbind();
+      { // render trace result
+        this.render_target.bind();
+        this.update();
+        this.renderer.render();
+        this.render_target.unbind();
+      }
 
       { // blend
         this.swap_target.bind();
         this.renderer.setPipeline(this.blend_pipeline!);
   
         this.blend_block.get<UniformTexture>(HISTORY_LABEL)!.set(this.swap_target.back.color_attachment);
-        this.blend_block.get<UniformFloat>(INDEX_LABEL)!.set(this.defer_frame_index);
+        this.blend_block.get<UniformVector4>(FRAME_STATUS_LABEL)!.set(this.defer_frame_index, this.defer_sample_count, Math.random(), -1);
   
         this.renderer.render();
-        this.swap_target.swap();
         this.swap_target.unbind();
+        this.swap_target.swap();
       }
 
-      // display
-      this.renderer.setPipeline(this.render_pipeline!);
-      this.render_block.get<UniformVector4>(FRAME_STATUS_LABEL)!.set(this.defer_frame_index, this.defer_sample_count, Math.random(), -1);
-      this.render_block.get<UniformTexture>(FRAME_TEXTURE_LABEL)!.set(this.swap_target.back.color_attachment);
-      this.renderer.render();
-
+      { // display
+        this.renderer.setPipeline(this.render_pipeline!);
+        this.render_block.get<UniformTexture>(FRAME_TEXTURE_LABEL)!.set(this.swap_target.back.color_attachment);
+        this.renderer.render();
+      }
       this.defer_frame_index++;
     }
   }

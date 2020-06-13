@@ -60,19 +60,28 @@ vec3 linear_to_srgb(vec3 i) {
   return mix(pow(i, vec3(0.41666)) * 1.055 - vec3(0.055), i * 12.92, vec3(lessThanEqual(i, vec3(0.0031308))));
 }
 
-vec3 rand_hammersley_cos(const vec3 n, float index, const float count, const float offset)
-{
-  uint i = uint(index);
-  float x = index / count;
+float radical_inverse(uint i) {
   i = (i << 16u) | (i >> 16u);
   i = ((i & 0x55555555u) << 1u) | ((i & 0xAAAAAAAAu) >> 1u);
   i = ((i & 0x33333333u) << 2u) | ((i & 0xCCCCCCCCu) >> 2u);
   i = ((i & 0x0F0F0F0Fu) << 4u) | ((i & 0xF0F0F0F0u) >> 4u);
   i = ((i & 0x00FF00FFu) << 8u) | ((i & 0xFF00FF00u) >> 8u);
-  vec2 r = vec2(x, (float(i) * 2.32830643653086963e-10 * 6.2831) + offset);
-  vec3 uu = normalize(cross(n, vec3(1.0, 1.0, 0.0))), vv = cross(uu, n);
-  float sqrtx = sqrt(r.x);
-  return normalize(vec3(sqrtx * cos(r.y) * uu + sqrtx * sin(r.y) * vv + sqrt(1.0 - r.x) * n));
+  return float(i) * 2.32830643653086963e-10;
+}
+
+vec3 hemisphere_sample_cos(const vec3 n, vec2 coord) {
+  float phi = coord.y * 2.0 * PI;
+  float cos_theta = sqrt(1.0 - coord.x);
+  float sin_theta = sqrt(1.0 - cos_theta * cos_theta);
+
+  vec3 left = normalize(cross(n, vec3(0.0, 1.0, 0.0)));
+  vec3 up = cross(left, n);
+
+  return normalize(cos(phi) * sin_theta * left + sin(phi) * sin_theta * up + cos_theta * n);
+}
+
+vec3 hammersley_sample_cos(const vec3 n, float i, float count) {
+  return hemisphere_sample_cos(n, vec2(i / count, radical_inverse(uint(i))));
 }
 
 #endif
