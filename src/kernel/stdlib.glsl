@@ -56,6 +56,10 @@ float rand(const vec2 i){
   return fract(sin(dot(i.xy ,vec2(12.9898,78.233))) * 43758.5453);
 }
 
+vec3 linear_to_srgb(vec3 i) {
+  return mix(pow(i, vec3(0.41666)) * 1.055 - vec3(0.055), i * 12.92, vec3(lessThanEqual(i, vec3(0.0031308))));
+}
+
 vec3 rand_hammersley_cos(const vec3 n, float index, const float count, const float offset)
 {
   uint i = uint(index);

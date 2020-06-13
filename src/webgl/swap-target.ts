@@ -1,41 +1,53 @@
+import { Target } from "./target";
+import { Color4 } from "../math/color";
+import { GPUDevice } from "../device";
+
 export class SwapTarget {
 
-  colorTexture: WebGLTexture;
-  depthBuffer: WebGLRenderbuffer;
-  frameBuffer: WebGLFramebuffer;
+  front: Target;
+  back: Target;
 
-  constructor(public gl: WebGLRenderingContext, public width: number, public height: number) {
-    this.colorTexture = gl.createTexture()!;
-    gl.bindTexture(gl.TEXTURE_2D, this.colorTexture);
-    gl.texImage2D(gl.TEXTURE_2D, 0, (gl as any).RGBA32F, width, height, 0, gl.RGBA, gl.FLOAT, null);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-    gl.bindTexture(gl.TEXTURE_2D, null);
+  get gl(): WebGL2RenderingContext {
+    return this.device.getContext<WebGL2RenderingContext>();
+  }
 
-    this.depthBuffer = gl.createRenderbuffer()!;
-    gl.bindRenderbuffer(gl.RENDERBUFFER, this.depthBuffer);
-    gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height);
-    gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+  constructor(public device: GPUDevice, public width: number, public height: number) {
+    this.front = new Target(device, width, height);
+    this.back = new Target(device, width, height);
+  }
 
-    this.frameBuffer = gl.createFramebuffer()!;
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBuffer);
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.colorTexture, 0);
-    gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, this.depthBuffer);
+  swap(): void {
+    let tmp = this.front;
+    this.front = this.back;
+    this.back = tmp;
+  }
+
+  bind(): void {
+    const gl = this.gl;
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.front.frameBuffer);
+    gl.viewport(0, 0, this.width, this.height);
+  }
+
+  clear(color: Color4, colorMask: boolean, depthMask: boolean, stencilMask: boolean): void {
+    const gl = this.gl;
+    if (colorMask)
+      gl.clearColor(color.R, color.G, color.B, color.A);
+
+    let mask = 0;
+    if (colorMask) mask |= gl.COLOR_BUFFER_BIT;
+    if (depthMask) mask |= gl.DEPTH_BUFFER_BIT;
+    if (stencilMask) mask |= gl.STENCIL_BUFFER_BIT;
+
+    gl.clear(mask);
+  }
+
+  unbind(): void {
+    const gl = this.gl;
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
   }
 
-  bind() {
-    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.frameBuffer);
-    this.gl.viewport(0, 0, this.width, this.height);
-  }
-
-  unbind() {
-    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
-  }
-
   delete() {
-    this.gl.deleteRenderbuffer(this.depthBuffer);
-    this.gl.deleteFramebuffer(this.frameBuffer);
-    this.gl.deleteTexture(this.colorTexture);
+    this.front.delete();
+    this.back.delete();
   }
 }

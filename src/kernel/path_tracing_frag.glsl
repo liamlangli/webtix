@@ -12,11 +12,15 @@ layout(std140) uniform Camera {
   float fov;
 };
 
+// [frame_index, sample_count, -1, -1]
+uniform vec4 frame_status;
+
 // input & output
 in vec2 uv;
 out vec4 color;
 
 bool terminated = false;
+float frame_index, sample_count;
 
 #include <stdlib>
 #buffer <bvh>
@@ -36,6 +40,9 @@ void main()
   trace_result result;
   bool hit;
 
+  frame_index = frame_status.x;
+  sample_count = frame_status.y;
+
   r = ray_generate();
 
   int i;
@@ -46,11 +53,13 @@ void main()
       r = ray_closest_hit(r, result);
     } else {
       ray_missed(r);
-      return;
+      break;
     }
 
     if (terminated) {
-      return;
+      break;
     }
   }
+
+  color = vec4(linear_to_srgb(color.rgb), color.a);
 }

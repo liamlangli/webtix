@@ -1,6 +1,6 @@
-import { GPUDevice } from "../../device";
 import { Uniform } from "./uniform";
 import { Matrix4 } from "../../math/mat4";
+import { GPUPipeline } from "../pipeline";
 
 export class UniformMatrix4 implements Uniform {
 
@@ -8,8 +8,8 @@ export class UniformMatrix4 implements Uniform {
 
   location?: WebGLUniformLocation | undefined;
 
-  upload(device: GPUDevice): void {
-    const gl = device.getContext<WebGL2RenderingContext>();
+  upload(pipeline: GPUPipeline): void {
+    const gl = pipeline.device.getContext<WebGL2RenderingContext>();
     gl.uniformMatrix4fv(this.location!, false, this.matrix.elements);
   }
 

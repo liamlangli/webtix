@@ -4,7 +4,13 @@
  * output vec4 color; // output color
  **/
 ray ray_closest_hit(const ray i, const trace_result result) {
-  color += vec4(reflect(result.normal, i.direction) * 0.5 + 0.5, 1.0);
+
+  vec3 reflect_direction = rand_hammersley_cos(result.normal, frame_index, sample_count, rand(uv));
+  ray bounce_ray = ray(reflect_direction, result.position + reflect_direction * EPSILON);
+  bool blocked = trace_shadow(bounce_ray);
+
+  if (!blocked)
+    color += vec4(1.0);
 
   terminated = true;
 

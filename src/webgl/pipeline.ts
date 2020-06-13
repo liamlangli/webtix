@@ -21,6 +21,9 @@ export class GPUPipeline {
   block?: UniformBlock;
   defines?: ObjectMap<string>;
 
+  active_texture_slot: number = 0;
+  max_texture_slot: number = 16;
+
   private vertexShader: string;
   private fragmentShader: string;
 
@@ -52,7 +55,7 @@ export class GPUPipeline {
     while (match = include_pattern.exec(source)) {
       const match_pattern = match[0];
       const kernel_name = match[1];
-      const kernel_clip = ShaderLib.request(kernel_name);
+      const kernel_clip = ShaderLib.get(kernel_name);
       source = source.replace(match_pattern, kernel_clip);
     }
 
@@ -96,8 +99,9 @@ export class GPUPipeline {
   activate() {
     const gl = this.device.getContext<WebGL2RenderingContext>();
     gl.useProgram(this.program);
+    this.active_texture_slot = 0;
     if (this.block) {
-      this.block.upload(this.device);
+      this.block.upload(this);
     }
   }
 

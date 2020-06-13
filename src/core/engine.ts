@@ -17,9 +17,7 @@ export class Engine {
   // engine prepare stage
   protected start(): void {}
 
-  frame = (): void => {
-    this.update();
-    this.renderer.render();
+  protected frame = (time?: number): void => {
     this.animation_index = requestAnimationFrame(this.frame);
   }
 

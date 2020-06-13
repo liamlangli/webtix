@@ -1,5 +1,6 @@
 import { GPUDevice } from "../../device";
 import { Uniform } from "./uniform";
+import { GPUPipeline } from "../pipeline";
 
 export class UniformFloat implements Uniform {
 
@@ -12,8 +13,8 @@ export class UniformFloat implements Uniform {
     return this;
   }
 
-  upload(device: GPUDevice): void {
-    const gl = device.getContext<WebGL2RenderingContext>();
+  upload(pipeline: GPUPipeline): void {
+    const gl = pipeline.device.getContext<WebGL2RenderingContext>();
     gl.uniform1f(this.location!, this.value);
   }
 

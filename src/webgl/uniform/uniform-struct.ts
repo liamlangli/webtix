@@ -1,5 +1,5 @@
-import { GPUDevice } from "../../device";
 import { Uniform } from "./uniform";
+import { GPUPipeline } from "../pipeline";
 
 export function isUniformStruct(uniform: Uniform): uniform is UniformStruct {
   return !!(uniform as any).isUniformStruct;
@@ -15,8 +15,8 @@ export class UniformStruct implements Uniform {
 
   constructor(public name: string, public buffer: Float32Array, public slot: number = 0) {}
 
-  upload(device: GPUDevice): void {
-    const gl = device.getContext<WebGL2RenderingContext>();
+  upload(pipeline: GPUPipeline): void {
+    const gl = pipeline.device.getContext<WebGL2RenderingContext>();
     if (this.gpu_buffer === undefined) {
       this.gpu_buffer = gl.createBuffer()!;
       gl.bindBuffer(gl.UNIFORM_BUFFER, this.gpu_buffer);

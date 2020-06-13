@@ -19,9 +19,11 @@ export class SphericalControl {
   offset: Vector3 = new Vector3();
 
   speed: number = 1.0;
+  zoomSpeed: number = 0.1;
 
   constructor(public element: HTMLCanvasElement) {
     element.addEventListener('mousedown', this.onmousedown, false);
+    element.addEventListener('mousewheel', this.onmousewheel, false);
   }
 
   onmousedown = (event: MouseEvent): void => {
@@ -49,12 +51,31 @@ export class SphericalControl {
     window.removeEventListener('mouseup', this.onmouseup);
   }
 
+  onmousewheel = (event: Event): void => {
+    const e = event as any;
+
+    let delta = 0;
+    if (e.wheelDelta !== void 0) {
+        delta = e.wheelDelta;
+    } else if (e.deltaY !== void 0) {
+        delta = -e.deltaY;
+    }
+    delta = delta > 0 ? -0.1 : 0.1;
+    this.zoom(1.0 + this.zoomSpeed * delta);
+    this.update();
+    EventHub.fire(GlobalEvent.MouseMove);
+  }
+
   rotate_left(angle: number): void {
     this.spherical.phi -= angle;
   }
 
   rotate_up(angle: number): void {
     this.spherical.theta = math_clamp(this.spherical.theta - angle, 1e-3, Math.PI);
+  }
+
+  zoom(scale: number): void {
+    this.spherical.radius *= scale;
   }
 
   update(): void {

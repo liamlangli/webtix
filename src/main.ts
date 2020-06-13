@@ -5,11 +5,12 @@ import draco_decode from "./loaders/draco-loader";
 
 const canvas = document.getElementById('view') as HTMLCanvasElement
 const renderer = new Renderer(canvas);
-(window as any).renderer = renderer;
+const engine = new PathTraceEngine(renderer);
+
+const global = (window as any);
+global.engine = engine;
 
 async function main() {
-  const engine = new PathTraceEngine(renderer);
-
   const geometry = await draco_decode('draco/helmet.drc');
   engine.set_geometry(geometry);
   engine.run();

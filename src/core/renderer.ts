@@ -2,8 +2,6 @@ import { GPUPipeline } from '../webgl/pipeline';
 import { GPUDevice } from '../device';
 import { GPUVertexArray } from '../webgl/vertex-array';
 import { createScreenQuad } from '../utils/prefab';
-import EventHub from './event';
-import { GlobalEvent } from './global-event';
 
 export class Renderer {
 
@@ -16,9 +14,6 @@ export class Renderer {
   height: number;
 
   private screenQuadVertexArray: GPUVertexArray;
-
-  private frame_index: number = 0;
-  private sample_count: number = 1;
 
   constructor(public canvas: HTMLCanvasElement) {
 
@@ -47,31 +42,11 @@ export class Renderer {
     }
 
     this.screenQuadVertexArray = createScreenQuad(this.device);
-
-    EventHub.on(GlobalEvent.MouseMove, () => {
-      this.frame_index = 0;
-    });
-  }
-
-  async launch(): Promise<void> {
-    const device = this.device;
-
-   
-
-    // view
-
   }
 
   render(): void {
     if (this.pipeline) {
-      if (this.frame_index >= this.sample_count) {
-        return;
-      }
-      ++this.frame_index;
-
-      if (this.pipeline.block) {
-        this.pipeline.block.upload(this.device);
-      }
+      this.pipeline.activate();
 
       const gl = this.device.getContext<WebGL2RenderingContext>();
       this.screenQuadVertexArray.activate();

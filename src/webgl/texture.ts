@@ -5,6 +5,8 @@ import { BufferArray } from "../types";
 export interface GPUTexture {
   activate(slot: number): void;
   bufferData(data: BufferArray, width: number, height: number): void;
+  raw<T>(): T;
+  delete(): void;
 }
 
 export class GPUTextureDescriptor {
@@ -69,5 +71,14 @@ export class GPUTextureInternal implements GPUTexture {
     const gl = this.device.getContext<WebGL2RenderingContext>();
     gl.activeTexture(gl.TEXTURE0 + slot);
     gl.bindTexture(this.type, this.texture);
+  }
+
+  raw<T>(): T {
+    return this.texture as T;
+  }
+
+  delete(): void {
+    const gl = this.device.getContext<WebGL2RenderingContext>();
+    gl.deleteTexture(this.texture);
   }
 }

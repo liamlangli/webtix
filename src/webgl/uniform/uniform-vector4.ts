@@ -1,5 +1,5 @@
-import { GPUDevice } from "../../device";
 import { Uniform } from "./uniform";
+import { GPUPipeline } from "../pipeline";
 
 export class UniformVector4 implements Uniform {
 
@@ -25,8 +25,8 @@ export class UniformVector4 implements Uniform {
     return this;
   }
 
-  upload(device: GPUDevice): void {
-    const gl = device.getContext<WebGL2RenderingContext>();
+  upload(pipeline: GPUPipeline): void {
+    const gl = pipeline.device.getContext<WebGL2RenderingContext>();
     gl.uniform4f(this.location!, this.x, this.y, this.z, this.w);
   }
 
