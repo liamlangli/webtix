@@ -15,5 +15,4 @@ void main()
 {
   float index = frame_status.x + 1.0;
   color = vec4(mix(texture(history, uv).rgb, texture(frame, uv).rgb, 1.0 / index), 1.0);
-  // color = vec4(vec3(1.0 / index), 1.0);
 }

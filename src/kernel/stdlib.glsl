@@ -66,7 +66,7 @@ float radical_inverse(uint i) {
   i = ((i & 0x33333333u) << 2u) | ((i & 0xCCCCCCCCu) >> 2u);
   i = ((i & 0x0F0F0F0Fu) << 4u) | ((i & 0xF0F0F0F0u) >> 4u);
   i = ((i & 0x00FF00FFu) << 8u) | ((i & 0xFF00FF00u) >> 8u);
-  return float(i) * 2.32830643653086963e-10;
+  return float(i) * 2.32830643653086963e-10 + fract(rand(uv));
 }
 
 vec3 hemisphere_sample_cos(const vec3 n, vec2 coord) {

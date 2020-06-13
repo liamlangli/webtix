@@ -27,7 +27,11 @@ const TRACE_DEPTH_LABEL = 'TRACE_DEPTH';
 const FRAME_TEXTURE_LABEL = 'frame';
 const FRAME_STATUS_LABEL = 'frame_status';
 const HISTORY_LABEL = 'history';
-const INDEX_LABEL = 'index';
+
+export enum PathTraceMode {
+  Render = 0,
+  Bake = 1
+}
 
 export class PathTraceEngine extends Engine {
 
@@ -48,12 +52,14 @@ export class PathTraceEngine extends Engine {
 
   private last_defer_time: number = 0;
   private defer_frame_index: number = 0;
-  private defer_sample_count: number = 120;
+  private defer_sample_count: number = 200;
   private defer_delay: number = 200;
 
   private need_draw: boolean = true;
   private swap_target: SwapTarget;
   private render_target: Target;
+
+  private mode: PathTraceMode = PathTraceMode.Render;
 
   constructor(public renderer: Renderer) {
     super(renderer);
@@ -72,8 +78,11 @@ export class PathTraceEngine extends Engine {
     this.blend_pipeline_descriptor.vertexShader = ScreenVert as any;
     this.blend_pipeline_descriptor.fragmentShader = BlendFrag as any;
     this.blend_block = new UniformBlock();
-    this.blend_block.create_uniform_vector4(FRAME_STATUS_LABEL);
+    this.blend_block.create_uniform_vector4(FRAME_STATUS_LABEL, this.defer_frame_index, this.defer_sample_count, Math.random(), -1);
+    this.blend_block.create_uniform_texture(FRAME_TEXTURE_LABEL, this.render_target.color_attachment);
+    this.blend_block.create_uniform_texture(HISTORY_LABEL, this.swap_target.front.color_attachment);
     this.blend_pipeline_descriptor.block = this.blend_block;
+    this.blend_pipeline = this.device.createPipeline(this.blend_pipeline_descriptor);
 
     const render_pipeline_descriptor = new GPUPipelineDescriptor();
     render_pipeline_descriptor.vertexShader = ScreenVert as any;
@@ -82,11 +91,6 @@ export class PathTraceEngine extends Engine {
     this.render_block.create_uniform_texture(FRAME_TEXTURE_LABEL, this.swap_target.back.color_attachment);
     render_pipeline_descriptor.block = this.render_block;
     this.render_pipeline = this.device.createPipeline(render_pipeline_descriptor);
-
-    this.blend_block.create_uniform_texture(FRAME_TEXTURE_LABEL, this.render_target.color_attachment);
-    this.blend_block.create_uniform_texture(HISTORY_LABEL, this.swap_target.front.color_attachment);
-    this.blend_block.create_uniform_float(INDEX_LABEL, this.defer_frame_index);
-    this.blend_pipeline = this.device.createPipeline(this.blend_pipeline_descriptor);
 
     this.camera = new Camera(Math.PI / 2, 1.0);
     this.camera.position.set(0, 0, -2.0);
@@ -101,6 +105,10 @@ export class PathTraceEngine extends Engine {
       this.last_defer_time = performance.now();
       this.defer_frame_index = 0;
     });
+  }
+
+  set_mode(mode: PathTraceMode): void {
+    this.mode = mode;
   }
 
   set_geometry(geometry: DracoGeometry): void {
@@ -214,8 +222,10 @@ export class PathTraceEngine extends Engine {
 
     if (defer_render) {
 
+
       { // render trace result
         this.render_target.bind();
+        this.renderer.setPipeline(this.trace_pipeline!);
         this.update();
         this.renderer.render();
         this.render_target.unbind();
