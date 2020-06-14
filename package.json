@@ -5,6 +5,10 @@
   "type": "dist/src/index.d.ts",
   "license": "MIT",
   "description": "WebGL2 based path-tracing render engine.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AngusLang/webtix"
+  },
   "author": "anguslang",
   "scripts": {
     "dev": "webpack-dev-server --watch",
