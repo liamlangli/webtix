@@ -2,8 +2,6 @@ const path = require('path');
 const webpack = require('webpack');
 const root = (...args) => path.resolve(__dirname, ...args);
 
-const mode = 'development';
-
 const devServer = {
   contentBase: root('./server'),
   inline: true,
@@ -35,10 +33,12 @@ const plugins = [
   new webpack.HotModuleReplacementPlugin()
 ];
 
-const generate_config = (isDev) => {
+const generate_config = (mode) => {
+  const is_dev = mode === 'development';
   const config = {
-    mode, output,
-    entry: isDev ? dev_entry : prod_entry,
+    mode,
+    output,
+    entry: is_dev ? dev_entry : prod_entry,
     resolve: {
       extensions: ['.ts', '.js', '.glsl']
     },
@@ -49,7 +49,7 @@ const generate_config = (isDev) => {
     devServer
   };
 
-  if (isDev) {
+  if (is_dev) {
     config.devtool = 'source-map';
   }
 
@@ -57,5 +57,6 @@ const generate_config = (isDev) => {
 };
 
 module.exports = (env, argv) => {
-  return generate_config(argv.mode === 'development');
+  return generate_config(argv.mode || 'development');
 };
+
