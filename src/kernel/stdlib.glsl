@@ -81,7 +81,7 @@ vec3 hemisphere_sample_cos(const vec3 n, vec2 coord) {
 }
 
 vec3 hammersley_sample_cos(const vec3 n, float i, float count) {
-  return hemisphere_sample_cos(n, vec2(i / count, radical_inverse(uint(i))));
+  return hemisphere_sample_cos(n, vec2(1.0 - i / count, radical_inverse(uint(i))));
 }
 
 #endif

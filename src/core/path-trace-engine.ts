@@ -205,7 +205,7 @@ export class PathTraceEngine extends Engine {
     camera.position.copy(this.control.target);
     camera.look_at(this.control.center);
     camera.write(this.camera_uniform!.buffer);
-    this.trace_block.get<UniformVector4>(FRAME_STATUS_LABEL)!.set(this.defer_frame_index, this.defer_sample_count, Math.random(), -1);
+    this.trace_block.get<UniformVector4>(FRAME_STATUS_LABEL)!.set(this.defer_frame_index, this.defer_sample_count, Math.random(), this.renderer.width);
   }
 
   frame = (time?: number): void => {
@@ -236,7 +236,7 @@ export class PathTraceEngine extends Engine {
         this.renderer.setPipeline(this.blend_pipeline!);
   
         this.blend_block.get<UniformTexture>(HISTORY_LABEL)!.set(this.swap_target.back.color_attachment);
-        this.blend_block.get<UniformVector4>(FRAME_STATUS_LABEL)!.set(this.defer_frame_index, this.defer_sample_count, Math.random(), -1);
+        this.blend_block.get<UniformVector4>(FRAME_STATUS_LABEL)!.set(this.defer_frame_index, this.defer_sample_count, Math.random(), this.renderer.width);
   
         this.renderer.render();
         this.swap_target.unbind();

@@ -1,8 +1,10 @@
 {
-  "name": "arch",
-  "version": "1.0.0",
+  "name": "webtix",
+  "version": "0.1.0",
   "main": "index.js",
   "license": "MIT",
+  "description": "WebGL2 based path-tracing render engine.",
+  "author": "anguslang",
   "scripts": {
     "dev": "webpack-dev-server --watch"
   },
