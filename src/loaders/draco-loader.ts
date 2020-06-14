@@ -43,7 +43,7 @@ export function draco_set_attribute(geometry: DracoGeometry, name: string, array
 /**
  * decode draco geometry from arraybuffer
  */
-export default async function draco_decode(source: string): Promise<DracoGeometry> {
+export async function draco_decode(source: string): Promise<DracoGeometry> {
   const config = {
     attributeIDs: {
       position: 'POSITION',

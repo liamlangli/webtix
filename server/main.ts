@@ -1,7 +1,7 @@
 import { Renderer } from '../src/core/renderer';
 import { snapshot_save_canvas } from '../src/utils/snapshot';
 import { PathTraceEngine } from '../src/core/path-trace-engine';
-import draco_decode from '../src/loaders/draco-loader';
+import { draco_decode } from '../src/loaders/draco-loader';
 
 const canvas = document.getElementById('view') as HTMLCanvasElement
 const renderer = new Renderer(canvas);

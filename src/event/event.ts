@@ -82,7 +82,7 @@ export class EventNode {
   }
 }
 
-export default class EventHub {
+export class EventHub {
 
   private static node = new EventNode();
 

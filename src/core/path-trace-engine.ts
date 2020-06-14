@@ -14,7 +14,7 @@ import * as PathTracingFrag from '../kernel/path_tracing_frag.glsl';
 import * as BlendFrag from '../kernel/blend_frag.glsl';
 import * as RenderFrag from '../kernel/render_frag.glsl';
 import { SwapTarget } from '../webgl/swap-target';
-import EventHub from '../event/event';
+import { EventHub } from '../event/event';
 import { GlobalEvent } from '../event/global-event';
 import { Target } from '../webgl/target';
 import { ShaderLib } from '../webgl/shader-lib';
