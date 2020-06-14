@@ -1,5 +1,5 @@
-import { BufferArray } from "../types";
-import { Spherical } from "./spherical";
+import { BufferArray } from '../types';
+import { Spherical } from './spherical';
 
 export class Vector3 {
 

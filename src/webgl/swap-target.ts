@@ -1,6 +1,6 @@
-import { Target } from "./target";
-import { Color4 } from "../math/color";
-import { GPUDevice } from "../device";
+import { Target } from './target';
+import { Color4 } from '../math/color';
+import { GPUDevice } from '../device';
 
 export class SwapTarget {
 

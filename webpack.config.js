@@ -11,13 +11,17 @@ const devServer = {
   host: '0.0.0.0'
 }
 
-const entry = {
-  app: './src/main.ts',
+const dev_entry = {
+  app: './server/main.ts'
+}
+
+const prod_entry = {
+  index: './src/index.ts'
 }
 
 const output = {
   filename: '[name].js',
-  path: root('./server'),
+  path: root('./dist'),
   publicPath: '/'
 }
 
@@ -31,17 +35,27 @@ const plugins = [
   new webpack.HotModuleReplacementPlugin()
 ];
 
-const config = {
-  mode, entry, output,
-  devtool: 'source-map',
-  resolve: {
-    extensions: ['.ts', '.js', '.glsl']
-  },
-  module: {
-    rules
-  },
-  plugins,
-  devServer
+const generate_config = (isDev) => {
+  const config = {
+    mode, output,
+    entry: isDev ? dev_entry : prod_entry,
+    resolve: {
+      extensions: ['.ts', '.js', '.glsl']
+    },
+    module: {
+      rules
+    },
+    plugins,
+    devServer
+  };
+
+  if (isDev) {
+    config.devtool = 'source-map';
+  }
+
+  return config;
 };
 
-module.exports = config;
+module.exports = (env, argv) => {
+  return generate_config(argv.mode === 'development');
+};

@@ -1,7 +1,7 @@
 /**
  * more into see doc/OBJLoader.md
  */
-import { Color3 } from "../math/color";
+import { Color3 } from '../math/color';
 
 const re_space   = /\s+/;
 

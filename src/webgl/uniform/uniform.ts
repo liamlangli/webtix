@@ -1,5 +1,5 @@
-import { GPUDevice } from "../../device";
-import { GPUPipeline } from "../pipeline";
+import { GPUDevice } from '../../device';
+import { GPUPipeline } from '../pipeline';
 
 export interface Uniform {
   name: string;

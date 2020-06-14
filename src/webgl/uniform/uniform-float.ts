@@ -1,6 +1,6 @@
-import { GPUDevice } from "../../device";
-import { Uniform } from "./uniform";
-import { GPUPipeline } from "../pipeline";
+import { GPUDevice } from '../../device';
+import { Uniform } from './uniform';
+import { GPUPipeline } from '../pipeline';
 
 export class UniformFloat implements Uniform {
 

@@ -1,4 +1,4 @@
-import { BufferArray } from "../types";
+import { BufferArray } from '../types';
 
 const taskCache = new WeakMap();
 
@@ -217,7 +217,7 @@ async function getWorker(taskID: number, taskCost: number): Promise<Worker> {
             break;
 
           default:
-            console.error('DRACOLoader: Unexpected message, "' + message.type + '"');
+            console.error(`DRACOLoader: Unexpected message, ${message.type}`);
         }
       };
 

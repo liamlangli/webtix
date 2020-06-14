@@ -1,6 +1,6 @@
-import { GPUDevice } from "../device";
-import { TextureFilter, PixelFormat, LinearFilter, RGBFormat, TextureType, TextureDataType, TEXTURE_2D, FloatType } from "./webgl2-constant";
-import { BufferArray } from "../types";
+import { GPUDevice } from '../device';
+import { TextureFilter, PixelFormat, LinearFilter, RGBFormat, TextureType, TextureDataType, TEXTURE_2D, FloatType } from './webgl2-constant';
+import { BufferArray } from '../types';
 
 export interface GPUTexture {
   activate(slot: number): void;

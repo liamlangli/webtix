@@ -1,12 +1,12 @@
-import { GPUTexture } from "./texture";
-import { GPUPipeline } from "./pipeline";
-import { Matrix4 } from "../math/mat4";
-import { Uniform } from "./uniform/uniform";
-import { UniformVector4 } from "./uniform/uniform-vector4";
-import { UniformTexture } from "./uniform/uniform-texture";
-import { UniformMatrix4 } from "./uniform/uniform-mat4";
-import { isUniformStruct, UniformStruct } from "./uniform/uniform-struct";
-import { UniformFloat } from "./uniform/uniform-float";
+import { GPUTexture } from './texture';
+import { GPUPipeline } from './pipeline';
+import { Matrix4 } from '../math/mat4';
+import { Uniform } from './uniform/uniform';
+import { UniformVector4 } from './uniform/uniform-vector4';
+import { UniformTexture } from './uniform/uniform-texture';
+import { UniformMatrix4 } from './uniform/uniform-mat4';
+import { isUniformStruct, UniformStruct } from './uniform/uniform-struct';
+import { UniformFloat } from './uniform/uniform-float';
 
 export class UniformBlock {
 

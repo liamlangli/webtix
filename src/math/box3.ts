@@ -2,8 +2,8 @@
  * axes align bounding box
  */
 
-import { Point3, Vector3 } from "./vector3";
-import { BufferArray } from "../types";
+import { Point3, Vector3 } from './vector3';
+import { BufferArray } from '../types';
 
 export class Box3 {
 

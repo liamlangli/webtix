@@ -1,5 +1,5 @@
-import { Uniform } from "./uniform";
-import { GPUPipeline } from "../pipeline";
+import { Uniform } from './uniform';
+import { GPUPipeline } from '../pipeline';
 
 export class UniformVector4 implements Uniform {
 

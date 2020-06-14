@@ -1,5 +1,5 @@
-import { Vector3 } from "../math/vector3";
-import { Matrix4 } from "../math/mat4";
+import { Vector3 } from '../math/vector3';
+import { Matrix4 } from '../math/mat4';
 
 export class Camera {
 

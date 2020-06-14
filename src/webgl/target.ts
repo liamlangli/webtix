@@ -1,6 +1,6 @@
-import { GPUDevice } from "../device";
-import { GPUTexture, GPUTextureDescriptor } from "./texture";
-import { RGBAFormat, NearestFilter } from "./webgl2-constant";
+import { GPUDevice } from '../device';
+import { GPUTexture, GPUTextureDescriptor } from './texture';
+import { RGBAFormat, NearestFilter } from './webgl2-constant';
 
 export class Target {
 

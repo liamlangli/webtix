@@ -1,5 +1,5 @@
-import { Renderer } from "./renderer";
-import { GPUDevice } from "../device";
+import { Renderer } from './renderer';
+import { GPUDevice } from '../device';
 
 export class Engine {
 

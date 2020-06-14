@@ -1,6 +1,6 @@
-import { Uniform } from "./uniform";
-import { GPUTexture } from "../texture";
-import { GPUPipeline } from "../pipeline";
+import { Uniform } from './uniform';
+import { GPUTexture } from '../texture';
+import { GPUPipeline } from '../pipeline';
 
 export class UniformTexture implements Uniform {
 

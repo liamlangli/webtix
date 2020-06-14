@@ -1,6 +1,6 @@
-import { GPUTexture, GPUTextureDescriptor } from "../webgl/texture";
-import { GPUDevice } from "../device";
-import { NearestFilter } from "../webgl/webgl2-constant";
+import { GPUTexture, GPUTextureDescriptor } from '../webgl/texture';
+import { GPUDevice } from '../device';
+import { NearestFilter } from '../webgl/webgl2-constant';
 
 export interface TextureBufferInfo {
   count: number;

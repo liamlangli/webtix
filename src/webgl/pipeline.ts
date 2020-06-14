@@ -1,8 +1,8 @@
-import { ShaderLib } from "./shader-lib";
-import { GPUDevice } from "../device";
-import { TextureBuffer } from "../core/texture-buffer";
-import { UniformBlock } from "./uniform-block";
-import { ObjectMap } from "../types";
+import { ShaderLib } from './shader-lib';
+import { GPUDevice } from '../device';
+import { TextureBuffer } from '../core/texture-buffer';
+import { UniformBlock } from './uniform-block';
+import { ObjectMap } from '../types';
 
 const include_pattern = /#include <(.+)>/g;
 const buffer_pattern = /#buffer <(.+)>/g;

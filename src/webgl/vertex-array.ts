@@ -1,5 +1,5 @@
-import { GPUDevice } from "../device";
-import { GPUBuffer } from "./buffer";
+import { GPUDevice } from '../device';
+import { GPUBuffer } from './buffer';
 
 export interface GPUVertexArray {
   activate(): void;

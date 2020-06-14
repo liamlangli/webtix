@@ -1,5 +1,5 @@
-import { Vector3 } from "./vector3";
-import { math_clamp } from "./math-utils";
+import { Vector3 } from './vector3';
+import { math_clamp } from './math-utils';
 
 export class Spherical {
 

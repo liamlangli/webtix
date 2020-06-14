@@ -1,7 +1,7 @@
-import { GPUDevice } from "../../device";
-import { Uniform } from "./uniform";
-import { Vector3 } from "../../math/vector3";
-import { GPUPipeline } from "../pipeline";
+import { GPUDevice } from '../../device';
+import { Uniform } from './uniform';
+import { Vector3 } from '../../math/vector3';
+import { GPUPipeline } from '../pipeline';
 
 export class UniformVector3 implements Uniform {
 

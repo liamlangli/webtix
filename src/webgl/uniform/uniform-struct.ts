@@ -1,5 +1,5 @@
-import { Uniform } from "./uniform";
-import { GPUPipeline } from "../pipeline";
+import { Uniform } from './uniform';
+import { GPUPipeline } from '../pipeline';
 
 export function isUniformStruct(uniform: Uniform): uniform is UniformStruct {
   return !!(uniform as any).isUniformStruct;

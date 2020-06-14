@@ -1,6 +1,6 @@
-import { Uniform } from "./uniform";
-import { Matrix4 } from "../../math/mat4";
-import { GPUPipeline } from "../pipeline";
+import { Uniform } from './uniform';
+import { Matrix4 } from '../../math/mat4';
+import { GPUPipeline } from '../pipeline';
 
 export class UniformMatrix4 implements Uniform {
 

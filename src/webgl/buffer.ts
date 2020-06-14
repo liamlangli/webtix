@@ -1,6 +1,6 @@
-import { GPUDevice } from "../device";
-import { GPUBufferDataType, GPUFloat, BufferType, ARRAY_BUFFER } from "./webgl2-constant";
-import { BufferArray } from "../types";
+import { GPUDevice } from '../device';
+import { GPUBufferDataType, GPUFloat, BufferType, ARRAY_BUFFER } from './webgl2-constant';
+import { BufferArray } from '../types';
 
 export interface GPUBuffer {
   activate(location: number): void;

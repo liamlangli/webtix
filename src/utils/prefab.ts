@@ -1,7 +1,7 @@
-import { GPUVertexArray } from "../webgl/vertex-array";
-import { GPUBufferDescriptor } from "../webgl/buffer";
-import { GPUDevice } from "../device";
-import { GPUFloat, ARRAY_BUFFER } from "../webgl/webgl2-constant";
+import { GPUVertexArray } from '../webgl/vertex-array';
+import { GPUBufferDescriptor } from '../webgl/buffer';
+import { GPUDevice } from '../device';
+import { GPUFloat, ARRAY_BUFFER } from '../webgl/webgl2-constant';
 
 let _screenQuad: GPUVertexArray;
 export function createScreenQuad(device: GPUDevice): GPUVertexArray {
