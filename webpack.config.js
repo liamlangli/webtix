@@ -18,6 +18,7 @@ const prod_entry = {
 }
 
 const output = {
+  library: 'WTX',
   filename: '[name].js',
   path: root('./dist'),
   publicPath: '/'
