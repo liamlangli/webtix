@@ -12,6 +12,7 @@
     "ivec",
     "lilang",
     "mult",
+    "rgbe",
     "stdlib",
     "struct",
     "wasm",
