@@ -14,3 +14,8 @@ Assume that ray-tracing developers would like to share their render result with 
 - [x] Buffer texture sampler
 - [ ] BSDF kernel
 - [x] Free camera control
+
+## Documentations
+[builtin](./doc/builtin.md)   
+[buffer texture](./doc/buffer-texture.md)   
+[kernel node](./doc/kernel-node.md)   
