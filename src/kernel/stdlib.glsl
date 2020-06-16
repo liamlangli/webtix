@@ -9,6 +9,8 @@
 #define PI_INV 0.31830988618
 #define PI2_INV 0.15915494309
 
+float random_seed;
+
 struct ray {
   vec3 origin, direction;
 };
@@ -31,6 +33,10 @@ bool contain(const vec3 v, const vec3 b, const vec3 t) {
 
 float lerp(float a, float b, float t) {
   return a + (b - a) * t;
+}
+
+float square(float a) {
+  return a * a;
 }
 
 float box_intersect(const vec3 minV, const vec3 maxV, const ray r) {
@@ -59,8 +65,13 @@ float box_intersect(const vec3 minV, const vec3 maxV, const ray r) {
   return t_n;
 }
 
+// stable random func
 float rand(const vec2 i){
-  return fract(sin(dot(i.xy ,vec2(12.9898,78.233))) * 43758.5453);
+  return fract(sin(dot(i, vec2(12.9898,78.233))) * 43758.5453);
+}
+
+float rand_unstable(const vec2 i) {
+  return fract(sin(dot(i.yx + random_seed - .5, vec2(12.9898,78.233))) * 43758.5453);
 }
 
 vec3 linear_to_srgb(vec3 i) {
@@ -87,8 +98,28 @@ vec3 hemisphere_sample_cos(const vec3 n, vec2 coord) {
   return normalize(cos(phi) * sin_theta * left + sin(phi) * sin_theta * up + cos_theta * n);
 }
 
-vec3 hammersley_sample_cos(const vec3 n, float i, float count) {
+vec3 hemisphere_sample_uniform(const vec3 n, vec2 coord) {
+  float phi = coord.y * 2.0 * PI;
+  float cos_theta = 1.0 - coord.x;
+  float sin_theta = sqrt(1.0 - cos_theta * cos_theta);
+
+  vec3 left = normalize(cross(n, vec3(0.0, 1.0, 0.0)));
+  vec3 up = cross(left, n);
+
+  return normalize(cos(phi) * sin_theta * left + sin(phi) * sin_theta * up + cos_theta * n);
+}
+
+vec2 hammersley_sample_2d(float i, float count) {
+  return vec2(1.0 - i / count, radical_inverse(uint(i)));
+}
+
+vec3 hammersley_sample_cos(const vec3 n, const float i, const float count) {
   return hemisphere_sample_cos(n, vec2(1.0 - i / count, radical_inverse(uint(i))));
 }
+
+vec3 hammersley_sample_uniform(const vec3 n, const float i, const float count) {
+  return hemisphere_sample_uniform(n, vec2(1.0 - i / count, radical_inverse(uint(i))));
+}
+
 
 #endif

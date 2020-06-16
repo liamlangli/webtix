@@ -12,15 +12,14 @@ layout(std140) uniform Camera {
   float fov;
 };
 
-// [frame_index, sample_count, -1, -1]
-uniform vec4 frame_status;
-
 // input & output
 in vec2 uv;
 out vec4 color;
 
+// [frame_index, sample_count, -1, -1]
+uniform vec4 frame_status;
 bool terminated = false;
-float frame_index, sample_count, random_seed, screen_width;
+float frame_index, sample_count, screen_width;
 
 #include <stdlib>
 #buffer <bvh>

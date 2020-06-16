@@ -52,7 +52,7 @@ export class PathTraceEngine extends Engine {
 
   private last_defer_time: number = 0;
   private defer_frame_index: number = 0;
-  private defer_sample_count: number = 200;
+  private defer_sample_count: number = 64;
   private defer_delay: number = 200;
 
   private need_draw: boolean = true;
@@ -170,6 +170,10 @@ export class PathTraceEngine extends Engine {
    */
   set_ray_generate_kernel(kernel: string): void {
     ShaderLib.set(KERNEL_RAY_GENERATE, kernel);
+  }
+
+  set_sample_count(count: number): void {
+    this.defer_sample_count = count;
   }
 
   /**
