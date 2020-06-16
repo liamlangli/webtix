@@ -31,9 +31,7 @@ bool contain(const vec3 v, const vec3 b, const vec3 t) {
   return dot(step(b, v), step(v, t)) >= 3.0;
 }
 
-float lerp(float a, float b, float t) {
-  return a + (b - a) * t;
-}
+#define lerp(a, b, t) (a + (b - a) * t)
 
 float square(float a) {
   return a * a;
@@ -76,6 +74,10 @@ float rand_unstable(const vec2 i) {
 
 vec3 linear_to_srgb(vec3 i) {
   return mix(pow(i, vec3(0.41666)) * 1.055 - vec3(0.055), i * 12.92, vec3(lessThanEqual(i, vec3(0.0031308))));
+}
+
+float luminance(vec3 c) {
+  return dot(c, vec3(0.299, 0.587, 0.114));
 }
 
 float radical_inverse(uint i) {

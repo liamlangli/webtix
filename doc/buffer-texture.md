@@ -1,5 +1,5 @@
 Buffer Texture
---------------
+==============
 > WebGL2 Fallback
 
 ### indexed geometry
@@ -20,8 +20,13 @@ for indexed geometry, we have attribute `position` `normal`
 [boxMaxX, boxMaxY, boxMaxZ]
 [childrenCount, vertexIndex, longestAxis]
 
-// material buffer,
-[albedoR, albedoG, albedoB, metallic]
-[]
+// material buffer, seven pixel per node
+[albedoR, albedoG, albedoB]
+[emissionR, emissionG, emissionB]
+[absorptionR, absorptionG, absorptionB]
+[eta, metallic, subsurface]
+[specular, roughness, specular_tint]
+[anisotropic, sheen, sheenTint]
+[clearcoat, clearcoat_glossiness, transmission];
 ```
 

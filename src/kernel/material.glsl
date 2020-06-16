@@ -12,14 +12,14 @@ struct material {
 
   float specular;
   float roughness;
-  float specularTint;
+  float specular_tint;
 
   float anisotropic;
   float sheen;
   float sheenTint;
 
   float clearcoat;
-  float clearcoatGloss;
+  float clearcoat_glossiness;
   float transmission;
 };
 
