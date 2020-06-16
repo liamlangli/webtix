@@ -4,7 +4,10 @@
 #define EPSILON 1e-6
 #define MAX_RAY_DISTANCE 1e10
 #define PI 3.141592653
+#define PI2 6.28318530718
 #define Naturn_E 2.718281828
+#define PI_INV 0.31830988618
+#define PI2_INV 0.15915494309
 
 struct ray {
   vec3 origin, direction;
@@ -24,6 +27,10 @@ float max_element(vec3 v) {
 
 bool contain(const vec3 v, const vec3 b, const vec3 t) {
   return dot(step(b, v), step(v, t)) >= 3.0;
+}
+
+float lerp(float a, float b, float t) {
+  return a + (b - a) * t;
 }
 
 float box_intersect(const vec3 minV, const vec3 maxV, const ray r) {
