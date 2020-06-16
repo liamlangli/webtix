@@ -22,8 +22,7 @@ builtin function & variable
 |luminance| float luminance(vec3 c)| color luminance|
 |radical_inverse|float radical_inverse(uint i)| radical inverse sequence|
 |hemisphere_sample_cos| vec3 hemisphere_sample_cos(const vec3 n, vec2 coord)| sample points on unit hemisphere with cos weight align normal vector |
-| hemisphere_sample_uniform| vec3 hemisphere_sample_uniform(const vec3 n, vec2 coord) | sample points on unit hemisphere with average weight aligh normal vector|
-|hammersley_sample_2d| 
-vec2 hammersley_sample_2d(float i, float count)| hammersley low discrepancy sequence|
-| hammersley_sample_cos | vec3 hammersley_sample_cos(const vec3 n, const float i, const float count)| hammersley low discrepancy sequence sample points on unit hemisphere with cos weight align normal vector|
+|hemisphere_sample_uniform| vec3 hemisphere_sample_uniform(const vec3 n, vec2 coord) | sample points on unit hemisphere with average weight aligh normal vector|
+|hammersley_sample_2d| vec2 hammersley_sample_2d(float i, float count)| hammersley low discrepancy sequence|
+|hammersley_sample_cos | vec3 hammersley_sample_cos(const vec3 n, const float i, const float count)| hammersley low discrepancy sequence sample points on unit hemisphere with cos weight align normal vector|
 |hammersley_sample_uniform|vec3 hammersley_sample_uniform(const vec3 n, const float i, const float count)|hammersley low discrepancy sequence sample points on unit hemisphere with average weight aligh normal vector|
