@@ -1,3 +1,6 @@
+#ifndef disney_kernel
+#define disney_kernel
+
 #define BSDF_REFLECTED 1
 #define BSDF_TRANSMITTED 2
 #define BSDF_SPECULAR 4
@@ -246,3 +249,5 @@ vec3 disney_bsdf_eval(const material mat, const float eta_i, const float eta_o, 
 
   return lerp(brdf, bsdf, mat.transmission);
 }
+
+#endif

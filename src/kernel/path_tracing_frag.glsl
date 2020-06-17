@@ -22,6 +22,7 @@ bool terminated = false;
 float frame_index, sample_count, screen_width;
 
 #include <stdlib>
+#include <material>
 #buffer <bvh>
 #buffer <position>
 #buffer <normal>
@@ -46,12 +47,16 @@ void main()
 
   r = ray_generate();
 
+  vec3 throughput = vec3(1.0);
+  vec3 radiance = vec3(0.0);
+  material mat;
+
   int i;
   for(i = 0; i < TRACE_DEPTH; ++i) {
     // start tracing 
-    hit = trace(r, result);
+    hit = trace(r, result, mat);
     if (hit) {
-      r = ray_closest_hit(r, result);
+      r = ray_closest_hit(r, result, mat);
     } else {
       ray_missed(r);
       break;

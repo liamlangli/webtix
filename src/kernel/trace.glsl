@@ -1,5 +1,5 @@
-#ifndef traverse
-#define traverse
+#ifndef trace_kernel
+#define trace_kernel
 
 #define IS_LEAF(n) (n.c.x <= EPSILON)
 #define NOT_LEAF(n) (n.c.x > EPSILON)
@@ -12,9 +12,12 @@
 struct trace_result {
   vec3 position;
   vec3 normal;
+  float eta;
+  float absorption;
+  int type;
 };
 
-bool trace(const ray r, out trace_result result) {
+bool trace(const ray r, out trace_result result, out material mat) {
   float i, t;
   bvh_block block;
   primitive_block p_block, near_primitive;
@@ -46,6 +49,7 @@ bool trace(const ray r, out trace_result result) {
   if (near_intersection.t < MAX_RAY_DISTANCE) {
     result.position = r.origin + r.direction * near_intersection.t;
     result.normal = primitive_centriod_normal(near_primitive, near_intersection.v, near_intersection.u);
+    mat = default_material;
     return true;
   }
 

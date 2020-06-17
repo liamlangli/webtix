@@ -1,5 +1,5 @@
-#ifndef material
-#define material
+#ifndef material_kernel
+#define material_kernel
 
 struct material {
   vec3 emission;
@@ -23,5 +23,12 @@ struct material {
   float transmission;
 };
 
+material default_material = material(
+  vec3(0.0), vec3(1.0, 0.84314, 0.0), vec3(0.0),
+  1.0, 0.8, 0.0,
+  1.0, 0.2, 0.1,
+  0.5, 0.0, 0.0,
+  0.0, 0.0, 0.0
+);
 
 #endif

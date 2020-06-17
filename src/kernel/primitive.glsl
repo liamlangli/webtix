@@ -1,5 +1,5 @@
-#ifndef primitive_request
-#define primitive_request
+#ifndef primitive_kernel
+#define primitive_kernel
 
 struct primitive_block {
   vec3 p0, p1, p2, n0, n1, n2;
