@@ -21,12 +21,15 @@ import { ShaderLib } from '../webgl/shader-lib';
 import { KERNEL_RAY_GENERATE, KERNEL_RAY_CLOSEST_HIT, KERNEL_RAY_MISSED } from '../constants';
 import { UniformTexture } from '../webgl/uniform/uniform-texture';
 import { UniformVector4 } from '../webgl/uniform/uniform-vector4';
+import { create_white_texture } from '../utils/prefab';
+import { hdr_load } from '../loaders/hdr-loader';
 
 const TRACE_DEPTH_LABEL = 'TRACE_DEPTH';
 
 const FRAME_TEXTURE_LABEL = 'frame';
 const FRAME_STATUS_LABEL = 'frame_status';
 const HISTORY_LABEL = 'history';
+const ENVIRONMENT_LABEL = 'environment';
 
 export enum PathTraceMode {
   Render = 0,
@@ -50,6 +53,7 @@ export class PathTraceEngine extends Engine {
   camera_uniform?: UniformStruct;
   control: SphericalControl;
 
+
   private last_defer_time: number = 0;
   private defer_frame_index: number = 0;
   private defer_sample_count: number = 64;
@@ -60,6 +64,8 @@ export class PathTraceEngine extends Engine {
   private render_target: Target;
 
   private mode: PathTraceMode = PathTraceMode.Render;
+
+  private environment_texture = create_white_texture(this.device);
 
   constructor(public renderer: Renderer) {
     super(renderer);
@@ -105,6 +111,8 @@ export class PathTraceEngine extends Engine {
       this.last_defer_time = performance.now();
       this.defer_frame_index = 0;
     });
+
+    this.environment_texture = create_white_texture(this.device);
   }
 
   set_mode(mode: PathTraceMode): void {
@@ -160,9 +168,19 @@ export class PathTraceEngine extends Engine {
     block.create_uniform_texture(texture_buffer_normal.name + '_buffer', texture_normal);
     block.create_uniform_texture(texture_buffer_index.name + '_buffer', texture_index);
     block.create_uniform_texture(texture_buffer_uv.name + '_buffer', texture_uv);
+    block.create_uniform_texture(ENVIRONMENT_LABEL, this.environment_texture);
     block.create_uniform_vector4(FRAME_STATUS_LABEL);
 
     this.trace_pipeline_descriptor.buffers = buffers;
+  }
+
+  /**
+   * @param uri hdr image uri
+   */
+  async set_environment(uri: string): Promise<void> {
+    const descriptor = await hdr_load(uri);
+    this.environment_texture = this.device.createTexture(descriptor);
+    this.trace_block.get<UniformTexture>(ENVIRONMENT_LABEL)!.texture = this.environment_texture;
   }
 
   /**

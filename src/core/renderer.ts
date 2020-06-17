@@ -1,8 +1,9 @@
 import { GPUPipeline } from '../webgl/pipeline';
 import { GPUDevice } from '../device';
 import { GPUVertexArray } from '../webgl/vertex-array';
-import { createScreenQuad } from '../utils/prefab';
-import { Color4, Color3 } from '../math/color';
+import { create_screen_quad } from '../utils/prefab';
+import { Color4 } from '../math/color';
+import { GPUTexture } from '../webgl';
 
 export class Renderer {
 
@@ -16,7 +17,7 @@ export class Renderer {
 
   clear_color: Color4 = new Color4(0, 0, 0, 0);
 
-  private screenQuadVertexArray: GPUVertexArray;
+  private screen_quad_vertex_array: GPUVertexArray;
 
   constructor(public canvas: HTMLCanvasElement) {
 
@@ -44,7 +45,7 @@ export class Renderer {
       e.stopPropagation();
     }
 
-    this.screenQuadVertexArray = createScreenQuad(this.device);
+    this.screen_quad_vertex_array = create_screen_quad(this.device);
   }
 
   clear(colorMask: boolean, depthMask: boolean, stencilMask: boolean): void {
@@ -66,7 +67,7 @@ export class Renderer {
       this.pipeline.activate();
 
       const gl = this.device.getContext<WebGL2RenderingContext>();
-      this.screenQuadVertexArray.activate();
+      this.screen_quad_vertex_array.activate();
       gl.drawArrays(gl.TRIANGLES, 0, 6);
       gl.bindVertexArray(null);
     }

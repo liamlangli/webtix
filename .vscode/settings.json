@@ -1,5 +1,6 @@
 {
   "cSpell.words": [
+    "Ldexp",
     "Mitsuba",
     "Optix",
     "anguslang",
@@ -14,6 +15,8 @@
     "lilang",
     "mult",
     "rgbe",
+    "scanline",
+    "scanlines",
     "stdlib",
     "struct",
     "wasm",

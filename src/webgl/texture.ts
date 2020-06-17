@@ -1,6 +1,7 @@
 import { GPUDevice } from '../device';
 import { TextureFilter, PixelFormat, LinearFilter, RGBFormat, TextureType, TextureDataType, TEXTURE_2D, FloatType } from './webgl2-constant';
 import { BufferArray } from '../types';
+import { Image } from '../core/image';
 
 export interface GPUTexture {
   activate(slot: number): void;
@@ -21,15 +22,20 @@ export class GPUTextureDescriptor {
 
   flipY: boolean = true;
   premultiplyAlpha: boolean = false;
+
+  image?: Image;
 }
 
 export class GPUTextureInternal implements GPUTexture {
+
 
   public format: PixelFormat;
   public dataType: TextureDataType;
   public type: TextureType;
   public internalFormat: any;
+
   public texture: WebGLTexture;
+  public image?: Image;
 
   constructor(public device: GPUDevice, descriptor: GPUTextureDescriptor) {
     const gl = device.getContext<WebGL2RenderingContext>();
@@ -39,6 +45,7 @@ export class GPUTextureInternal implements GPUTexture {
     this.internalFormat = descriptor.internalFormat;
     this.format = descriptor.format;
     this.dataType = descriptor.dataType;
+    this.image = descriptor.image;
 
     gl.bindTexture(descriptor.type, this.texture);
 
@@ -51,6 +58,11 @@ export class GPUTextureInternal implements GPUTexture {
 
     gl.texParameteri(descriptor.type, gl.TEXTURE_MIN_FILTER, descriptor.minFilter);
     gl.texParameteri(descriptor.type, gl.TEXTURE_MAG_FILTER, descriptor.magFilter);
+
+    if (this.image) {
+      gl.texImage2D(this.type, 0, this.internalFormat, this.image.width!, this.image.height!, 0, this.format, this.dataType, this.image.data);
+    }
+
     gl.bindTexture(this.type, null);
   }
 
