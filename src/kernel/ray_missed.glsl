@@ -1,4 +1,4 @@
 // output vec4 color;
-void ray_missed(const ray i) {
-  color = vec4(0.0);
+void ray_missed(ray r) {
+  color = vec4(sample_environment(r.direction), 1.0);
 }

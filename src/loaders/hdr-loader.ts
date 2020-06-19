@@ -11,6 +11,7 @@ export async function hdr_load(uri: string): Promise<GPUTextureDescriptor> {
 
   const texture_descriptor = new GPUTextureDescriptor();
   texture_descriptor.image = {width: info.width, height: info.height, data: pixels};
+  texture_descriptor.flipY = false;
   return texture_descriptor;
 }
 

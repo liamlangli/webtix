@@ -16,6 +16,8 @@ layout(std140) uniform Camera {
 in vec2 uv;
 out vec4 color;
 
+uniform sampler2D environment;
+
 // [frame_index, sample_count, -1, -1]
 uniform vec4 frame_status;
 bool terminated = false;
@@ -29,6 +31,7 @@ float frame_index, sample_count, screen_width;
 #buffer <index>
 #include <primitive>
 #include <trace>
+#include <environment>
 #include <ray_generate>
 #include <ray_closest_hit>
 #include <ray_missed>

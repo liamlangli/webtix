@@ -5,7 +5,8 @@ import * as ray_generate_kernel from '../kernel/ray_generate.glsl';
 import * as ray_closest_hit_kernel from '../kernel/ray_closest_hit.glsl';
 import * as ray_missed_kernel from '../kernel/ray_missed.glsl';
 import * as material_kernel from '../kernel/material.glsl';
-import { KERNEL_RAY_GENERATE, KERNEL_RAY_CLOSEST_HIT, KERNEL_RAY_MISSED } from '../constants';
+import * as environment_kernel from '../kernel/environment.glsl';
+import { KERNEL_RAY_GENERATE, KERNEL_RAY_CLOSEST_HIT, KERNEL_RAY_MISSED, KERNEL_ENVIRONMENT } from '../constants';
 
 const bucket = new Map<string, any>();
 
@@ -16,6 +17,8 @@ bucket.set('material', material_kernel);
 bucket.set(KERNEL_RAY_GENERATE, ray_generate_kernel);
 bucket.set(KERNEL_RAY_CLOSEST_HIT, ray_closest_hit_kernel);
 bucket.set(KERNEL_RAY_MISSED, ray_missed_kernel);
+bucket.set(KERNEL_ENVIRONMENT, environment_kernel);
+
 
 export class ShaderLib {
 
