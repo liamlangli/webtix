@@ -80,6 +80,16 @@ float luminance(vec3 c) {
   return dot(c, vec3(0.299, 0.587, 0.114));
 }
 
+vec3 tonemapping_aces(vec3 i)
+{
+  const float A = 2.51;
+  const float B = 0.03;
+  const float C = 2.43;
+  const float D = 0.59;
+  const float E = 0.14;
+  return (i * (A * i + B)) / (i * (C * i + D) + E);
+}
+
 float radical_inverse(uint i) {
   i = (i << 16u) | (i >> 16u);
   i = ((i & 0x55555555u) << 1u) | ((i & 0xAAAAAAAAu) >> 1u);

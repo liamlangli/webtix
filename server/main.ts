@@ -13,7 +13,7 @@ global.engine = engine;
 async function main() {
   const geometry = await draco_decode('draco/helmet.drc');
   engine.set_geometry(geometry);
-  engine.set_environment('epping_forest.hdr');
+  engine.set_environment('forest.hdr');
   engine.run();
 }
 

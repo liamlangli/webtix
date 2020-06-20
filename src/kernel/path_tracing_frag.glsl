@@ -70,5 +70,6 @@ void main()
     }
   }
 
+  color.rgb = tonemapping_aces(color.rgb);
   color = vec4(linear_to_srgb(color.rgb), color.a);
 }
