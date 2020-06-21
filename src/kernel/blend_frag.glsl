@@ -8,11 +8,11 @@ uniform sampler2D frame;
 // [frame_index, sample_count, random_seed, -1]
 uniform vec4 frame_status;
 
-in vec2 uv;
+in vec2 v_uv;
 out vec4 color;
 
 void main()
 {
   float index = frame_status.x + 1.0;
-  color = mix(texture(history, uv), texture(frame, uv), 1.0 / index);
+  color = mix(texture(history, v_uv), texture(frame, v_uv), 1.0 / index);
 }

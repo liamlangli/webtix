@@ -14,9 +14,9 @@ float ggx_smith(float n_dot_v, float roughness)
 
 float fresnel_schlink(float u)
 {
-    float m = clamp(1 - u, 0., 1.);
-    float m2 = m * m;
-    return m2 * m2 * m; // pow(m,5)
+  float m = clamp(1 - u, 0., 1.);
+  float m2 = m * m;
+  return m2 * m2 * m; // pow(m,5)
 }
 
 // fresnel reflection probability
@@ -79,12 +79,12 @@ float disney_bsdf_pdf(const material mat, const float eta_i, const float eta_o, 
 
 void disney_bsdf_sample(const material mat, float eta_i, float eta_o, const vec3 position, const vec3 u, const vec3 v, const vec3 normal, const vec3 view, inout vec3 light, inout float pdf, int type)
 {
-  float r = rand(uv);
+  float r = rand(v_uv);
   if (r < mat.transmission) {
     float F = fresnel(dot(normal, view), eta_i, eta_o);
 
     // sample reflectance or transmission based on Fresnel term
-    if (rand_unstable(uv) < F)
+    if (rand_unstable(v_uv) < F)
     {
      // sample specular
       vec2 rr = hammersley_sample_2d(frame_index, sample_count);
@@ -120,9 +120,9 @@ void disney_bsdf_sample(const material mat, float eta_i, float eta_o, const vec3
       }
     } else {
       // sample brdf
-      if (rand_unstable(uv + 0.1) < 0.5) {
+      if (rand_unstable(v_uv + 0.1) < 0.5) {
         // sample diffuse
-        if (rand_unstable(uv + 0.2) < mat.subsurface)
+        if (rand_unstable(v_uv + 0.2) < mat.subsurface)
         {
           light = hammersley_sample_uniform(-normal, frame_index, sample_count);
           // negate z coordinate to sample inside the surface

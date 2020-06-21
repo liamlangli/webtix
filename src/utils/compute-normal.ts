@@ -5,7 +5,6 @@ const v0 = new Vector3();
 const v1 = new Vector3();
 const v2 = new Vector3();
 
-
 const BUFFER_STRIDE_TRIANGLE = 3;
 const BUFFER_STRIDE_POSITION = 3;
 
@@ -16,8 +15,8 @@ export function compute_normal_indexed(index: Uint32Array, position: Float32Arra
   const normal = new Float32Array(position.length);
 
   let p, p0, p1, p2;
-  const triangleCount = index.length / 3;
-  for (let i = 0; i < triangleCount; ++i) {
+  const triangle_count = index.length / 3;
+  for (let i = 0; i < triangle_count; ++i) {
     
     p = i * BUFFER_STRIDE_TRIANGLE;
     p0 = index[p] * BUFFER_STRIDE_POSITION;

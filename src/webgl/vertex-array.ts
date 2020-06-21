@@ -15,6 +15,8 @@ export class GPUVertexArrayInternal implements GPUVertexArray {
 
     gl.bindVertexArray(this.vertexArrayObject);
     for (let i = 0; i < buffers.length; ++i) {
+      if (!buffers[i])
+        continue;
       buffers[i].activate(i);
     }
     gl.bindVertexArray(null);

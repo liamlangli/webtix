@@ -1,4 +1,5 @@
-import { BufferArray } from '../types';
+import { BufferArray, ObjectMap } from '../types';
+import { Geometry, Attribute } from '../webgl/geometry';
 
 const taskCache = new WeakMap();
 
@@ -12,6 +13,12 @@ const workerLimit = 4;
 const workerPool: any[] = [];
 let workerNextTaskID = 1;
 let workerSourceURL = '';
+
+const attribute_slot_map: ObjectMap<number> = {
+  'position': 0,
+  'normal': 1,
+  'uv': 2
+}
 
 export interface DracoAttribute {
   array: BufferArray;
@@ -38,6 +45,20 @@ export function draco_get_attribute(geometry: DracoGeometry, name: string): Drac
 
 export function draco_set_attribute(geometry: DracoGeometry, name: string, array: BufferArray, itemSize: number): void {
   geometry.attributes.push({name, array, itemSize});
+}
+
+export function draco_to_geometry(geometry: DracoGeometry): Geometry {
+  const core_geometry = new Geometry();
+  core_geometry.index = geometry.index as Attribute;
+  const attributes = geometry.attributes;
+
+  for (let i = 0; i < attributes.length; ++i) {
+    const attribute = attributes[i];
+    const slot = attribute_slot_map[attribute.name];
+    core_geometry.setAttribute({...attribute, slot});
+  }
+
+  return core_geometry;
 }
 
 /**

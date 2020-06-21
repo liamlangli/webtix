@@ -13,7 +13,7 @@ layout(std140) uniform Camera {
 };
 
 // input & output
-in vec2 uv;
+in vec2 v_uv;
 out vec4 color;
 
 uniform sampler2D environment;

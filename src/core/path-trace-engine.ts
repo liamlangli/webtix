@@ -1,5 +1,4 @@
 import { GPUPipeline, GPUPipelineDescriptor } from '../webgl/pipeline';
-import { draco_get_attribute, draco_set_attribute, DracoGeometry } from '../loaders/draco-loader';
 import { compute_normal_indexed } from '../utils/compute-normal';
 import { bvh_build_geometry_indexed } from './mesh-bvh';
 import { TextureBuffer } from './texture-buffer';
@@ -23,6 +22,7 @@ import { UniformTexture } from '../webgl/uniform/uniform-texture';
 import { UniformVector4 } from '../webgl/uniform/uniform-vector4';
 import { create_white_texture } from '../utils/prefab';
 import { hdr_load } from '../loaders/hdr-loader';
+import { Geometry } from '../webgl/geometry';
 
 const TRACE_DEPTH_LABEL = 'TRACE_DEPTH';
 
@@ -119,26 +119,26 @@ export class PathTraceEngine extends Engine {
     this.mode = mode;
   }
 
-  set_geometry(geometry: DracoGeometry): void {
+  set_geometry(geometry: Geometry): void {
     const device = this.device;
 
-    const position = draco_get_attribute(geometry, 'position');
-    const uv = draco_get_attribute(geometry, 'uv');
+    const position = geometry.getAttribute('position');
+    const uv = geometry.getAttribute('uv');
 
     if (position === undefined || uv === undefined) {
       throw `require position & uv attribute.`;
     }
   
-    const indexBuffer = geometry.index.array as Uint32Array;
+    const indexBuffer = geometry.index!.array as Uint32Array;
     const positionBuffer = position.array as Float32Array;
     const uvBuffer = uv!.array as Float32Array;
   
-    let normal = draco_get_attribute(geometry, 'normal');
+    let normal = geometry.getAttribute('normal');
     if (normal === undefined) {
       console.warn('recompute normal attribute');
       const normalBuffer = compute_normal_indexed(indexBuffer, positionBuffer);
-      draco_set_attribute(geometry, 'normal', normalBuffer, 3);
-      normal = draco_get_attribute(geometry, 'normal');
+      geometry.setAttribute({name: 'normal', array: normalBuffer, itemSize: 3, slot: 2});
+      normal = geometry.getAttribute('normal');
     }
   
     const normalBuffer = normal!.array as Float32Array;
