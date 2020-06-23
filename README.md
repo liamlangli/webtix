@@ -6,7 +6,7 @@ This project was created to saving your life while you were suffered from wrote 
 
 We want that you could implement your customized ray-tracing algorithm by just write several lines of glsl shader code.
 
-Assume that ray-tracing developers would like to share their render result with others mostly. So we implement project with webgl & typescript. which was easy to share and present.
+Assume that ray-tracing developers would like to share their render result with others mostly. So we implement project with webgl & typescript. which was easily to share and present.
 
 ## Core Feature
 - [x] BVH builder
