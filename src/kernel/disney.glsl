@@ -103,7 +103,7 @@ void disney_bsdf_sample(const material mat, float eta_i, float eta_o, const vec3
 
         half *= -1.0;
         type = BSDF_REFLECTED;
-        light = 2.0 * dot(view, half) * half - view;
+        light = normalize(reflect(-view, half));
 
       } else {
         float eta = eta_i / eta_o;
