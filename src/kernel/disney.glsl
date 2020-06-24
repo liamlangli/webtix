@@ -21,11 +21,11 @@ float fresnel_schlink(float u)
 
 // fresnel reflection probability
 float fresnel(float v_dot_n, float eta_i, float eta_o) {
-  float sin_theta_t2 = square(eta_i/eta_o) * (1.0- v_dot_n * v_dot_n);
+  float sin_theta_t2 = square(eta_i/eta_o) * (1.0 - v_dot_n * v_dot_n);
 
   // total internal reflection
-  if (sin_theta_t2 > 1.0f)
-    return 1.0f;
+  if (sin_theta_t2 > 1.0)
+    return 1.0;
 
   float l_dot_n = sqrt(1.0 - sin_theta_t2);
 
@@ -106,6 +106,7 @@ void disney_bsdf_sample(const material mat, float eta_i, float eta_o, const vec3
         light = normalize(reflect(-view, half));
 
       } else {
+
         float eta = eta_i / eta_o;
         vec3 refract_light = refract(view, normal, eta);
 
