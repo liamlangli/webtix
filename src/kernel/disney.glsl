@@ -51,6 +51,17 @@ float GTR2(float n_dot_h, float a) {
   return a2 / (PI * t * t);
 }
 
+vec3 specular_sample_half(const float a, const vec2 coord, const vec3 n, const vec3 u, const vec3 v) {
+  float half_phi = coord.x * PI2;
+  float half_theta_cos = sqrt((1. - coord.y) / (1. + (square(a) - 1.) * coord.y));
+  float half_theta_sin = sqrt(max(0., 1. - square(half_theta_cos)));
+  float half_phi_sin = sin(half_phi);
+  float half_phi_cos = cos(half_phi);
+
+  vec3 half = u * (half_theta_sin * half_phi_cos) + v * (half_theta_sin * half_phi_sin) + n * half_theta_cos;
+  return half;
+}
+
 float disney_bsdf_pdf(const material mat, const float eta_i, const float eta_o, vec3 position, vec3 normal, vec3 view, vec3 light) {
   float bsdf_pdf = 0.0;
   float brdf_pdf = 0.0;
@@ -72,9 +83,8 @@ float disney_bsdf_pdf(const material mat, const float eta_i, const float eta_o, 
     bsdf_pdf = pdf_spec * F;
     // weight pdfs equally
     brdf_pdf = lerp(pdf_diff, pdf_spec, 0.5);
-
   }
-  return lerp(brdfPdf, bsdfPdf, mat.transmission);
+  return lerp(brdf_pdf, bsdf_pdf, mat.transmission);
 }
 
 void disney_bsdf_sample(const material mat, float eta_i, float eta_o, const vec3 position, const vec3 u, const vec3 v, const vec3 normal, const vec3 view, inout vec3 light, inout float pdf, int type)
@@ -87,17 +97,10 @@ void disney_bsdf_sample(const material mat, float eta_i, float eta_o, const vec3
     if (rand_unstable(v_uv) < F)
     {
      // sample specular
-      vec2 rr = hammersley_sample_2d(frame_index, sample_count);
+      vec2 rand_coord = hammersley_sample_2d(frame_index, sample_count);
 
       float a = max(0.001f, mat.roughness);
-      float half_phi = rr.x * PI2;
-
-      float half_theta_cos = sqrt((1. - rr.y) / (1. + (square(a) - 1.) * rr.y));
-      float half_theta_sin = sqrt(max(0., 1. - square(half_theta_cos)));
-      float half_phi_sin = sin(half_phi);
-      float half_phi_cos = cos(half_phi);
-
-      vec3 half = u * (half_theta_sin * half_phi_cos) + v * (half_theta_sin * half_phi_sin) + normal * half_theta_cos;
+      vec3 half = specular_sample_half(a, rand_coord, normal, u, v);
 
       if (dot(half, view) <= 0.0) {
 
@@ -135,19 +138,15 @@ void disney_bsdf_sample(const material mat, float eta_i, float eta_o, const vec3
           type = BSDF_REFLECTED;
         }
       } else {
-        vec2 rr = hammersley_sample_2d(frame_index, sample_count);
+        vec2 rand_coord = hammersley_sample_2d(frame_index, sample_count);
         // sample specular
         float a = max(0.001f, mat.roughness);
-        float half_phi = rr.x * PI2;
-        float half_theta_cos = sqrt((1. - rr.y) / (1. + (square(a) - 1.) * rr.y));
-        float half_theta_sin = sqrt(max(0., 1. - square(half_theta_cos)));
-        float half_phi_sin = sin(half_phi);
-        float half_phi_cos = cos(half_phi);
+        vec3 half = specular_sample_half(a, rand_coord, normal, u, v);
 
-        vec3 half = u * (half_theta_sin * half_phi_cos) + v * (half_theta_sin * half_phi_sin) + normal * half_theta_cos;
         // ensure half angle in same hemisphere as incoming light vector
         if (dot(half, view) <= 0.0f)
-            half *= -1.0f;
+          half *= -1.0f;
+
         light = reflect(view, half);
         type = BSDF_REFLECTED;
       }

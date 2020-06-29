@@ -59,8 +59,11 @@ void main()
     // start tracing 
     hit = trace(r, result, mat);
     if (hit) {
+      // invoke cloest hit procedure
       r = ray_closest_hit(r, result, mat);
+
     } else {
+      // if ray doesn't any primitive in scene
       ray_missed(r);
       break;
     }
