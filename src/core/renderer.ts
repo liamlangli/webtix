@@ -3,7 +3,6 @@ import { GPUDevice } from '../device';
 import { GPUVertexArray } from '../webgl/vertex-array';
 import { create_screen_quad } from '../utils/prefab';
 import { Color4 } from '../math/color';
-import { GPUTexture } from '../webgl';
 
 export class Renderer {
 
