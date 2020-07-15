@@ -6,7 +6,7 @@ struct material {
   vec3 color;
   vec3 absorption;
 
-  float eta;
+  float eta; // index of refraction
   float metallic;
   float subsurface;
 

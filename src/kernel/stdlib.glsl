@@ -15,6 +15,10 @@ struct ray {
   vec3 origin, direction;
 };
 
+vec3 ray_extend(const ray r, const float t) {
+  return r.origin + r.direction * t;
+}
+
 struct texture_buffer_layout {
   float width, height, count, stride;
 };
@@ -35,6 +39,10 @@ bool contain(const vec3 v, const vec3 b, const vec3 t) {
 
 float square(float a) {
   return a * a;
+}
+
+vec3 face_normal(const vec3 normal, const vec3 view) {
+  return dot(normal, view) > 0.0 ? normal : -normal;
 }
 
 float box_intersect(const vec3 minV, const vec3 maxV, const ray r) {

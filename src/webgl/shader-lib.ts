@@ -1,6 +1,7 @@
 import * as stdlib_kernel from '../kernel/stdlib.glsl';
 import * as primitive_kernel from '../kernel/primitive.glsl';
 import * as trace_kernel from '../kernel/trace.glsl';
+import * as disney_kernel from '../kernel/disney.glsl';
 import * as ray_generate_kernel from '../kernel/ray_generate.glsl';
 import * as ray_closest_hit_kernel from '../kernel/ray_closest_hit.glsl';
 import * as ray_missed_kernel from '../kernel/ray_missed.glsl';
@@ -14,6 +15,7 @@ bucket.set('stdlib', stdlib_kernel);
 bucket.set('primitive', primitive_kernel);
 bucket.set('trace', trace_kernel);
 bucket.set('material', material_kernel);
+bucket.set('disney', disney_kernel);
 bucket.set(KERNEL_RAY_GENERATE, ray_generate_kernel);
 bucket.set(KERNEL_RAY_CLOSEST_HIT, ray_closest_hit_kernel);
 bucket.set(KERNEL_RAY_MISSED, ray_missed_kernel);

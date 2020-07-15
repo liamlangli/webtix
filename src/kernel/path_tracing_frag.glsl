@@ -31,6 +31,7 @@ float frame_index, sample_count, screen_width;
 #buffer <index>
 #include <primitive>
 #include <trace>
+#include <disney>
 #include <environment>
 #include <ray_generate>
 #include <ray_closest_hit>
@@ -38,20 +39,23 @@ float frame_index, sample_count, screen_width;
 
 void main()
 {
-  // ray create
-  ray r;
-  trace_result result;
-  bool hit;
-
   frame_index = frame_status.x;
   sample_count = frame_status.y;
   random_seed = frame_status.z;
   screen_width = frame_status.w;
 
+  // ray create
+  ray r;
+  trace_result result;
+  bool hit;
+  int ray_type = BSDF_REFLECTED;
+
   r = ray_generate();
 
   vec3 throughput = vec3(1.0);
   vec3 radiance = vec3(0.0);
+  vec3 ray_absorption = vec3(0.0);
+  float ray_eta = 1.0;
   material mat;
 
   int i;

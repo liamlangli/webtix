@@ -1,9 +1,9 @@
 #ifndef disney_kernel
 #define disney_kernel
 
-#define BSDF_REFLECTED 1
-#define BSDF_TRANSMITTED 2
-#define BSDF_SPECULAR 4
+const int BSDF_REFLECTED = 1;
+const int BSDF_TRANSMITTED = 2;
+const int BSDF_SPECULAR = 4;
 
 float ggx_smith(float n_dot_v, float roughness)
 {
@@ -14,7 +14,7 @@ float ggx_smith(float n_dot_v, float roughness)
 
 float fresnel_schlink(float u)
 {
-  float m = clamp(1 - u, 0., 1.);
+  float m = clamp(1. - u, 0., 1.);
   float m2 = m * m;
   return m2 * m2 * m; // pow(m,5)
 }
@@ -51,15 +51,18 @@ float GTR2(float n_dot_h, float a) {
   return a2 / (PI * t * t);
 }
 
-vec3 specular_sample_half(const float a, const vec2 coord, const vec3 n, const vec3 u, const vec3 v) {
+vec3 specular_sample_half(const float a, const vec2 coord, const vec3 n) {
   float half_phi = coord.x * PI2;
   float half_theta_cos = sqrt((1. - coord.y) / (1. + (square(a) - 1.) * coord.y));
   float half_theta_sin = sqrt(max(0., 1. - square(half_theta_cos)));
   float half_phi_sin = sin(half_phi);
   float half_phi_cos = cos(half_phi);
 
-  vec3 half = u * (half_theta_sin * half_phi_cos) + v * (half_theta_sin * half_phi_sin) + n * half_theta_cos;
-  return half;
+  vec3 left = normalize(cross(n, vec3(0.0, 1.0, 0.0)));
+  vec3 up = cross(left, n);
+
+  vec3 half_direction = left * (half_theta_sin * half_phi_cos) + up * (half_theta_sin * half_phi_sin) + n * half_theta_cos;
+  return half_direction;
 }
 
 float disney_bsdf_pdf(const material mat, const float eta_i, const float eta_o, vec3 position, vec3 normal, vec3 view, vec3 light) {
@@ -71,13 +74,13 @@ float disney_bsdf_pdf(const material mat, const float eta_i, const float eta_o, 
   } else {
     float F = fresnel(dot(normal, view), eta_i, eta_o);
     float a = max(0.001, mat.roughness);
-    vec3 half = normalize(light + view);
+    vec3 half_direction = normalize(light + view);
 
-    float cos_theta_half = abs(dot(half, n));
+    float cos_theta_half = abs(dot(half_direction, normal));
     float pdf_half = GTR2(cos_theta_half, a) * cos_theta_half;
 
     // calculate pdf for each method given outgoing light vector
-    float pdf_spec = 0.25 * pdf_half/ max(EPSILON, dot(light, half));
+    float pdf_spec = 0.25 * pdf_half/ max(EPSILON, dot(light, half_direction));
     float pdf_diff = abs(dot(light, normal)) * PI_INV * (1.0 - mat.subsurface);
 
     bsdf_pdf = pdf_spec * F;
@@ -87,7 +90,16 @@ float disney_bsdf_pdf(const material mat, const float eta_i, const float eta_o, 
   return lerp(brdf_pdf, bsdf_pdf, mat.transmission);
 }
 
-void disney_bsdf_sample(const material mat, float eta_i, float eta_o, const vec3 position, const vec3 u, const vec3 v, const vec3 normal, const vec3 view, inout vec3 light, inout float pdf, int type)
+void disney_bsdf_sample(
+  const material mat,
+  float eta_i,
+  float eta_o,
+  const vec3 position,
+  const vec3 normal,
+  const vec3 view,
+  inout vec3 light,
+  inout float pdf,
+  int type)
 {
   float r = rand(v_uv);
   if (r < mat.transmission) {
@@ -100,20 +112,20 @@ void disney_bsdf_sample(const material mat, float eta_i, float eta_o, const vec3
       vec2 rand_coord = hammersley_sample_2d(frame_index, sample_count);
 
       float a = max(0.001f, mat.roughness);
-      vec3 half = specular_sample_half(a, rand_coord, normal, u, v);
+      vec3 half_direction = specular_sample_half(a, rand_coord, normal);
 
-      if (dot(half, view) <= 0.0) {
+      if (dot(half_direction, view) <= 0.0) {
 
-        half *= -1.0;
+        half_direction *= -1.0;
         type = BSDF_REFLECTED;
-        light = normalize(reflect(-view, half));
+        light = normalize(reflect(-view, half_direction));
 
       } else {
 
         float eta = eta_i / eta_o;
         vec3 refract_light = refract(view, normal, eta);
 
-        if (refract_light !== vec3(0.0)) {
+        if (refract_light != vec3(0.0)) {
           type = BSDF_SPECULAR;
           pdf = (1.0 - F) * mat.transmission;
           return;
@@ -141,13 +153,13 @@ void disney_bsdf_sample(const material mat, float eta_i, float eta_o, const vec3
         vec2 rand_coord = hammersley_sample_2d(frame_index, sample_count);
         // sample specular
         float a = max(0.001f, mat.roughness);
-        vec3 half = specular_sample_half(a, rand_coord, normal, u, v);
+        vec3 half_direction = specular_sample_half(a, rand_coord, normal);
 
         // ensure half angle in same hemisphere as incoming light vector
-        if (dot(half, view) <= 0.0f)
-          half *= -1.0f;
+        if (dot(half_direction, view) <= 0.0f)
+          half_direction *= -1.0f;
 
-        light = reflect(view, half);
+        light = reflect(view, half_direction);
         type = BSDF_REFLECTED;
       }
     }
@@ -155,14 +167,22 @@ void disney_bsdf_sample(const material mat, float eta_i, float eta_o, const vec3
   pdf = disney_bsdf_pdf(mat, eta_i, eta_o, position, normal, view, light);
 }
 
-vec3 disney_bsdf_eval(const material mat, const float eta_i, const float eta_o, const vec3 position, const vec3 normal, const vec3 view, const vec3 light) {
+vec3 disney_bsdf_eval(
+  const material mat,
+  const float eta_i,
+  const float eta_o,
+  const vec3 position,
+  const vec3 normal,
+  const vec3 view,
+  const vec3 light)
+{
   float n_dot_l = dot(normal, light);
   float n_dot_v = dot(normal, view);
 
-  vec3 half = normalize(light + view);
+  vec3 half_direction = normalize(light + view);
 
-  float n_dot_h = Dot(normal, half);
-  float l_dot_h = Dot(light, half);
+  float n_dot_h = dot(normal, half_direction);
+  float l_dot_h = dot(light, half_direction);
 
   vec3 color_linear = vec3(mat.color);
   float color_luminance = luminance(color_linear);
@@ -170,23 +190,23 @@ vec3 disney_bsdf_eval(const material mat, const float eta_i, const float eta_o, 
   vec3 color_tint = color_luminance > 0. ? color_linear / color_luminance : vec3(1.0f); // normalize lum. to isolate hue + sat
   vec3 color_specular = lerp(mat.specular * .08 * lerp(vec3(1.0), color_tint, mat.specular_tint), color_linear, mat.metallic);
 
-  vec3 bsdf = 0.0f;
-  vec3 brdf = 0.0f;
+  vec3 bsdf = vec3(0.0);
+  vec3 brdf = vec3(0.0);
 
   if (mat.transmission > 0.) {
     // evaluate BSDF
     if (n_dot_l <= 0.) {
       float F = fresnel(n_dot_v, eta_i, eta_o);
-      bsdf = mat.transmission * (1.0 - F ) / abs(n_dot_l) * (1.0 - mat.metallic);
+      bsdf = vec3(mat.transmission * (1.0 - F ) / abs(n_dot_l) * (1.0 - mat.metallic));
     } else {
       // specular lobe
-      float a = max(0.001f, mat.roughness);
+      float a = max(0.001, mat.roughness);
       float Ds = GTR2(n_dot_h, a);
 
       // fresnel term with the microfacet normal
       float F_h = fresnel(l_dot_h, eta_i, eta_o);
 
-      vec3 Fs = lerp(color_specular, vec3(1.0f), F_h);
+      vec3 Fs = lerp(color_specular, vec3(1.0), F_h);
       float Gs = ggx_smith(n_dot_v, a) * ggx_smith(n_dot_l, a);
 
       bsdf = Gs * Fs * Ds;
@@ -195,7 +215,7 @@ vec3 disney_bsdf_eval(const material mat, const float eta_i, const float eta_o, 
 
   if (mat.transmission < 1.0) {
     // evaluate BRDF
-    if (NDotL <= 0)
+    if (n_dot_l <= 0.0)
     {
 
       if (mat.subsurface > 0.0)
@@ -204,7 +224,7 @@ vec3 disney_bsdf_eval(const material mat, const float eta_i, const float eta_o, 
         // this ensures transmitted light corresponds to the diffuse model
         vec3 s = sqrt(mat.color);
       
-        float F_l = fresnel_schlink(abs(n_dot_l))
+        float F_l = fresnel_schlink(abs(n_dot_l));
         float F_v = fresnel_schlink(n_dot_v);
         float F_d = (1.0 - 0.5 * F_l)*( 1.0 - 0.5 * F_v);
 
@@ -220,7 +240,7 @@ vec3 disney_bsdf_eval(const material mat, const float eta_i, const float eta_o, 
       // Fresnel term with the microfacet normal
       float F_h = fresnel_schlink(l_dot_h);
 
-      Vec3 Fs = lerp(color_specular, Vec3(1), F_h);
+      vec3 Fs = lerp(color_specular, vec3(1.0), F_h);
       float Gs = ggx_smith(n_dot_v, a) * ggx_smith(n_dot_l, a);
 
       // Diffuse fresnel - go from 1 at normal incidence to .5 at grazing
@@ -233,13 +253,13 @@ vec3 disney_bsdf_eval(const material mat, const float eta_i, const float eta_o, 
       // Based on Hanrahan-Krueger BSDF approximation of isotrokPic bssrdf
       // 1.25 scale is used to (roughly) preserve albedo
       // Fss90 used to "flatten" retroreflection based on roughness
-      //float Fss90 = LDotH*LDotH*mat.roughness;
+      //float Fss90 = LdotH*LdotH*mat.roughness;
       //float Fss = Lerp(1.0f, Fss90, FL) * Lerp(1.0f, Fss90, FV);
-      //float ss = 1.25 * (Fss * (1.0f / (NDotL + NDotV) - .5) + .5);
+      //float ss = 1.25 * (Fss * (1.0f / (NdotL + NdotV) - .5) + .5);
 
       // clearcoat (ior = 1.5 -> F0 = 0.04)
-      float Dr = GTR1(n_dot_h, lerp(.1,.001, mat.clearcoatGloss));
-      float Fc = Lerp(.04f, 1.0f, F_h);
+      float Dr = GTR1(n_dot_h, lerp(.1,.001, mat.clearcoat_glossiness));
+      float Fc = lerp(.04f, 1.0f, F_h);
       float Gr = ggx_smith(n_dot_l, .25) * ggx_smith(n_dot_v, .25);
 
       brdf = PI_INV * F_d * color_linear * (1.0 - mat.metallic) * (1.0 - mat.subsurface) + Gs * Fs * Ds + mat.clearcoat * Gr * Fc * Dr;
