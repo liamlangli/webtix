@@ -1,10 +1,6 @@
 #ifndef disney_kernel
 #define disney_kernel
 
-const int BSDF_REFLECTED = 1;
-const int BSDF_TRANSMITTED = 2;
-const int BSDF_SPECULAR = 4;
-
 float ggx_smith(float n_dot_v, float roughness)
 {
   float a = roughness * roughness;

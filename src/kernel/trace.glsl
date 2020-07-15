@@ -12,6 +12,7 @@
 struct trace_result {
   vec3 position;
   vec3 normal;
+  float t; // distance
   int type;
 };
 
@@ -47,6 +48,7 @@ bool trace(const ray r, out trace_result result, out material mat) {
   if (near_intersection.t < MAX_RAY_DISTANCE) {
     result.position = ray_extend(r, near_intersection.t);
     result.normal = primitive_centriod_normal(near_primitive, near_intersection.v, near_intersection.u);
+    result.t = near_intersection.t;
     mat = default_material;
     return true;
   }

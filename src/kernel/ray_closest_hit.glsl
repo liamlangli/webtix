@@ -1,4 +1,4 @@
-#define ENV_SAMPLE
+// #define ENV_SAMPLE
 
 /**
  * global variable
@@ -25,7 +25,7 @@ ray ray_closest_hit(const ray ray_input, const trace_result result, const materi
   vec3 hit_position = result.position;
   vec3 hit_normal = result.normal;
   vec3 view = -ray_input.direction;
-  vec3 surface_eta = mat.eta;
+  float surface_eta = mat.eta;
   ray ray_output;
 
   // index of refraction for transmission, 1.0 corresponds to air
@@ -38,14 +38,20 @@ ray ray_closest_hit(const ray ray_input, const trace_result result, const materi
   }
 
   // update throughput based on absorption through the medium
-  pathThroughput *= exp( -ray_absorption * result.t);
+  throughput *= exp(-ray_absorption * result.t);
 
   // TODO Light Sampling
+  #ifdef LIGHT_SAMPLING
+  #else
+		radiance += throughput * mat.emission;
+  #endif
 
-  disney_bsdf_sample(mat, ray_eta, surface_eta, hit_position, hit_normal, view, bsdf_direction, bsdf_type);
+  disney_bsdf_sample(mat, ray_eta, surface_eta, hit_position, hit_normal, view, bsdf_direction, bsdf_pdf, bsdf_type);
 
-  if (bsdf_pdf <= 0.0)
-    break;
+  if (bsdf_pdf <= 0.0) {
+    terminated = true;
+    return ray_output;
+  }
 
   vec3 f = disney_bsdf_eval(mat, ray_eta, surface_eta, hit_position, hit_normal, view, bsdf_direction);
 
@@ -54,10 +60,12 @@ ray ray_closest_hit(const ray ray_input, const trace_result result, const materi
   }
 
   // update throughput with primitive reflectance
-  throughput *= f * abs(dot(n, bsdfDir)) / bsdfPdf;
+  throughput *= f * abs(dot(hit_normal, bsdf_direction)) / bsdf_pdf;
   ray_type = bsdf_type;
   ray_output.direction = bsdf_direction;
   ray_output.origin = hit_position + face_normal(hit_normal, bsdf_direction) * EPSILON;
+
+  color.xyz += radiance;
 
   return ray_output;
 #endif

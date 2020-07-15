@@ -12,19 +12,32 @@ layout(std140) uniform Camera {
   float fov;
 };
 
+const int BSDF_REFLECTED = 1;
+const int BSDF_TRANSMITTED = 2;
+const int BSDF_SPECULAR = 4;
+
 // input & output
 in vec2 v_uv;
 out vec4 color;
 
 uniform sampler2D environment;
 
+#include <stdlib>
+#include <material>
+
 // [frame_index, sample_count, -1, -1]
 uniform vec4 frame_status;
 bool terminated = false;
 float frame_index, sample_count, screen_width;
 
-#include <stdlib>
-#include <material>
+// tracing variable
+vec3 throughput = vec3(1.0);
+vec3 radiance = vec3(0.0);
+vec3 ray_absorption = vec3(0.0);
+float ray_eta = 1.0;
+int ray_type = BSDF_REFLECTED;
+material mat;
+
 #buffer <bvh>
 #buffer <position>
 #buffer <normal>
@@ -48,15 +61,8 @@ void main()
   ray r;
   trace_result result;
   bool hit;
-  int ray_type = BSDF_REFLECTED;
 
   r = ray_generate();
-
-  vec3 throughput = vec3(1.0);
-  vec3 radiance = vec3(0.0);
-  vec3 ray_absorption = vec3(0.0);
-  float ray_eta = 1.0;
-  material mat;
 
   int i;
   for(i = 0; i < TRACE_DEPTH; ++i) {
