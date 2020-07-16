@@ -52,6 +52,8 @@ material mat;
 
 void main()
 {
+  color = vec4(vec3(0.0), 1.0);
+
   frame_index = frame_status.x;
   sample_count = frame_status.y;
   random_seed = frame_status.z;
@@ -66,7 +68,7 @@ void main()
 
   int i;
   for(i = 0; i < TRACE_DEPTH; ++i) {
-    // start tracing 
+    // start tracing
     hit = trace(r, result, mat);
     if (hit) {
       // invoke cloest hit procedure

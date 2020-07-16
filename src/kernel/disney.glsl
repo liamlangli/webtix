@@ -49,8 +49,8 @@ float GTR2(float n_dot_h, float a) {
 
 vec3 specular_sample_half(const float a, const vec2 coord, const vec3 n) {
   float half_phi = coord.x * PI2;
-  float half_theta_cos = sqrt((1. - coord.y) / (1. + (square(a) - 1.) * coord.y));
-  float half_theta_sin = sqrt(max(0., 1. - square(half_theta_cos)));
+  float half_theta_cos = sqrt((1.0 - coord.y) / (1.0 + (square(a) - 1.0) * coord.y));
+  float half_theta_sin = sqrt(max(0.0, 1.0 - square(half_theta_cos)));
   float half_phi_sin = sin(half_phi);
   float half_phi_cos = cos(half_phi);
 
@@ -61,7 +61,15 @@ vec3 specular_sample_half(const float a, const vec2 coord, const vec3 n) {
   return half_direction;
 }
 
-float disney_bsdf_pdf(const material mat, const float eta_i, const float eta_o, vec3 position, vec3 normal, vec3 view, vec3 light) {
+float disney_bsdf_pdf(
+  const material mat,
+  const float eta_i,
+  const float eta_o,
+  const vec3 position,
+  const vec3 normal,
+  const vec3 view,
+  const vec3 light)
+{
   float bsdf_pdf = 0.0;
   float brdf_pdf = 0.0;
   if (dot(normal, light) <= 0.0) {
@@ -87,17 +95,19 @@ float disney_bsdf_pdf(const material mat, const float eta_i, const float eta_o, 
 }
 
 void disney_bsdf_sample(
-  const material mat,
-  float eta_i,
-  float eta_o,
-  const vec3 position,
-  const vec3 normal,
-  const vec3 view,
-  inout vec3 light,
-  inout float pdf,
+  const in material mat,
+  const in float eta_i,
+  const in float eta_o,
+  const in vec3 position,
+  const in vec3 normal,
+  const in vec3 view,
+  out vec3 light,
+  out float pdf,
   int type)
 {
   float r = rand(v_uv);
+
+  // material refract transport
   if (r < mat.transmission) {
     float F = fresnel(dot(normal, view), eta_i, eta_o);
 
@@ -110,56 +120,55 @@ void disney_bsdf_sample(
       float a = max(0.001f, mat.roughness);
       vec3 half_direction = specular_sample_half(a, rand_coord, normal);
 
-      if (dot(half_direction, view) <= 0.0) {
-
+      if (dot(half_direction, view) <= 0.0)
         half_direction *= -1.0;
-        type = BSDF_REFLECTED;
-        light = normalize(reflect(-view, half_direction));
+      type = BSDF_REFLECTED;
+      light = normalize(reflect(-view, half_direction));
 
-      } else {
-
-        float eta = eta_i / eta_o;
-        vec3 refract_light = refract(view, normal, eta);
-
-        if (refract_light != vec3(0.0)) {
-          type = BSDF_SPECULAR;
-          pdf = (1.0 - F) * mat.transmission;
-          return;
-        } else {
-          pdf = 0.0;
-          return;
-        }
-      }
     } else {
-      // sample brdf
-      if (rand_unstable(v_uv + 0.1) < 0.5) {
-        // sample diffuse
-        if (rand_unstable(v_uv + 0.2) < mat.subsurface)
-        {
-          light = hammersley_sample_uniform(-normal, frame_index, sample_count);
-          // negate z coordinate to sample inside the surface
-          type = BSDF_TRANSMITTED;
-        }
-        else
-        {
-          light = hammersley_sample_cos(normal, frame_index, sample_count);
-          type = BSDF_REFLECTED;
-        }
+      float eta = eta_i / eta_o;
+      vec3 refract_light = refract(view, normal, eta);
+
+      if (refract_light != vec3(0.0)) {
+        type = BSDF_SPECULAR;
+        pdf = (1.0 - F) * mat.transmission;
+        return;
       } else {
-        vec2 rand_coord = hammersley_sample_2d(frame_index, sample_count);
-        // sample specular
-        float a = max(0.001f, mat.roughness);
-        vec3 half_direction = specular_sample_half(a, rand_coord, normal);
-
-        // ensure half angle in same hemisphere as incoming light vector
-        if (dot(half_direction, view) <= 0.0f)
-          half_direction *= -1.0f;
-
-        light = reflect(view, half_direction);
-        type = BSDF_REFLECTED;
+        pdf = 0.0;
+        return;
       }
     }
+  } else {
+
+    // sample brdf
+    if (rand_unstable(v_uv + 0.1) < 0.5) {
+      // sample diffuse
+      if (rand_unstable(v_uv + 0.2) < mat.subsurface)
+      {
+        light = hammersley_sample_uniform(-normal, frame_index, sample_count);
+        // negate z coordinate to sample inside the surface
+        type = BSDF_TRANSMITTED;
+      }
+      else
+      {
+        light = hammersley_sample_cos(normal, frame_index, sample_count);
+        type = BSDF_REFLECTED;
+      }
+    } else {
+      vec2 rand_coord = hammersley_sample_2d(frame_index, sample_count);
+      // sample specular
+      float a = max(0.001, mat.roughness);
+      vec3 half_direction = specular_sample_half(a, rand_coord, normal);
+
+      // ensure half angle in same hemisphere as incoming light vector
+      if (dot(half_direction, view) <= 0.0)
+        half_direction *= -1.0;
+
+      light = reflect(-view, half_direction);
+      type = BSDF_REFLECTED;
+    }
   }
+
   pdf = disney_bsdf_pdf(mat, eta_i, eta_o, position, normal, view, light);
 }
 
@@ -183,15 +192,15 @@ vec3 disney_bsdf_eval(
   vec3 color_linear = vec3(mat.color);
   float color_luminance = luminance(color_linear);
 
-  vec3 color_tint = color_luminance > 0. ? color_linear / color_luminance : vec3(1.0f); // normalize lum. to isolate hue + sat
-  vec3 color_specular = lerp(mat.specular * .08 * lerp(vec3(1.0), color_tint, mat.specular_tint), color_linear, mat.metallic);
+  vec3 color_tint = color_luminance > 0.0 ? color_linear / color_luminance : vec3(1.0); // normalize lum. to isolate hue + sat
+  vec3 color_specular = lerp(mat.specular * 0.08 * lerp(vec3(1.0), color_tint, mat.specular_tint), color_linear, mat.metallic);
 
   vec3 bsdf = vec3(0.0);
   vec3 brdf = vec3(0.0);
 
-  if (mat.transmission > 0.) {
+  if (mat.transmission > 0.0) {
     // evaluate BSDF
-    if (n_dot_l <= 0.) {
+    if (n_dot_l <= 0.0) {
       float F = fresnel(n_dot_v, eta_i, eta_o);
       bsdf = vec3(mat.transmission * (1.0 - F ) / abs(n_dot_l) * (1.0 - mat.metallic));
     } else {
