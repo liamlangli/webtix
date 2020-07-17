@@ -43,17 +43,17 @@ ray ray_closest_hit(const ray ray_input, const trace_result result, const materi
   // TODO Light Sampling
   #ifdef LIGHT_SAMPLING
   #else
-		radiance += throughput * mat.emission;
+		radiance += clamp(throughput * mat.emission, 0.0, 1.0);
   #endif
 
-  disney_bsdf_sample(mat, ray_eta, surface_eta, hit_position, hit_normal, view, bsdf_direction, bsdf_pdf, bsdf_type);
+  disney_bsdf_sample(mat, ray_eta, surface_eta, hit_normal, view, bsdf_direction, bsdf_pdf, bsdf_type);
 
   if (bsdf_pdf <= 0.0) {
     terminated = true;
     return ray_output;
   }
 
-  vec3 f = disney_bsdf_eval(mat, ray_eta, surface_eta, hit_position, hit_normal, view, bsdf_direction);
+  vec3 f = disney_bsdf_eval(mat, ray_eta, surface_eta, hit_normal, view, bsdf_direction);
 
   if (dot(hit_normal, bsdf_direction) <= 0.0) {
     ray_eta = surface_eta;
@@ -65,7 +65,7 @@ ray ray_closest_hit(const ray ray_input, const trace_result result, const materi
   ray_output.direction = bsdf_direction;
   ray_output.origin = hit_position + face_normal(hit_normal, bsdf_direction) * EPSILON;
 
-  color.xyz += radiance;
+  color.xyz = radiance;
 
   return ray_output;
 #endif

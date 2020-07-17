@@ -24,7 +24,7 @@ primitive_block fetch_primitive(const float index) {
 }
 
 vec3 primitive_centriod_normal(const primitive_block p, const float u, const float v) {
-  return p.n0 * (1.0 - u - v) + p.n1 * u + p.n2 * v;
+  return normalize(p.n0 * (1.0 - u - v) + p.n1 * u + p.n2 * v);
 }
 
 /**

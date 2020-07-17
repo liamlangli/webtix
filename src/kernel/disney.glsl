@@ -58,22 +58,21 @@ vec3 specular_sample_half(const float a, const vec2 coord, const vec3 n) {
   vec3 up = cross(left, n);
 
   vec3 half_direction = left * (half_theta_sin * half_phi_cos) + up * (half_theta_sin * half_phi_sin) + n * half_theta_cos;
-  return half_direction;
+  return normalize(half_direction);
 }
 
 float disney_bsdf_pdf(
   const material mat,
-  const float eta_i,
-  const float eta_o,
-  const vec3 position,
-  const vec3 normal,
-  const vec3 view,
-  const vec3 light)
+  const in float eta_i,
+  const in float eta_o,
+  const in vec3 normal,
+  const in vec3 view,
+  const in vec3 light)
 {
   float bsdf_pdf = 0.0;
   float brdf_pdf = 0.0;
   if (dot(normal, light) <= 0.0) {
-    bsdf_pdf  = 0.0f;
+    bsdf_pdf = 0.0;
     brdf_pdf = PI2_INV * mat.subsurface * 0.5;
   } else {
     float F = fresnel(dot(normal, view), eta_i, eta_o);
@@ -98,7 +97,6 @@ void disney_bsdf_sample(
   const in material mat,
   const in float eta_i,
   const in float eta_o,
-  const in vec3 position,
   const in vec3 normal,
   const in vec3 view,
   out vec3 light,
@@ -169,14 +167,13 @@ void disney_bsdf_sample(
     }
   }
 
-  pdf = disney_bsdf_pdf(mat, eta_i, eta_o, position, normal, view, light);
+  pdf = disney_bsdf_pdf(mat, eta_i, eta_o, normal, view, light);
 }
 
 vec3 disney_bsdf_eval(
   const material mat,
   const float eta_i,
   const float eta_o,
-  const vec3 position,
   const vec3 normal,
   const vec3 view,
   const vec3 light)
@@ -202,7 +199,7 @@ vec3 disney_bsdf_eval(
     // evaluate BSDF
     if (n_dot_l <= 0.0) {
       float F = fresnel(n_dot_v, eta_i, eta_o);
-      bsdf = vec3(mat.transmission * (1.0 - F ) / abs(n_dot_l) * (1.0 - mat.metallic));
+      bsdf = vec3(mat.transmission * (1.0 - F) / abs(n_dot_l) * (1.0 - mat.metallic));
     } else {
       // specular lobe
       float a = max(0.001, mat.roughness);
@@ -231,7 +228,7 @@ vec3 disney_bsdf_eval(
       
         float F_l = fresnel_schlink(abs(n_dot_l));
         float F_v = fresnel_schlink(n_dot_v);
-        float F_d = (1.0 - 0.5 * F_l)*( 1.0 - 0.5 * F_v);
+        float F_d = (1.0 - 0.5 * F_l) * (1.0 - 0.5 * F_v);
 
         brdf = PI_INV * s * mat.subsurface * F_d * (1.0 - mat.metallic);
       }
@@ -263,7 +260,7 @@ vec3 disney_bsdf_eval(
       //float ss = 1.25 * (Fss * (1.0f / (NdotL + NdotV) - .5) + .5);
 
       // clearcoat (ior = 1.5 -> F0 = 0.04)
-      float Dr = GTR1(n_dot_h, lerp(.1,.001, mat.clearcoat_glossiness));
+      float Dr = GTR1(n_dot_h, lerp(0.1, 0.001, mat.clearcoat_glossiness));
       float Fc = lerp(.04f, 1.0f, F_h);
       float Gr = ggx_smith(n_dot_l, .25) * ggx_smith(n_dot_v, .25);
 

@@ -28,7 +28,7 @@ export class Renderer {
 
     this.device = new GPUDevice(context);
 
-    const ratio = window.devicePixelRatio * 3;
+    const ratio = window.devicePixelRatio * 2.0;
     this.width = canvas.width * ratio;
     this.height = canvas.height * ratio;
     canvas.width = this.width;

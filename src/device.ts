@@ -2,7 +2,6 @@ import { GPUTexture, GPUTextureDescriptor, GPUTextureInternal } from './webgl/te
 import { GPUBufferDescriptor, GPUBufferInternal, GPUBuffer } from './webgl/buffer';
 import { GPUVertexArray, GPUVertexArrayInternal } from './webgl/vertex-array';
 import { GPUPipeline, GPUPipelineDescriptor } from './webgl/pipeline';
-import { Geometry } from './webgl/geometry';
 
 export type GPUContext = WebGL2RenderingContext;
 

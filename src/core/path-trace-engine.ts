@@ -56,8 +56,8 @@ export class PathTraceEngine extends Engine {
 
   private last_defer_time: number = 0;
   private defer_frame_index: number = 0;
-  private defer_sample_count: number = 64;
-  private defer_delay: number = 200;
+  private defer_sample_count: number = 32;
+  private defer_delay: number = 256;
 
   private need_draw: boolean = true;
   private swap_target: SwapTarget;

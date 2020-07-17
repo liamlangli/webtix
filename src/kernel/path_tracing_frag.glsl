@@ -2,6 +2,7 @@
 precision highp float;
 precision highp int;
 precision highp sampler2D;
+
 #constants
 
 // uniforms
@@ -73,16 +74,20 @@ void main()
     if (hit) {
       // invoke cloest hit kernel
       r = ray_closest_hit(r, result, mat);
-      if (terminated) {
-        break;
-      }
     } else {
       // if ray doesn't any primitive in scene
       ray_missed(r);
       break;
     }
+
+    if (terminated) {
+      break;
+    }
   }
 
+#ifdef TONE_MAPPING
   color.rgb = tonemapping_aces(color.rgb);
+#endif
+
   color = vec4(linear_to_srgb(color.rgb), color.a);
 }
