@@ -72,6 +72,13 @@ export class Vector3 {
     return this.set(a.y * b.z - a.z * b.y, a.x * b.z - a.z * b.x, a.x * b.y - a.y * b.x);
   }
 
+  distance(v: Vector3): number {
+    const delta_x = this.x - v.x;
+    const delta_y = this.y - v.y;
+    const delta_z = this.z - v.z;
+    return Math.sqrt(delta_x * delta_x + delta_y * delta_y + delta_z * delta_z);
+  }
+
   set(x: number, y: number, z: number): Vector3 {
     this.x = x;
     this.y = y;

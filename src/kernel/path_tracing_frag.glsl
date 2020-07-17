@@ -85,6 +85,8 @@ void main()
     }
   }
 
+  color.rgb = clamp(color.rgb, 0.0, 1000.0);
+
 #ifdef TONE_MAPPING
   color.rgb = tonemapping_aces(color.rgb);
 #endif

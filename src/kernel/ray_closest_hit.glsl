@@ -43,7 +43,7 @@ ray ray_closest_hit(const ray ray_input, const trace_result result, const materi
   // TODO Light Sampling
   #ifdef LIGHT_SAMPLING
   #else
-		radiance += clamp(throughput * mat.emission, 0.0, 1.0);
+		radiance += throughput * mat.emission;
   #endif
 
   disney_bsdf_sample(mat, ray_eta, surface_eta, hit_normal, view, bsdf_direction, bsdf_pdf, bsdf_type);
@@ -59,11 +59,11 @@ ray ray_closest_hit(const ray ray_input, const trace_result result, const materi
     ray_eta = surface_eta;
   }
 
-  // update throughput with primitive reflectance
+  // update throughput with bsdf direction
   throughput *= f * abs(dot(hit_normal, bsdf_direction)) / bsdf_pdf;
   ray_type = bsdf_type;
-  ray_output.direction = bsdf_direction;
   ray_output.origin = hit_position + face_normal(hit_normal, bsdf_direction) * EPSILON;
+  ray_output.direction = bsdf_direction;
 
   color.xyz = radiance;
 

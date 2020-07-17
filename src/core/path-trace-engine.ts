@@ -23,6 +23,8 @@ import { UniformVector4 } from '../webgl/uniform/uniform-vector4';
 import { create_white_texture } from '../utils/prefab';
 import { hdr_load } from '../loaders/hdr-loader';
 import { Geometry } from '../webgl/geometry';
+import { Box3 } from '../math';
+import { fit_view } from '../utils/fit-view';
 
 const TRACE_DEPTH_LABEL = 'TRACE_DEPTH';
 
@@ -76,7 +78,7 @@ export class PathTraceEngine extends Engine {
     this.trace_pipeline_descriptor = new GPUPipelineDescriptor();
     this.trace_pipeline_descriptor.vertexShader = ScreenVert as any;
     this.trace_pipeline_descriptor.fragmentShader = PathTracingFrag as any;
-    this.trace_pipeline_descriptor.defines[TRACE_DEPTH_LABEL] = '2';
+    this.trace_pipeline_descriptor.defines[TRACE_DEPTH_LABEL] = '5';
     this.trace_block = new UniformBlock();
     this.trace_pipeline_descriptor.block = this.trace_block;
 
@@ -148,6 +150,10 @@ export class PathTraceEngine extends Engine {
     const texture_buffer_normal = new TextureBuffer('normal', normalBuffer);
     const texture_buffer_uv = new TextureBuffer('uv', uvBuffer);
     const texture_buffer_index = new TextureBuffer('index', bvh.index);
+
+    const box = new Box3().read(bvh.nodes);
+    fit_view(box, this.camera);
+    this.control.spherical.from_vector3(this.camera.position);
   
     const buffers = new Map();
     buffers.set(texture_buffer_bvh.name, texture_buffer_bvh);

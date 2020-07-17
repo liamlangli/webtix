@@ -31,7 +31,7 @@ float fresnel(float v_dot_n, float eta_i, float eta_o) {
   float r1 = (v_dot_n - eta * l_dot_n)/(v_dot_n + eta * l_dot_n);
   float r2 = (l_dot_n - eta * v_dot_n)/(l_dot_n + eta * v_dot_n);
 
-  return 0.5 * (square(r1) + square(r2));
+  return clamp(0.5 * (square(r1) + square(r2)), 0.0, 1.0);
 }
 
 float GTR1(float n_dot_h, float a) {
@@ -107,6 +107,7 @@ void disney_bsdf_sample(
 
   // material refract transport
   if (r < mat.transmission) {
+
     float F = fresnel(dot(normal, view), eta_i, eta_o);
 
     // sample reflectance or transmission based on Fresnel term
@@ -125,9 +126,10 @@ void disney_bsdf_sample(
 
     } else {
       float eta = eta_i / eta_o;
-      vec3 refract_light = refract(view, normal, eta);
+      vec3 refract_view = refract(view, normal, eta);
 
-      if (refract_light != vec3(0.0)) {
+      if (refract_view != vec3(0.0)) {
+        light = refract_view;
         type = BSDF_SPECULAR;
         pdf = (1.0 - F) * mat.transmission;
         return;
@@ -136,10 +138,12 @@ void disney_bsdf_sample(
         return;
       }
     }
+
   } else {
 
     // sample brdf
     if (rand_unstable(v_uv + 0.1) < 0.5) {
+
       // sample diffuse
       if (rand_unstable(v_uv + 0.2) < mat.subsurface)
       {
@@ -250,7 +254,7 @@ vec3 disney_bsdf_eval(
       float F_l = fresnel_schlink(n_dot_l);
       float F_v = fresnel_schlink(n_dot_v);
       float F0 = 0.5 + 2.0 * l_dot_h * l_dot_h * mat.roughness;
-      float F_d = lerp(1.0, F0, F_l) * lerp(1.0f, F0, F_v);
+      float F_d = lerp(1.0, F0, F_l) * lerp(1.0, F0, F_v);
 
       // Based on Hanrahan-Krueger BSDF approximation of isotrokPic bssrdf
       // 1.25 scale is used to (roughly) preserve albedo
@@ -261,7 +265,7 @@ vec3 disney_bsdf_eval(
 
       // clearcoat (ior = 1.5 -> F0 = 0.04)
       float Dr = GTR1(n_dot_h, lerp(0.1, 0.001, mat.clearcoat_glossiness));
-      float Fc = lerp(.04f, 1.0f, F_h);
+      float Fc = lerp(0.04, 1.0, F_h);
       float Gr = ggx_smith(n_dot_l, .25) * ggx_smith(n_dot_v, .25);
 
       brdf = PI_INV * F_d * color_linear * (1.0 - mat.metallic) * (1.0 - mat.subsurface) + Gs * Fs * Ds + mat.clearcoat * Gr * Fc * Dr;
