@@ -113,10 +113,10 @@ void disney_bsdf_sample(
     // sample reflectance or transmission based on Fresnel term
     if (rand_unstable(v_uv) < F)
     {
-     // sample specular
+      // sample specular
       vec2 rand_coord = hammersley_sample_2d(frame_index, sample_count);
 
-      float a = max(0.001f, mat.roughness);
+      float a = max(0.001, mat.roughness);
       vec3 half_direction = specular_sample_half(a, rand_coord, normal);
 
       if (dot(half_direction, view) <= 0.0)
@@ -126,10 +126,10 @@ void disney_bsdf_sample(
 
     } else {
       float eta = eta_i / eta_o;
-      vec3 refract_view = refract(view, normal, eta);
+      vec3 refract_view = refract(-view, normal, eta);
 
       if (refract_view != vec3(0.0)) {
-        light = refract_view;
+        light = normalize(refract_view);
         type = BSDF_SPECULAR;
         pdf = (1.0 - F) * mat.transmission;
         return;

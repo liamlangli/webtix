@@ -26,7 +26,7 @@ ray ray_closest_hit(const ray ray_input, const trace_result result, const materi
   vec3 hit_normal = result.normal;
   vec3 view = -ray_input.direction;
   float surface_eta = mat.eta;
-  ray ray_output;
+  ray ray_output = ray_input;
 
   // index of refraction for transmission, 1.0 corresponds to air
   if (ray_eta == 1.0) {

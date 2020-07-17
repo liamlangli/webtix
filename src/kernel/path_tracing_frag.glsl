@@ -7,7 +7,7 @@ precision highp sampler2D;
 
 // uniforms
 layout(std140) uniform Camera {
-  vec4 position;
+  vec4 camera_position;
   vec4 forward;
   vec4 up;
   float fov;
