@@ -142,10 +142,10 @@ void disney_bsdf_sample(
   } else {
 
     // sample brdf
-    if (rand_unstable(v_uv + 0.1) < 0.5) {
+    if (rand_unstable(v_uv) < 0.5) {
 
       // sample diffuse
-      if (rand_unstable(v_uv + 0.2) < mat.subsurface)
+      if (rand_unstable(v_uv.yx) < mat.subsurface)
       {
         light = hammersley_sample_uniform(-normal, frame_index, sample_count);
         // negate z coordinate to sample inside the surface

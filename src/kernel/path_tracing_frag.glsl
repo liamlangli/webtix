@@ -68,7 +68,7 @@ void main()
   r = ray_generate();
 
   int i;
-  for(i = 0; i < TRACE_DEPTH; ++i) {
+  for(i = 0; i < 5; ++i) {
     // start tracing
     hit = trace(r, result, mat);
     if (hit) {
@@ -83,6 +83,10 @@ void main()
     if (terminated) {
       break;
     }
+  }
+
+  if (mat.transmission > 0.0) {
+    ray_missed(r);
   }
 
   color.rgb = min(color.rgb, 1e3);

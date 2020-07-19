@@ -76,7 +76,6 @@ ray ray_closest_hit(const ray ray_input, const trace_result result, const materi
   ray_output.direction = bsdf_direction;
 
   color.rgb = radiance;
-  // color.rgb = vec3(bsdf_pdf);
 
   return ray_output;
 #endif
