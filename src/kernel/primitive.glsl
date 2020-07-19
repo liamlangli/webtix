@@ -58,7 +58,7 @@ primitive_intersection primitive_intersect(const primitive_block block, const ra
     return result;
 
   float t = dot(v2, Q) * invdet;
-  if (t > EPSILON) {
+  if (t > 0.0) {
     return primitive_intersection(t, u, v);
   }
   return result;
