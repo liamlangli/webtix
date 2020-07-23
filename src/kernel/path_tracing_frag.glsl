@@ -68,7 +68,7 @@ void main()
   r = ray_generate();
 
   int i;
-  for(i = 0; i < 5; ++i) {
+  for(i = 0; i < TRACE_DEPTH; ++i) {
     // start tracing
     hit = trace(r, result, mat);
     if (hit) {

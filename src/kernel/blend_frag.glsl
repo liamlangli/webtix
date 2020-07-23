@@ -14,5 +14,6 @@ out vec4 color;
 void main()
 {
   float index = frame_status.x + 1.0;
-  color = mix(texture(history, v_uv), texture(frame, v_uv), 1.0 / index);
+  color.rgb = clamp(mix(texture(history, v_uv), texture(frame, v_uv), 1.0 / index).xyz, 0.0, 1.0);
+  color.a = 1.0;
 }

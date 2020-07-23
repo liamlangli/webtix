@@ -163,10 +163,10 @@ void disney_bsdf_sample(
       vec3 half_direction = specular_sample_half(a, rand_coord, normal);
 
       // ensure half angle in same hemisphere as incoming light vector
-      if (dot(half_direction, view) <= 0.0)
+      if (dot(half_direction, -view) <= 0.0)
         half_direction *= -1.0;
 
-      light = reflect(-view, half_direction);
+      light = normalize(reflect(-view, half_direction));
       type = BSDF_REFLECTED;
     }
   }

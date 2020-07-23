@@ -77,7 +77,7 @@ float rand(const vec2 i){
 }
 
 float rand_unstable(const vec2 i) {
-  return fract(sin(dot(i.yx + random_seed - .5, vec2(12.9898,78.233))) * 43758.5453);
+  return fract(sin(dot(i.yx + random_seed, vec2(12.9898,78.233))) * 43758.5453);
 }
 
 vec3 linear_to_srgb(vec3 i) {
