@@ -10,7 +10,7 @@ float ggx_smith(float n_dot_v, float roughness)
 
 float fresnel_schlink(float u)
 {
-  float m = clamp(1. - u, 0., 1.);
+  float m = clamp(1.0 - u, 0.0, 1.0);
   float m2 = m * m;
   return m2 * m2 * m; // pow(m,5)
 }
@@ -103,7 +103,7 @@ void disney_bsdf_sample(
   out float pdf,
   int type)
 {
-  float r = rand(v_uv);
+  float r = rand_unstable(v_uv);
 
   // material refract transport
   if (r < mat.transmission) {

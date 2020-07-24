@@ -77,7 +77,7 @@ export class PathTraceEngine extends Engine {
     this.trace_pipeline_descriptor = new GPUPipelineDescriptor();
     this.trace_pipeline_descriptor.vertexShader = ScreenVert as any;
     this.trace_pipeline_descriptor.fragmentShader = PathTracingFrag as any;
-    this.trace_pipeline_descriptor.defines[TRACE_DEPTH_LABEL] = '2';
+    this.trace_pipeline_descriptor.defines[TRACE_DEPTH_LABEL] = '5';
     this.trace_block = new UniformBlock();
     this.trace_pipeline_descriptor.block = this.trace_block;
 

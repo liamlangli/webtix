@@ -70,12 +70,12 @@ ray ray_closest_hit(const ray ray_input, const trace_result result, const materi
   }
 
   // update throughput with bsdf direction
-  throughput *= f * abs(dot(hit_normal, bsdf_direction)) / bsdf_pdf;
+  throughput = clamp(throughput * f * abs(dot(hit_normal, bsdf_direction)) / bsdf_pdf, 0.0, 1.0);;
   ray_type = bsdf_type;
   ray_output.origin = hit_position + face_normal(hit_normal, bsdf_direction) * EPSILON;
   ray_output.direction = bsdf_direction;
 
-  color.rgb = bsdf_direction;
+  color.rgb = radiance;
 
   return ray_output;
 #endif
