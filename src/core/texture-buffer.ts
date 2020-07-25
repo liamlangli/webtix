@@ -96,19 +96,19 @@ export class TextureBuffer {
 
   constructor(name: string, inputData: number[] | Float32Array, stride: number = 1) {
     // align data with RGB color format
+    const length = inputData.length / BUFFER_STRIDE_PIXEL_RGB;
+    this.count = length;
 
     // max pixel on the same row
     const row_max_data_count = (MAX_TEXTURE_SIZE / stride) | 0;
-    const buffer_width = row_max_data_count * stride;
-
-    const length = inputData.length / BUFFER_STRIDE_PIXEL_RGB;
-    this.count = length;
+    let buffer_width = row_max_data_count * stride;
+    buffer_width = length < MAX_TEXTURE_SIZE ? length : buffer_width;
 
     const lines = Math.ceil(length / buffer_width);
     const output = new Float32Array(lines * buffer_width * BUFFER_STRIDE_PIXEL_RGB);
     output.set(inputData);
 
-    this.width = buffer_width;
+    this.width = Math.min(length, buffer_width);
     this.height = lines;
     this.data = output;
     this.name = name;

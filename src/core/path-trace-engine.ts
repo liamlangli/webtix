@@ -25,6 +25,7 @@ import { hdr_load } from '../loaders/hdr-loader';
 import { Geometry } from '../webgl/geometry';
 import { Box3 } from '../math';
 import { fit_view } from '../utils/fit-view';
+import { Material } from './material';
 
 const TRACE_DEPTH_LABEL = 'TRACE_DEPTH';
 
@@ -54,6 +55,9 @@ export class PathTraceEngine extends Engine {
   camera: Camera;
   camera_uniform?: UniformStruct;
   control: SphericalControl;
+
+  default_material: Material = new Material();
+  material_buffer?: Float32Array;
 
   private last_defer_time: number = 0;
   private defer_frame_index: number = 0;
@@ -141,18 +145,22 @@ export class PathTraceEngine extends Engine {
       geometry.setAttribute({name: 'normal', array: normalBuffer, itemSize: 3, slot: 2});
       normal = geometry.getAttribute('normal');
     }
-  
+
     const normalBuffer = normal!.array as Float32Array;
     const bvh = bvh_build_geometry_indexed(indexBuffer, positionBuffer);
+    this.material_buffer = Material.makeMaterialBuffer([this.default_material]);
+
     const texture_buffer_bvh = new TextureBuffer('bvh', bvh.nodes, 3);
     const texture_buffer_position = new TextureBuffer('position', positionBuffer);
     const texture_buffer_normal = new TextureBuffer('normal', normalBuffer);
     const texture_buffer_uv = new TextureBuffer('uv', uvBuffer);
     const texture_buffer_index = new TextureBuffer('index', bvh.index);
+    const texture_buffer_material = new TextureBuffer('material', this.material_buffer, Material.BUFFER_STRIDE);
 
     const box = new Box3().read(bvh.nodes);
     fit_view(box, this.camera);
     this.control.spherical.from_vector3(this.camera.position);
+    this.control.center.copy(box.center);
   
     const buffers = new Map();
     buffers.set(texture_buffer_bvh.name, texture_buffer_bvh);
@@ -160,12 +168,14 @@ export class PathTraceEngine extends Engine {
     buffers.set(texture_buffer_normal.name, texture_buffer_normal);
     buffers.set(texture_buffer_index.name, texture_buffer_index);
     buffers.set(texture_buffer_uv.name, texture_buffer_uv);
+    buffers.set(texture_buffer_material.name, texture_buffer_material);
   
     const texture_bvh = texture_buffer_bvh.createGPUTexture(device);
     const texture_position = texture_buffer_position.createGPUTexture(device);
     const texture_normal = texture_buffer_normal.createGPUTexture(device);
     const texture_index = texture_buffer_index.createGPUTexture(device);
     const texture_uv = texture_buffer_uv.createGPUTexture(device);
+    const texture_material = texture_buffer_material.createGPUTexture(device);
     
     const block = this.trace_block;
     block.create_uniform_texture(texture_buffer_bvh.name + '_buffer', texture_bvh);
@@ -173,6 +183,7 @@ export class PathTraceEngine extends Engine {
     block.create_uniform_texture(texture_buffer_normal.name + '_buffer', texture_normal);
     block.create_uniform_texture(texture_buffer_index.name + '_buffer', texture_index);
     block.create_uniform_texture(texture_buffer_uv.name + '_buffer', texture_uv);
+    block.create_uniform_texture(texture_buffer_material + '_buffer', texture_material);
     block.create_uniform_texture(ENVIRONMENT_LABEL, this.environment_texture);
     block.create_uniform_vector4(FRAME_STATUS_LABEL);
 

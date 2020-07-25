@@ -11,7 +11,7 @@ const global = (window as any);
 global.engine = engine;
 
 async function main() {
-  const geometry = await draco_decode('draco/monkey.drc');
+  const geometry = await draco_decode('draco/lucy.drc');
   engine.set_geometry(draco_to_geometry(geometry));
   engine.set_environment('forest.hdr');
   engine.run();

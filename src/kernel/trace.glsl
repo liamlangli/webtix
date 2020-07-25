@@ -49,7 +49,7 @@ bool trace(const ray r, out trace_result result, out material mat) {
     result.position = ray_extend(r, near_intersection.t);
     result.normal = primitive_centriod_normal(near_primitive, near_intersection.v, near_intersection.u);
     result.t = near_intersection.t;
-    mat = default_material;
+    mat = material_from_block(fetch_material(0.0));
     return true;
   }
 

@@ -24,7 +24,6 @@ out vec4 color;
 uniform sampler2D environment;
 
 #include <stdlib>
-#include <material>
 
 // [frame_index, sample_count, -1, -1]
 uniform vec4 frame_status;
@@ -37,12 +36,13 @@ vec3 radiance = vec3(0.0);
 vec3 ray_absorption = vec3(0.0);
 float ray_eta = 1.0;
 int ray_type = BSDF_REFLECTED;
-material mat;
 
 #buffer <bvh>
 #buffer <position>
 #buffer <normal>
 #buffer <index>
+#buffer <material>
+#include <material>
 #include <primitive>
 #include <trace>
 #include <disney>
@@ -50,6 +50,8 @@ material mat;
 #include <ray_generate>
 #include <ray_closest_hit>
 #include <ray_missed>
+
+material mat;
 
 void main()
 {
@@ -95,5 +97,7 @@ void main()
   color.rgb = tonemapping_aces(color.rgb);
 #endif
 
-  color = vec4(linear_to_srgb(color.rgb), color.a);
+  // color = vec4(linear_to_srgb(color.rgb), color.a);
+
+  // color = texture(material_buffer, v_uv);
 }
