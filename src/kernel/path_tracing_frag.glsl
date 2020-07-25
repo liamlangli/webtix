@@ -21,8 +21,6 @@ const int BSDF_SPECULAR = 4;
 in vec2 v_uv;
 out vec4 color;
 
-uniform sampler2D environment;
-
 #include <stdlib>
 
 // [frame_index, sample_count, -1, -1]
@@ -97,7 +95,5 @@ void main()
   color.rgb = tonemapping_aces(color.rgb);
 #endif
 
-  // color = vec4(linear_to_srgb(color.rgb), color.a);
-
-  // color = texture(material_buffer, v_uv);
+  color = vec4(linear_to_srgb(color.rgb), color.a);
 }

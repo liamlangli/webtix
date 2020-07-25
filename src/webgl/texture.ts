@@ -27,8 +27,6 @@ export class GPUTextureDescriptor {
 }
 
 export class GPUTextureInternal implements GPUTexture {
-
-
   public format: PixelFormat;
   public dataType: TextureDataType;
   public type: TextureType;

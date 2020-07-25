@@ -1,4 +1,4 @@
-// #define SAMPLE_ENV
+// #define SAMPLE_AO
 
 /**
  * global variable

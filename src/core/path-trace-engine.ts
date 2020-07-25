@@ -183,7 +183,7 @@ export class PathTraceEngine extends Engine {
     block.create_uniform_texture(texture_buffer_normal.name + '_buffer', texture_normal);
     block.create_uniform_texture(texture_buffer_index.name + '_buffer', texture_index);
     block.create_uniform_texture(texture_buffer_uv.name + '_buffer', texture_uv);
-    block.create_uniform_texture(texture_buffer_material + '_buffer', texture_material);
+    block.create_uniform_texture(texture_buffer_material.name + '_buffer', texture_material);
     block.create_uniform_texture(ENVIRONMENT_LABEL, this.environment_texture);
     block.create_uniform_vector4(FRAME_STATUS_LABEL);
 

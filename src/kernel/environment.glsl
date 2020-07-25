@@ -1,6 +1,8 @@
 #ifndef environment_kernel
 #define environment_kernel
 
+uniform sampler2D environment;
+
 /**
  * https://community.khronos.org/t/creating-texture-from-hdr-image/66677/5
  **/
