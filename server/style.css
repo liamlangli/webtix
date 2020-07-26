@@ -4,8 +4,13 @@ body {
   height: 100%;
   margin: 0;
   padding: 0;
-  background-color: #f2f2f2;
+  background-color: #838383;
   overflow: hidden;
+}
+
+h1, h2, h3, h4, h5, h6, p {
+  margin: 0; 
+  padding: 0;
 }
 
 #view {
@@ -16,4 +21,17 @@ body {
   height: 512px;
   border-radius: 3px;
   background-color: rgba(0, 0, 0, 0.0);
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+footer {
+  position: fixed;
+  bottom: 10px;
+  font-size: 11px;
+  color: #444;
+  width: 100%;
+  text-align: center;
 }

@@ -67,7 +67,8 @@ export class GPUTextureInternal implements GPUTexture {
   bufferData(data: BufferArray, width: number, height: number, level: number = 0): void {
     const gl = this.device.getContext<WebGL2RenderingContext>();
     gl.bindTexture(this.type, this.texture);
-    gl.texImage2D(this.type, level, this.internalFormat, width, height, 0, this.format, this.dataType, data);
+    gl.texImage2D(this.type, 0, this.internalFormat, width, height, 0, this.format, this.dataType, data);
+    // gl.texSubImage2D(this.type, level, 0, 0, width, height, this.format, this.dataType, data);
     gl.bindTexture(this.type, null);
   }
 

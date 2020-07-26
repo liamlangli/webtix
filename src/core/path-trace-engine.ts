@@ -111,13 +111,15 @@ export class PathTraceEngine extends Engine {
 
     this.camera_uniform = this.trace_block.create_uniform_struct('Camera', new Float32Array(16), 0);
 
-    EventHub.on(GlobalEvent.MouseMove, () => {
-      this.need_draw = true;
-      this.last_defer_time = performance.now();
-      this.defer_frame_index = 0;
-    });
+    EventHub.on(GlobalEvent.MouseMove, this.reset_defer_render);
 
     this.environment_texture = create_white_texture(this.device);
+  }
+  
+  reset_defer_render = (): void => {
+    this.need_draw = true;
+    this.last_defer_time = performance.now();
+    this.defer_frame_index = 0;
   }
 
   set_mode(mode: PathTraceMode): void {
@@ -244,6 +246,13 @@ export class PathTraceEngine extends Engine {
     camera.look_at(this.control.center);
     camera.write(this.camera_uniform!.buffer);
     this.trace_block.get<UniformVector4>(FRAME_STATUS_LABEL)!.set(this.defer_frame_index, this.defer_sample_count, Math.random(), this.renderer.width);
+
+    if (this.default_material && this.default_material.needsUpdate) {
+      this.reset_defer_render();
+      this.default_material.write(this.material_buffer!);
+      this.trace_block.get<UniformTexture>('material_buffer')!.texture.bufferData(this.material_buffer!, 7, 1);
+      this.default_material.needsUpdate = false;
+    }
   }
 
   frame = (time?: number): void => {

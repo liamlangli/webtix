@@ -13,6 +13,8 @@ export class Material {
     return buffer;
   }
 
+  public needsUpdate: boolean = false;
+
   public emission = new Vector3();
   public color = new Vector3(1.0, 1.0, 1.0);
   public absorption = new Vector3();
