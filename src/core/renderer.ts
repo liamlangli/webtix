@@ -28,16 +28,27 @@ export class Renderer {
 
     this.device = new GPUDevice(context);
 
-    const ratio = window.devicePixelRatio * 0.5;
+    this.device.getExtension('EXT_color_buffer_float');
+    this.device.getExtension('OES_texture_float_linear'); // this might be unnecessary
+
+    const debug = this.device.getExtension<WEBGL_debug_renderer_info>('WEBGL_debug_renderer_info');
+
+    let performanceScale = 1.0;
+    if (debug) {
+      const unmask_renderer = context.getParameter(debug.UNMASKED_RENDERER_WEBGL) as string;
+      if (unmask_renderer.search(/(Nvidia|GeForce|RTX)/i) > -1) {
+        performanceScale = 2.0;
+      }
+      console.log(`[Renderer] Vender info ${unmask_renderer}`);
+    }
+
+    const ratio = window.devicePixelRatio * performanceScale;
     this.width = canvas.width * ratio;
     this.height = canvas.height * ratio;
     canvas.width = this.width;
     canvas.height = this.height;
 
     context.viewport(0, 0, this.width, this.height);
-  
-    this.device.getExtension('EXT_color_buffer_float');
-    this.device.getExtension('OES_texture_float_linear'); // this might be unnecessary
 
     canvas.oncontextmenu = function (e) {
       e.preventDefault();
