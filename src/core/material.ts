@@ -20,7 +20,7 @@ export class Material {
   public absorption = new Vector3();
 
   public eta: number = 1.6;;
-  public metallic: number = 0.0;
+  public metallic: number = 1.0;
   public subsurface: number = 0.0;
 
   public specular: number = 0.0;
