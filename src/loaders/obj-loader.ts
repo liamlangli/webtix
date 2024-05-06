@@ -1,32 +1,32 @@
 /**
  * more into see doc/OBJLoader.md
  */
-import { Color3 } from '../math/color';
+import { Color3 } from "../math/color";
 
-const re_space   = /\s+/;
+const re_space = /\s+/;
 
 // obj file pattern
 const re_vector = /^v\s/;
 const re_normal = /^vn\s/;
-const re_face   = /^f\s/;
-const re_mtllib = /^mtllib\s/; 
+const re_face = /^f\s/;
+const re_mtllib = /^mtllib\s/;
 const re_usemtl = /^usemtl\s/;
 
 // mtl file pattern
-const re_ns         = /^Ns\s/;
-const re_ka         = /^Ka\s/;
-const re_kd         = /^Kd\s/;
-const re_ks         = /^Ks\s/;
-const re_ke         = /^Ke\s/;
-const re_refract    = /^Ni\s/;
-const re_opacity    = /^d\s/;
-const re_illum      = /^illum\s/;
-const re_newmtl     = /^newmtl\s/;
+const re_ns = /^Ns\s/;
+const re_ka = /^Ka\s/;
+const re_kd = /^Kd\s/;
+const re_ks = /^Ks\s/;
+const re_ke = /^Ke\s/;
+const re_refract = /^Ni\s/;
+const re_opacity = /^d\s/;
+const re_illum = /^illum\s/;
+const re_newmtl = /^newmtl\s/;
 
 export class OBJPackage {
     constructor(
         public objData: OBJData,
-        public mtlData: MTLData
+        public mtlData: MTLData,
     ) {}
 }
 
@@ -38,9 +38,9 @@ export class OBJData {
     ) {}
 }
 /**
- * 
+ *
  * MTL file description
- * 
+ *
  * Ns <roughness>
  * Ka <ambient color>
  * Kd <diffuse color>
@@ -49,9 +49,9 @@ export class OBJData {
  * Ni <refract scalar>
  * d  <opacity>
  * illum <illumination model>
- * 
+ *
  * wavefront file illumination models
- * 
+ *
  * 0. Color on and Ambient off
  * 1. Color on and Ambient on
  * 2. Highlight on
@@ -63,8 +63,8 @@ export class OBJData {
  * 8. Reflection on and Ray trace off
  * 9. Transparency: Glass on, Reflection: Ray trace off
  * 10. Casts shadows onto invisible surfaces
- * 
- * 
+ *
+ *
  */
 export class MaterialNode {
     constructor(public name: string) {}
@@ -78,9 +78,7 @@ export class MaterialNode {
 }
 
 export class MTLData {
-    constructor(
-        public materials: MaterialNode[]
-    ) {}
+    constructor(public materials: MaterialNode[]) {}
 }
 
 function objProcess(data: string, materils: MaterialNode[]) {
@@ -90,31 +88,42 @@ function objProcess(data: string, materils: MaterialNode[]) {
     const fs = [];
     let mtl_index = -1;
 
-    const lines = data.split('\n');
+    const lines = data.split("\n");
     let i = -1;
-    while ( ++i < lines.length) {
+    while (++i < lines.length) {
         const line = lines[i].trim();
         const elements = line.split(re_space);
         elements.shift();
 
-        if ( re_vector.test( line ) ) {
-            vs.push([parseFloat(elements[0]), parseFloat(elements[1]), parseFloat(elements[2])]);
-        } else if ( re_normal.test( line ) ) {
-            vn.push([parseFloat(elements[0]), parseFloat(elements[1]), parseFloat(elements[2])]);
-        } else if ( re_face.test(line) ) {
-            
-            let j  = -1
+        if (re_vector.test(line)) {
+            vs.push([
+                parseFloat(elements[0]),
+                parseFloat(elements[1]),
+                parseFloat(elements[2]),
+            ]);
+        } else if (re_normal.test(line)) {
+            vn.push([
+                parseFloat(elements[0]),
+                parseFloat(elements[1]),
+                parseFloat(elements[2]),
+            ]);
+        } else if (re_face.test(line)) {
+            let j = -1;
             let indices = [];
 
             while (++j < elements.length) {
-                var is = elements[j].split('/')
-                indices.push(parseFloat(is[0]) - 1, parseFloat(is[2]) - 1, mtl_index);
+                var is = elements[j].split("/");
+                indices.push(
+                    parseFloat(is[0]) - 1,
+                    parseFloat(is[2]) - 1,
+                    mtl_index,
+                );
             }
             fs.push(indices);
-        } else if ( re_usemtl.test(line) && materils.length > 0) {
+        } else if (re_usemtl.test(line) && materils.length > 0) {
             const mtlName = elements[0];
             let index = 0;
-            for(;index < materils.length; ++index) {
+            for (; index < materils.length; ++index) {
                 if (mtlName === materils[index].name) {
                     mtl_index = index;
                     continue;
@@ -127,16 +136,15 @@ function objProcess(data: string, materils: MaterialNode[]) {
 }
 
 function mtlProcess(data: string) {
-
     const mtls = [];
     let mtl: any;
-    const lines = data.split('\n');
+    const lines = data.split("\n");
     let i = -1;
-    while ( ++i < lines.length) {
+    while (++i < lines.length) {
         const line = lines[i].trim();
         const elements = line.split(re_space);
         elements.shift();
-        
+
         if (re_newmtl.test(line)) {
             if (mtl) {
                 mtls.push(mtl);
@@ -144,15 +152,27 @@ function mtlProcess(data: string) {
             mtl = new MaterialNode(elements[0]);
         } else if (re_ka.test(line)) {
             if (mtl) {
-                mtl.ambient.set(parseFloat(elements[0]), parseFloat(elements[1]), parseFloat(elements[2]));
+                mtl.ambient.set(
+                    parseFloat(elements[0]),
+                    parseFloat(elements[1]),
+                    parseFloat(elements[2]),
+                );
             }
         } else if (re_kd.test(line)) {
             if (mtl) {
-                mtl.diffuse.set(parseFloat(elements[0]), parseFloat(elements[1]), parseFloat(elements[2]));
+                mtl.diffuse.set(
+                    parseFloat(elements[0]),
+                    parseFloat(elements[1]),
+                    parseFloat(elements[2]),
+                );
             }
         } else if (re_ks.test(line)) {
             if (mtl) {
-                mtl.specular.set(parseFloat(elements[0]), parseFloat(elements[1]), parseFloat(elements[2]));
+                mtl.specular.set(
+                    parseFloat(elements[0]),
+                    parseFloat(elements[1]),
+                    parseFloat(elements[2]),
+                );
             }
         } else if (re_ns.test(line)) {
             if (mtl) {
@@ -173,12 +193,15 @@ function mtlProcess(data: string) {
     return mtls;
 }
 
-export async function OBJLoader(path: string, fileName: string): Promise<OBJPackage> {
-    const mtlResponse = await fetch(path + '/' + fileName + '.mtl');
+export async function OBJLoader(
+    path: string,
+    fileName: string,
+): Promise<OBJPackage> {
+    const mtlResponse = await fetch(path + "/" + fileName + ".mtl");
     const mtlData = await mtlResponse.text();
     const mtlGroup = mtlProcess(mtlData);
 
-    const objResponse = await fetch(path + '/' + fileName + '.obj');
+    const objResponse = await fetch(path + "/" + fileName + ".obj");
     const objData = await objResponse.text();
 
     return new OBJPackage(objProcess(objData, mtlGroup), new MTLData(mtlGroup));

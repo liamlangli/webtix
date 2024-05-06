@@ -1,1 +1,1 @@
-export * from './blob-reader';
+export * from "./blob-reader";

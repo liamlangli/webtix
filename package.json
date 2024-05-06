@@ -1,26 +1,20 @@
 {
   "name": "webtix",
-  "version": "0.1.1",
-  "main": "dist/index.js",
-  "type": "dist/src/index.d.ts",
+  "version": "0.1.2",
+  "main": "src/index.ts",
+  "type": "module",
   "license": "MIT",
   "description": "WebGL2 based path-tracing render engine.",
   "repository": {
     "type": "git",
-    "url": "https://github.com/AngusLang/webtix"
+    "url": "https://github.com/liamlangli/webtix"
   },
-  "author": "anguslang",
+  "author": "liamlangli",
   "scripts": {
-    "dev": "webpack-dev-server --watch",
-    "build": "webpack --mode production"
+    "dev": "node dev.js"
   },
   "devDependencies": {
-    "raw-loader": "^0.5.1",
-    "ts-loader": "^4.1.0",
-    "typescript": "^3.9.2",
-    "webpack": "^4.43.0",
-    "webpack-cli": "^3.3.11",
-    "webpack-dev-server": "^3.11.0"
-  },
-  "dependencies": {}
+    "esbuild": "^0.20.2",
+    "typescript": "^5.4.5"
+  }
 }

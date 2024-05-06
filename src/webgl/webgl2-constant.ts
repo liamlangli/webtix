@@ -8,12 +8,12 @@ export const LinearMipmapNearestFilter: TextureFilter = 9985;
 export const LinearMipmapLinearFilter: TextureFilter = 9987;
 
 // Mapping modes
-export enum Mapping { }
+export enum Mapping {}
 export const UVMapping: Mapping = 300;
 export const CubeReflectionMapping: Mapping = 301;
 
 // Data types
-export enum TextureDataType { }
+export enum TextureDataType {}
 export const UnsignedByteType: TextureDataType = 5121;
 export const ByteType: TextureDataType = 5120;
 export const ShortType: TextureDataType = 5122;
@@ -24,7 +24,7 @@ export const FloatType: TextureDataType = 5126;
 export const HalfFloatType: TextureDataType = 5131;
 
 // Pixel formats
-export enum PixelFormat { }
+export enum PixelFormat {}
 export const AlphaFormat: PixelFormat = 6406;
 export const RGBFormat: PixelFormat = 6407;
 export const RGBAFormat: PixelFormat = 6408;
@@ -40,7 +40,7 @@ export const RGBIntegerFormat: PixelFormat = 36248;
 
 // Compressed texture formats
 // DDS / ST3C Compressed texture formats
-export enum CompressedPixelFormat { }
+export enum CompressedPixelFormat {}
 export const RGB_S3TC_DXT1_Format: CompressedPixelFormat = 33776;
 export const RGBA_S3TC_DXT1_Format: CompressedPixelFormat = 33777;
 export const RGBA_S3TC_DXT3_Format: CompressedPixelFormat = 33778;
@@ -72,13 +72,13 @@ export const RGBA_ASTC_12x10_Format: CompressedPixelFormat = 37820;
 export const RGBA_ASTC_12x12_Format: CompressedPixelFormat = 37821;
 
 // Texture Type
-export enum TextureType { }
+export enum TextureType {}
 export const TEXTURE_2D: TextureType = 3553;
 export const TEXTURE_3D: TextureType = 32879;
 export const TEXTURE_CUBE: TextureType = 34067;
 
 // buffer type
-export enum BufferType { }
+export enum BufferType {}
 export const ARRAY_BUFFER: BufferType = 0x8892;
 export const ELEMENT_ARRAY_BUFFER: BufferType = 0x8893;
 

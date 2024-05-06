@@ -1,3 +1,3 @@
 export enum GlobalEvent {
-  MouseMove = 'mousemove'
+    MouseMove = "mousemove",
 }

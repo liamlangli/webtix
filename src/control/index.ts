@@ -1,1 +1,1 @@
-export * from './spherical-control';
+export * from "./spherical-control";

@@ -1,2 +1,2 @@
-export * from './draco-loader';
-export * from './obj-loader';
+export * from "./draco-loader";
+export * from "./obj-loader";

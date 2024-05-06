@@ -8,9 +8,7 @@ uniform sampler2D environment;
  **/
 
 vec3 sample_environment(vec3 n) {
-  float u = 0.5 + (1.0 * PI_INV) * atan(n.x / -n.z);
-  float v = acos(n.y) * PI_INV;
-  return texture(environment, vec2(u, v)).rgb;
+    return texture(environment, vec2(atan(n.z, n.x) * PI_INV * 0.5 + 0.5, asin(-n.y) * PI_INV + 0.5)).rgb;
 }
 
 #endif

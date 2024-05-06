@@ -1,33 +1,31 @@
-import { Renderer } from './renderer';
-import { GPUDevice } from '../device';
+import { Renderer } from "./renderer";
+import { GPUDevice } from "../device";
 
 export class Engine {
+    animation_index: number = -1;
 
-  animation_index: number = -1;
+    get device(): GPUDevice {
+        return this.renderer.device;
+    }
 
-  get device(): GPUDevice {
-    return this.renderer.device;
-  }
+    constructor(public renderer: Renderer) {}
 
-  constructor(public renderer: Renderer) {}
+    // update state each frame
+    protected update(): void {}
 
-  // update state each frame
-  protected update(): void {}
+    // engine prepare stage
+    protected start(): void {}
 
-  // engine prepare stage
-  protected start(): void {}
+    protected frame = (time?: number): void => {
+        this.animation_index = requestAnimationFrame(this.frame);
+    };
 
-  protected frame = (time?: number): void => {
-    this.animation_index = requestAnimationFrame(this.frame);
-  }
+    pause(): void {
+        cancelAnimationFrame(this.animation_index);
+    }
 
-  pause(): void {
-    cancelAnimationFrame(this.animation_index);
-  }
-
-  run = (): void  => {
-    this.start();
-    this.frame();
-  }
-
+    run = (): void => {
+        this.start();
+        this.frame();
+    };
 }
